@@ -1,0 +1,115 @@
+import { NavItem } from '@/common/types/navItem'
+import { ROUTE_PATH } from '@/common/constants/routes-const'
+import { PERMISSIONS } from '@/common/constants/rolePermissions-const'
+
+export const ALL_NAV_ITEMS: NavItem[] = [
+	{
+		title: 'Dashboard',
+		url: ROUTE_PATH.ADMIN.DASHBOARD,
+		icon: 'dashboard',
+		isActive: false,
+		items: [],
+		permission: PERMISSIONS.DASHBOARD,
+	},
+	{
+		title: 'Categorías',
+		url: ROUTE_PATH.ADMIN.CATEGORY,
+		icon: 'box',
+		isActive: false,
+		items: [],
+		permission: PERMISSIONS.CATEGORIES,
+	},
+	{
+		title: 'Atributos',
+		url: ROUTE_PATH.ADMIN.ATTRIBUTES,
+		icon: 'boxModel2',
+		isActive: false,
+		items: [],
+		permission: PERMISSIONS.ATTRIBUTES,
+	},
+	{
+		title: 'Plantillas',
+		url: ROUTE_PATH.ADMIN.TEMPLATES,
+		icon: 'listDetails',
+		isActive: false,
+		items: [],
+		permission: PERMISSIONS.TEMPLATES,
+	},
+	{
+		title: 'Proveedores',
+		url: ROUTE_PATH.ADMIN.SUPPLIER,
+		icon: 'building',
+		isActive: false,
+		items: [],
+		permission: PERMISSIONS.SUPPLIERS,
+	},
+	{
+		title: 'Productos',
+		url: ROUTE_PATH.ADMIN.PRODUCT,
+		icon: 'tag',
+		isActive: false,
+		items: [],
+		permission: 'products',
+	},
+	{
+		title: 'Ventas',
+		url: ROUTE_PATH.ADMIN.SALES,
+		icon: 'cashRegister',
+		isActive: false,
+		items: [],
+		permission: 'sales',
+	},
+	{
+		title: 'Reportes',
+		url: ROUTE_PATH.ADMIN.REPORTS,
+		icon: 'chartBar',
+		isActive: false,
+		items: [],
+		permission: 'reports',
+	},
+	{
+		title: 'Usuarios',
+		url: ROUTE_PATH.ADMIN.USER,
+		icon: 'userGroup',
+		isActive: false,
+		items: [],
+		permission: 'users',
+	},
+	{
+		title: 'Clientes',
+		url: ROUTE_PATH.ADMIN.CUSTOMERS,
+		icon: 'userUsers',
+		isActive: false,
+		items: [],
+		permission: 'customers',
+	},
+	{
+		title: 'Administración',
+		url: '#',
+		icon: 'settingsCog',
+		isActive: true,
+		permission: 'administration',
+		items: [
+			{
+				title: 'Local',
+				url: ROUTE_PATH.ADMIN.CONFIGURATION.LOCAL,
+				icon: 'settingsCog',
+			},
+			{
+				title: 'Facturación',
+				url: ROUTE_PATH.ADMIN.CONFIGURATION.BILLING,
+				icon: 'settingsCog',
+			},
+			{
+				title: 'Preferencias',
+				url: ROUTE_PATH.ADMIN.CONFIGURATION.PREFERENCE,
+				icon: 'settingsCog',
+			},
+			{
+				title: 'Personalización',
+				url: ROUTE_PATH.ADMIN.CONFIGURATION.PERSONALIZATION,
+				icon: 'settingsCog',
+			},
+		],
+	},
+]

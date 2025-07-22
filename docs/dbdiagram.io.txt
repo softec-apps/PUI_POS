@@ -1,0 +1,212 @@
+Table usuarios {
+  id BIGINT [pk, increment]
+  nombre_usuario TEXT [not null, unique]
+  contrasena TEXT [not null]
+  correo TEXT [unique]
+  telefono TEXT
+  direccion TEXT
+  activo BOOLEAN [default: true]
+  created_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+Table roles_pos {
+  id BIGINT [pk, increment]
+  nombre TEXT [not null, unique]
+  descripcion TEXT
+  nivel_acceso INT
+}
+
+Table usuario_roles {
+  usuario_id BIGINT [ref: > usuarios.id]
+  rol_id BIGINT [ref: > roles_pos.id]
+  primary key (usuario_id, rol_id)
+}
+
+Table impuestos {
+  id BIGINT [pk, increment]
+  nombre TEXT [not null, unique]
+  tasa DECIMAL(5,2) [not null]
+  descripcion TEXT
+}
+
+Table categorias {
+  id BIGINT [pk, increment]
+  nombre TEXT [not null, unique]
+  descripcion TEXT
+  imagen_url TEXT
+}
+
+Table productos {
+  id BIGINT [pk, increment]
+  nombre TEXT [not null]
+  descripcion TEXT
+  precio DECIMAL(10,2) [not null]
+  categoria_id BIGINT [ref: > categorias.id]
+  proveedor_id BIGINT [ref: > proveedores.id]
+  impuesto_id BIGINT [ref: > impuestos.id]
+  stock INT [default: 0]
+  disponible BOOLEAN [default: true]
+}
+
+Table atributos_producto {
+  id BIGINT [pk, increment]
+  nombre TEXT [not null]
+  valor TEXT
+}
+
+Table valores_atributo_producto {
+  producto_id BIGINT [ref: > productos.id]
+  atributo_id BIGINT [ref: > atributos_producto.id]
+  valor TEXT
+  primary key (producto_id, atributo_id)
+}
+
+Table proveedores {
+  id BIGINT [pk, increment]
+  nombre TEXT [not null, unique]
+  contacto TEXT
+  direccion TEXT
+  telefono TEXT
+  activo BOOLEAN [default: true]
+}
+
+Table pagos {
+  id BIGINT [pk, increment]
+  monto DECIMAL(10,2) [not null]
+  fecha TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+  proveedor_id BIGINT [ref: > proveedores.id]
+}
+
+Table clientes {
+  id BIGINT [pk, increment]
+  cedula TEXT
+  nombre TEXT [not null, unique]
+  contacto TEXT
+  direccion TEXT
+  telefono TEXT
+}
+
+Table ventas {
+  id BIGINT [pk, increment]
+  cliente_id BIGINT [ref: > clientes.id]
+  monto_total DECIMAL(10,2) [not null]
+  metodo_pago TEXT
+  fecha TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+Table detalle_ventas {
+  id BIGINT [pk, increment]
+  venta_id BIGINT [ref: > ventas.id, not null]
+  producto_id BIGINT [ref: > productos.id, not null]
+  cantidad INT [not null, default: 1]
+  precio_unitario DECIMAL(10,2) [not null]
+  subtotal DECIMAL(10,2) [not null]
+}
+
+Table documentos_preventa {
+  id BIGINT [pk, increment]
+  cliente_id BIGINT [ref: > clientes.id, not null]
+  codigo_documento VARCHAR(20) [not null, unique]
+  tipo_documento VARCHAR(10) [not null] // 'COTIZACION' o 'PROFORMA'
+  fecha_emision TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+  fecha_validez TIMESTAMP
+  subtotal DECIMAL(12,2) [not null]
+  descuento DECIMAL(12,2) [default: 0]
+  impuestos DECIMAL(12,2) [not null]
+  total DECIMAL(12,2) [not null]
+  estado VARCHAR(20) [default: 'PENDIENTE'] // PENDIENTE, APROBADA, RECHAZADA, CONVERTIDA
+  observaciones TEXT
+  vendedor_id BIGINT [ref: > usuarios.id]
+  convertida_en_venta BIGINT [ref: > ventas.id, null] // Si se convierte en venta real
+  created_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+  updated_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+Table detalle_documentos_preventa {
+  id BIGINT [pk, increment]
+  documento_id BIGINT [ref: > documentos_preventa.id, not null]
+  producto_id BIGINT [ref: > productos.id, not null]
+  cantidad DECIMAL(10,2) [not null, default: 1]
+  precio_unitario DECIMAL(12,2) [not null]
+  descuento DECIMAL(5,2) [default: 0]
+  impuesto_id BIGINT [ref: > impuestos.id]
+  subtotal DECIMAL(12,2) [not null]
+  notas TEXT
+  created_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (documento_id, producto_id) [unique]
+  }
+}
+
+Table seguimiento_documentos_preventa {
+  id BIGINT [pk, increment]
+  documento_id BIGINT [ref: > documentos_preventa.id, not null]
+  usuario_id BIGINT [ref: > usuarios.id]
+  accion VARCHAR(50) [not null] // 'CREACION', 'MODIFICACION', 'APROBACION', etc.
+  comentario TEXT
+  created_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+Table comprobantes_fisicos {
+  id BIGINT [pk, increment]
+  venta_id BIGINT [ref: > ventas.id, not null, unique]
+  numero_comprobante VARCHAR(20) [not null]
+  usuario_emisor BIGINT [ref: > usuarios.id]
+  observaciones TEXT
+  fecha_emision TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+Table comprobantes_electronicos {
+  id BIGINT [pk, increment]
+  venta_id BIGINT [ref: > ventas.id, not null, unique]
+  codigo_autorizacion VARCHAR(100) [not null]
+  numero_comprobante VARCHAR(50) [not null]
+  clave_acceso VARCHAR(100) [not null]
+  fecha_autorizacion TIMESTAMP
+  respuesta_sri TEXT
+  xml_path TEXT [not null]
+  pdf_path TEXT
+  usuario_emisor BIGINT [ref: > usuarios.id]
+  fecha_emision TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+
+Table kardex_pos {
+  id BIGINT [pk, increment]
+  producto_id BIGINT [ref: > productos.id]
+  cantidad INT [not null]
+  fecha TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+  tipo TEXT [not null]
+  costo_unitario DECIMAL(10,2)
+  costo_total DECIMAL(10,2)
+  descripcion TEXT
+  tipo_movimiento TEXT
+  usuario_id BIGINT [ref: > usuarios.id]
+  fecha_registro TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+Table variaciones_precio {
+  id BIGINT [pk, increment]
+  producto_id BIGINT [ref: > productos.id]
+  precio DECIMAL(10,2) [not null]
+  descripcion TEXT
+}
+
+Table variaciones {
+  id BIGINT [pk, increment]
+  producto_id BIGINT [ref: > productos.id]
+  nombre TEXT [not null]
+  descripcion TEXT
+}
+
+Table informacion_local {
+  id BIGINT [pk, increment]
+  nombre_comercial TEXT [not null]
+  ruc TEXT [not null, unique]
+  direccion TEXT [not null]
+  telefono TEXT
+  email TEXT
+  sitio_web TEXT
+  created_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}

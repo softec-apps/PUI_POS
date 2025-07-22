@@ -1,0 +1,9 @@
+export const NEXT_AUTH = {
+	KEY_SECRET: process.env.NEXT_AUTH_SECRET,
+	PROVIDERS: {
+		GOOGLE: {
+			GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+			GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+		},
+	},
+}
