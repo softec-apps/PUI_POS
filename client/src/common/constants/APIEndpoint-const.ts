@@ -1,3 +1,4 @@
+
 export const ENDPOINT_API = {
 	AUTH: {
 		SIGNIN: 'signin',
@@ -6,4 +7,5 @@ export const ENDPOINT_API = {
 	ATRIBUTE: 'atribute',
 	TEMPLATE: 'template',
 	SUPPLIER: 'supplier',
+	BRAND: 'brand',
 }

@@ -23,6 +23,7 @@ export const ROUTE_PATH = {
 		REPORTS: '/dashboard/reports',
 		CUSTOMERS: '/dashboard/customers',
 		USER: '/dashboard/user',
+		BRANDS: '/dashboard/brand',
 		CONFIGURATION: {
 			LOCAL: '/dashboard/configuration/local',
 			BILLING: '/dashboard/configuration/billing',
