@@ -19,8 +19,9 @@ import { SupplierEntity } from '@/modules/suppliers/infrastructure/persistence/r
 import { CategoryEntity } from '@/modules/categories/infrastructure/persistence/relational/entities/category.entity'
 import { ProductVariantEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product-variant.entity'
 import { ProductAttributeValueEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product-attribute-value.entity'
+import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 
-@Entity({ name: 'product' })
+@Entity({ name: PATH_SOURCE.PRODUCT })
 export class ProductEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn('uuid')
   id: string

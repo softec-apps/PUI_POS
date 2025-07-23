@@ -11,6 +11,7 @@ import { FindOptionsWhere, Repository, In, EntityManager, ILike } from 'typeorm'
 import { ProductRepository } from '@/modules/product/infrastructure/persistence/product.repository'
 import { ProductMapper } from '@/modules/product/infrastructure/persistence/relational/mappers/product.mapper'
 import { ProductEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product.entity'
+import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 
 @Injectable()
 export class ProductRelationalRepository implements ProductRepository {
@@ -120,6 +121,11 @@ export class ProductRelationalRepository implements ProductRepository {
         where: whereClause,
         order: orderClause,
         withDeleted: true,
+        relations: [
+          PATH_SOURCE.CATEGORY,
+          PATH_SOURCE.BRAND,
+          `${PATH_SOURCE.TEMPLATE}.${PATH_SOURCE.ATRIBUTE}`,
+        ],
       }),
       // 2. Total CON filtros (para paginación)
       this.productRepository.count({

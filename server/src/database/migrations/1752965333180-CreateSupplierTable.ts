@@ -2,7 +2,6 @@ import { MigrationInterface, QueryRunner } from 'typeorm'
 
 export class CreateSupplierTable1752965333180 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Establecer timezone a UTC para esta migración
     await queryRunner.query("SET timezone = 'UTC'")
 
     await queryRunner.query(`
