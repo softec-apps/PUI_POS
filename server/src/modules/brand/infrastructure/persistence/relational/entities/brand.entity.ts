@@ -11,8 +11,9 @@ import {
 import { BrandStatus } from '@/modules/brand/status.enum'
 import { EntityRelationalHelper } from '@/utils/relational-entity-helper'
 import { SupplierEntity } from '@/modules/suppliers/infrastructure/persistence/relational/entities/supplier.entity'
+import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 
-@Entity({ name: 'brand' })
+@Entity({ name: PATH_SOURCE.BRAND })
 export class BrandEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn('uuid')
   id: string

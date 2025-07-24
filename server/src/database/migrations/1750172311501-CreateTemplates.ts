@@ -2,6 +2,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm'
 
 export class CreateTemplates1750172311501 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query("SET timezone = 'UTC'")
+
     await queryRunner.query(`
       CREATE TABLE "template" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),

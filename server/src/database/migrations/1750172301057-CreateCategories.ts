@@ -2,6 +2,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm'
 
 export class CreateCategories1750172301057 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query("SET timezone = 'UTC'")
+
     await queryRunner.query(`
       CREATE TYPE "category_status_enum" AS ENUM ('active', 'inactive')
     `)

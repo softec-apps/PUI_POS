@@ -1,4 +1,5 @@
 import {
+  IsEmpty,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -29,6 +30,7 @@ export class CreateBrandDto {
     maxLength: 300,
   })
   @IsString({ message: 'La description debe ser texto' })
+  @IsOptional()
   @MaxLength(300, {
     message: 'La description debe tener como máximo 300 caracteres',
   })
