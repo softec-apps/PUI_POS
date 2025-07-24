@@ -1,5 +1,4 @@
 import {
-  IsEmpty,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -15,7 +14,7 @@ export class CreateBrandDto {
     type: String,
     example: 'Nike',
     description: 'Nombre de la marca',
-    maxLength: 13,
+    maxLength: 50,
   })
   @IsNotEmpty({ message: 'El nombre es obligatorio' })
   @IsString({ message: 'El nombre debe ser texto' })
