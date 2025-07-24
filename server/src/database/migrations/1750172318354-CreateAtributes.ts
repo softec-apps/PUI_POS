@@ -2,6 +2,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm'
 
 export class CreateAtributes1750172318354 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query("SET timezone = 'UTC'")
+
     await queryRunner.query(`
       CREATE TYPE "atribute_type_enum" AS ENUM (
       'text',

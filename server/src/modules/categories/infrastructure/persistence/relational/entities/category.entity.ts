@@ -11,8 +11,9 @@ import {
 import { EntityRelationalHelper } from '@/utils/relational-entity-helper'
 import { CategoryStatus } from '@/modules/categories/category-status.enum'
 import { FileEntity } from '@/modules/files/infrastructure/persistence/relational/entities/file.entity'
+import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 
-@Entity({ name: 'category' })
+@Entity({ name: PATH_SOURCE.CATEGORY })
 export class CategoryEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn('uuid')
   id: string

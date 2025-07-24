@@ -7,14 +7,7 @@ import {
 import { NullableType } from '@/utils/types/nullable.type'
 import { Atribute } from '@/modules/atributes/domain/atribute'
 import { IPaginationOptions } from '@/utils/types/pagination-options'
-import {
-  FindOptionsWhere,
-  Repository,
-  In,
-  Like,
-  EntityManager,
-  ILike,
-} from 'typeorm'
+import { FindOptionsWhere, Repository, In, EntityManager, ILike } from 'typeorm'
 import { AtributeRepository } from '@/modules/atributes/infrastructure/persistence/atribute.repository'
 import { AtributeMapper } from '@/modules/atributes/infrastructure/persistence/relational/mappers/atributes.mapper'
 import { AtributeEntity } from '@/modules/atributes/infrastructure/persistence/relational/entities/atribute.entity'
@@ -56,6 +49,7 @@ export class AtributesRelationalRepository implements AtributeRepository {
     // Aplicar filtros
     if (filterOptions) {
       const filteredEntries = Object.entries(filterOptions).filter(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         ([_, value]) => value !== undefined && value !== null,
       )
       if (filteredEntries.length > 0) {

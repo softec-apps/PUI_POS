@@ -12,8 +12,9 @@ import {
 import { EntityRelationalHelper } from '@/utils/relational-entity-helper'
 import { AtributeEntity } from '@/modules/atributes/infrastructure/persistence/relational/entities/atribute.entity'
 import { CategoryEntity } from '@/modules/categories/infrastructure/persistence/relational/entities/category.entity'
+import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 
-@Entity({ name: 'template' })
+@Entity({ name: PATH_SOURCE.TEMPLATE })
 export class TemplateEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn('uuid')
   id: string

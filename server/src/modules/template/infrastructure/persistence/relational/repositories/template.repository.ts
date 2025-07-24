@@ -5,16 +5,9 @@ import {
   FilterTemplateDto,
 } from '@/modules/template/dto/query-template.dto'
 import { NullableType } from '@/utils/types/nullable.type'
-import {
-  FindOptionsWhere,
-  Repository,
-  In,
-  Like,
-  EntityManager,
-  ILike,
-} from 'typeorm'
 import { Template } from '@/modules/template/domain/template'
 import { IPaginationOptions } from '@/utils/types/pagination-options'
+import { FindOptionsWhere, Repository, In, EntityManager, ILike } from 'typeorm'
 import { TemplateRepository } from '@/modules/template/infrastructure/persistence/template.repository'
 import { TemplateMapper } from '@/modules/template/infrastructure/persistence/relational/mappers/template.mapper'
 import { TemplateEntity } from '@/modules/template/infrastructure/persistence/relational/entities/template.entity'
@@ -22,6 +15,7 @@ import { AtributeEntity } from '@/modules/atributes/infrastructure/persistence/r
 import { AtributeMapper } from '@/modules/atributes/infrastructure/persistence/relational/mappers/atributes.mapper'
 import { AtributesRelationalRepository } from '@/modules/atributes/infrastructure/persistence/relational/repositories/atribute.repository'
 import { Category } from '@/modules/categories/domain/category'
+import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 
 @Injectable()
 export class TemplateRelationalRepository implements TemplateRepository {
@@ -92,6 +86,7 @@ export class TemplateRelationalRepository implements TemplateRepository {
     // Aplicar filtros
     if (filterOptions) {
       const filteredEntries = Object.entries(filterOptions).filter(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         ([_, value]) => value !== undefined && value !== null,
       )
       if (filteredEntries.length > 0) {
@@ -140,7 +135,7 @@ export class TemplateRelationalRepository implements TemplateRepository {
         where: whereClause,
         order: orderClause,
         withDeleted: true,
-        relations: ['category', 'atributes'],
+        relations: [PATH_SOURCE.CATEGORY, PATH_SOURCE.ATRIBUTE],
       }),
       // 2. Total CON filtros (para paginación)
       this.templateRepository.count({

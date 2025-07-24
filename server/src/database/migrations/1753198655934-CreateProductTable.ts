@@ -13,7 +13,7 @@ export class CreateProductTable1753198655934 implements MigrationInterface {
         "status" character varying NOT NULL DEFAULT 'active',
         "basePrice" decimal(13,6) NOT NULL,
         "sku" character varying(20),
-        "barcode" character varying(50),
+        "barCode" character varying(50),
         "stock" integer NOT NULL,
         "brandId" uuid,
         "templateId" uuid,
@@ -32,7 +32,7 @@ export class CreateProductTable1753198655934 implements MigrationInterface {
       CREATE INDEX "IDX_product_code" ON "product" ("code");
       CREATE INDEX "IDX_product_name" ON "product" ("name");
       CREATE INDEX "IDX_product_sku" ON "product" ("sku");
-      CREATE INDEX "IDX_product_barcode" ON "product" ("barcode");
+      CREATE INDEX "IDX_product_barCode" ON "product" ("barCode");
       CREATE INDEX "IDX_product_status" ON "product" ("status");
       CREATE INDEX "IDX_product_brand" ON "product" ("brandId");
       CREATE INDEX "IDX_product_category" ON "product" ("categoryId");
@@ -44,7 +44,7 @@ export class CreateProductTable1753198655934 implements MigrationInterface {
       DROP INDEX "IDX_product_category";
       DROP INDEX "IDX_product_brand";
       DROP INDEX "IDX_product_status";
-      DROP INDEX "IDX_product_barcode";
+      DROP INDEX "IDX_product_barCode";
       DROP INDEX "IDX_product_sku";
       DROP INDEX "IDX_product_name";
       DROP INDEX "IDX_product_code";
