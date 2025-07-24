@@ -1,6 +1,5 @@
 'use client'
 
-import { z } from 'zod'
 import React from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, FormProvider } from 'react-hook-form'
@@ -13,26 +12,11 @@ import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
 import { FormFooter } from '@/modules/brand/components/organisms/Modal/FormFooter'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-
-// Schema de validación
-const BrandSchema = z.object({
-	name: z
-		.string()
-		.min(1, 'El nombre es requerido')
-		.min(3, 'El nombre debe tener al menos 3 caracteres')
-		.max(100, 'El nombre no puede exceder 100 caracteres'),
-	description: z
-		.string()
-		.max(255, 'La descripción no puede exceder 255 caracteres')
-		.optional()
-		.or(z.literal('')),
-})
-
-export type BrandFormData = z.infer<typeof BrandSchema>
+import { BrandSchema, BrandFormData } from '@/modules/brand/types/template-form'
 
 interface Props {
 	isOpen: boolean
-	currentBrand: I_Brand | null 
+	currentBrand: I_Brand | null
 	previewImage: string | null
 	isUploading: boolean
 	fileInputRef: React.RefObject<HTMLInputElement>
@@ -43,13 +27,7 @@ interface Props {
 	onClearPreview: () => void
 }
 
-export function BrandFormModal({
-	isOpen,
-	currentBrand,
-	isUploading,
-	onClose,
-	onSubmit,
-}: Props) {
+export function BrandFormModal({ isOpen, currentBrand, isUploading, onClose, onSubmit }: Props) {
 	const methods = useForm<BrandFormData>({
 		resolver: zodResolver(BrandSchema),
 		mode: 'onChange',
@@ -69,15 +47,13 @@ export function BrandFormModal({
 
 	// Efecto para cargar datos cuando se abre para editar
 	React.useEffect(() => {
-	
-		
 		if (isOpen && currentBrand) {
 			// CAMBIO: Asegurarse de que los valores se establezcan correctamente
 			const formData = {
 				name: currentBrand.name || '',
 				description: currentBrand.description || '',
 			}
-		
+
 			reset(formData)
 		} else if (isOpen && !currentBrand) {
 			// Limpiar form para crear nuevo
@@ -85,14 +61,13 @@ export function BrandFormModal({
 				name: '',
 				description: '',
 			}
-			
+
 			reset(emptyData)
 		}
 	}, [isOpen, currentBrand, reset])
 
 	const handleFormSubmit = async (data: BrandFormData) => {
 		try {
-
 			await onSubmit(data)
 			// No resetear aquí, se hace en el onClose
 		} catch (error) {
@@ -107,7 +82,6 @@ export function BrandFormModal({
 		})
 		onClose()
 	}
-
 
 	return (
 		<Sheet open={isOpen} onOpenChange={handleClose}>
