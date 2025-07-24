@@ -96,6 +96,7 @@ export function BrandView() {
 			hasNextPage: brands?.data?.pagination?.hasNextPage,
 		}),
 		[brands?.data]
+		
 	)
 
 	if (errorBrand && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />

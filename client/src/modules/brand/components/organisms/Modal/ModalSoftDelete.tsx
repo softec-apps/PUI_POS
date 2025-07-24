@@ -16,16 +16,16 @@ export function SoftDeleteModal({ isOpen, brand, isSoftDeleting, onClose, onConf
 		<ConfirmationModal
 			isOpen={isOpen}
 			variant='warning'
-			title='Remover categoría'
+			title='Remover marca'
 			description='Esta acción se puede deshacer'
 			message={
 				<>
-					¿Estás seguro de que deseas remover la categoría{' '}
+					¿Estás seguro de que deseas remover la marca{' '}
 					<span className='text-foreground font-semibold'>{brand?.name}</span>? Todos los productos asociados a esta
-					categoría perderán su clasificación.
+					marca perderán su clasificación.
 				</>
 			}
-			alertMessage='Esta acción removerá la categoría de la base de datos pero no sera elimiando de forma permanente.'
+			alertMessage='Esta acción removerá la marca de la base de datos pero no sera elimiando de forma permanente.'
 			isProcessing={isSoftDeleting}
 			onClose={onClose}
 			onConfirm={onConfirm}

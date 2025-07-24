@@ -1,8 +1,5 @@
 import { I_MetaPagination } from '@/common/types/pagination'
 
-
-
-
 /** Propiedades base de marca */
 interface I_BaseBrand {
 	name: string

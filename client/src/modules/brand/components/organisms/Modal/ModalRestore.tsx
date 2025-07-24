@@ -16,16 +16,16 @@ export function RestoreModal({ isOpen, brand, isRestoring, onClose, onConfirm }:
 		<ConfirmationModal
 			variant='success'
 			isOpen={isOpen}
-			title='Restaurar categoría'
+			title='Restaurar marca'
 			description='Esta acción se puede deshacer'
 			message={
 				<>
-					¿Estás seguro de que deseas remover la categoría{' '}
+					¿Estás seguro de que deseas remover la marca{' '}
 					<span className='text-foreground font-semibold'>{brand?.name}</span>? Todos los productos asociados a esta
-					categoría perderán su clasificación.
+					marca perderán su clasificación.
 				</>
 			}
-			alertMessage='Esta categoría volverá a estar activa en el sistema.'
+			alertMessage='Esta marca volverá a estar activa en el sistema.'
 			isProcessing={isRestoring}
 			onClose={onClose}
 			onConfirm={onConfirm}

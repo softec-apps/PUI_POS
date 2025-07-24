@@ -23,7 +23,6 @@ const BrandSchema = z.object({
 		.max(100, 'El nombre no puede exceder 100 caracteres'),
 	description: z
 		.string()
-		.min(3, 'El nombre debe tener al menos 3 caracteres')
 		.max(255, 'La descripción no puede exceder 255 caracteres')
 		.optional()
 		.or(z.literal('')),
@@ -33,7 +32,7 @@ export type BrandFormData = z.infer<typeof BrandSchema>
 
 interface Props {
 	isOpen: boolean
-	currentBrand: I_Brand | null  // CAMBIO: tipo específico
+	currentBrand: I_Brand | null 
 	previewImage: string | null
 	isUploading: boolean
 	fileInputRef: React.RefObject<HTMLInputElement>
@@ -70,7 +69,7 @@ export function BrandFormModal({
 
 	// Efecto para cargar datos cuando se abre para editar
 	React.useEffect(() => {
-		console.log('Form effect triggered:', { isOpen, currentBrand }) // Debug log
+	
 		
 		if (isOpen && currentBrand) {
 			// CAMBIO: Asegurarse de que los valores se establezcan correctamente
@@ -78,7 +77,7 @@ export function BrandFormModal({
 				name: currentBrand.name || '',
 				description: currentBrand.description || '',
 			}
-			console.log('Setting form data:', formData) // Debug log
+		
 			reset(formData)
 		} else if (isOpen && !currentBrand) {
 			// Limpiar form para crear nuevo
@@ -86,14 +85,14 @@ export function BrandFormModal({
 				name: '',
 				description: '',
 			}
-			console.log('Clearing form data') // Debug log
+			
 			reset(emptyData)
 		}
 	}, [isOpen, currentBrand, reset])
 
 	const handleFormSubmit = async (data: BrandFormData) => {
 		try {
-			console.log('Form submitted with data:', data) // Debug log
+
 			await onSubmit(data)
 			// No resetear aquí, se hace en el onClose
 		} catch (error) {
@@ -109,9 +108,6 @@ export function BrandFormModal({
 		onClose()
 	}
 
-	// CAMBIO: Agregar debug para verificar los valores actuales
-	const currentValues = methods.watch()
-	console.log('Current form values:', currentValues) // Debug log
 
 	return (
 		<Sheet open={isOpen} onOpenChange={handleClose}>

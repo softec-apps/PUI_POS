@@ -30,7 +30,7 @@ export const useModalState = () => {
 	}, [])
 
 	const openEditDialog = useCallback((brand: I_Brand) => {
-		console.log('Opening edit dialog with brand:', brand) // Debug log
+
 		setCurrentRecord(brand)
 		setIsDialogOpen(true)
 	}, [])

@@ -5,7 +5,6 @@ import { useCallback, useState } from 'react'
 const INITIAL_FORM_DATA: FormData = {
 	name: '',
 	description: '',
-	photo: '',
 }
 
 export const useFormState = (initialData: FormData = INITIAL_FORM_DATA) => {

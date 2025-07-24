@@ -16,16 +16,16 @@ export function HardDeleteModal({ isOpen, brand, isAction, onClose, onConfirm }:
 		<ConfirmationModal
 			isOpen={isOpen}
 			variant='destructive'
-			title='Eliminar categoría'
+			title='Eliminar marca'
 			description='Esta acción no se puede deshacer'
 			message={
 				<>
-					¿Estás seguro de que deseas eliminar de forma permanente la categoría{' '}
+					¿Estás seguro de que deseas eliminar de forma permanente la marca{' '}
 					<span className='text-foreground font-semibold'>{brand?.name}</span>? Todos los productos asociados a esta
-					categoría perderán su clasificación permanentemente.
+					marca perderán su clasificación permanentemente.
 				</>
 			}
-			alertMessage='Esta acción eliminará la categoría de la base de datos de forma permanente.'
+			alertMessage='Esta acción eliminará la marca de la base de datos de forma permanente.'
 			isProcessing={isAction}
 			onClose={onClose}
 			onConfirm={onConfirm}

@@ -8,17 +8,17 @@ interface UsebrandHandlersProps {
 	createBrand: (data: I_CreateBrand) => Promise<void>
 	updateBrand: (id: string, data: I_UpdateBrand) => Promise<void>
 	restoreBrand: (id: string) => Promise<void>
-	softDeletebrand: (id: string) => Promise<void>
-	hardDeletebrand: (id: string) => Promise<void>
+	softDeleteBrand: (id: string) => Promise<void>
+	hardDeleteBrand: (id: string) => Promise<void>
 }
 
 export function useBrandHandlers({
 	modalState,
 	createBrand,
 	updateBrand,
-	softDeletebrand,
+	softDeleteBrand,
 	restoreBrand,
-	hardDeletebrand,
+	hardDeleteBrand,
 }: UsebrandHandlersProps) {
 	// Form handlers para el nuevo modal con react-hook-form
 	const handleFormSubmit = useCallback(
@@ -26,7 +26,7 @@ export function useBrandHandlers({
 			try {
 				const brandData: any = {
 					name: data.name.trim(),
-					description: data.description?.trim() || null,
+					description: data.description?.trim() || "",
 				}
 
 				// CAMBIO: Ahora currentRecord tiene el tipo correcto
@@ -57,7 +57,6 @@ export function useBrandHandlers({
 	// Modal handlers
 	const handleEdit = useCallback(
 		(brand: I_Brand) => {
-			console.log('Handler edit called with:', brand) // Debug log
 			modalState.openEditDialog(brand)
 		},
 		[modalState]
@@ -104,14 +103,14 @@ export function useBrandHandlers({
 
 		try {
 			modalState.setIsSoftDeleting(true)
-			await softDeletebrand(modalState.brandToDelete.id)
+			await softDeleteBrand(modalState.brandToDelete.id)
 			modalState.closeSoftDeleteModal()
 		} catch (error) {
 			console.error('Delete error:', error)
 		} finally {
 			modalState.setIsSoftDeleting(false)
 		}
-	}, [modalState, softDeletebrand])
+	}, [modalState, softDeleteBrand])
 
 	const handleConfirmRestore = useCallback(async () => {
 		if (!modalState.brandToRestore) return
@@ -132,14 +131,14 @@ export function useBrandHandlers({
 
 		try {
 			modalState.setIsHardDeleting(true)
-			await hardDeletebrand(modalState.brandToHardDelete.id)
+			await hardDeleteBrand(modalState.brandToHardDelete.id)
 			modalState.closeHardDeleteModal()
 		} catch (error) {
 			console.error('Delete error:', error)
 		} finally {
 			modalState.setIsHardDeleting(false)
 		}
-	}, [modalState, hardDeletebrand])
+	}, [modalState, hardDeleteBrand])
 
 	return {
 		// Form handlers
