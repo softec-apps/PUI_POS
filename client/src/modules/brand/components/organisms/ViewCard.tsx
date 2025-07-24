@@ -1,14 +1,12 @@
 'use client'
 
-import Image from 'next/image'
-import { Icons } from '@/components/icons'
 import { Typography } from '@/components/ui/typography'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Badge } from '@/components/layout/atoms/Badge'
 import { Table as ReactTable } from '@tanstack/react-table'
-import {I_Brand } from '@/modules/brand/types/brand'
+import { I_Brand } from '@/modules/brand/types/brand'
 import { animations } from '@/modules/brand/components/atoms/animations'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { TableActions } from '@/modules/brand/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/brand/components/organisms/Table/TableInfoDate'
 
@@ -39,11 +37,11 @@ export const CardView = ({ table, onEdit, onHardDelete }: CardViewProps) => (
 							whileHover='hover'
 							layout
 							className='group relative'>
-							<Card className='border-border/50 flex h-full flex-col overflow-hidden border p-0 transition-all duration-300'>
-								<CardContent className='flex-grow px-4'>
-										<div className='bg-card/50 shadow- absolute top-2 right-2 z-10 rounded-full backdrop-blur-sm'>
-											<TableActions brandData={brandData} onEdit={onEdit} onHardDelete={onHardDelete} />
-										</div>
+							<Card className='border-border/50 flex h-full flex-col overflow-hidden border transition-all duration-300'>
+								<CardContent className='flex-grow'>
+									<div className='bg-card/50 shadow- absolute top-2 right-2 z-10 rounded-full backdrop-blur-sm'>
+										<TableActions brandData={brandData} onEdit={onEdit} onHardDelete={onHardDelete} />
+									</div>
 									<div className='flex h-full flex-col space-y-2'>
 										<Typography variant='h5' className='line-clamp-1'>
 											{brandData.name}
