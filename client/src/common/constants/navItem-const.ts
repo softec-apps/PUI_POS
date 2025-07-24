@@ -84,6 +84,14 @@ export const ALL_NAV_ITEMS: NavItem[] = [
 		permission: 'customers',
 	},
 	{
+		title: 'Marcas',
+		url: ROUTE_PATH.ADMIN.BRANDS,
+		icon: 'tag',
+		isActive: false,
+		items: [],
+		permission: 'brands',
+	},
+	{
 		title: 'Administración',
 		url: '#',
 		icon: 'settingsCog',

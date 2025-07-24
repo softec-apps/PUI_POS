@@ -13,6 +13,7 @@ export const PERMISSIONS = {
 	USERS: 'users',
 	CUSTOMERS: 'customers',
 	ADMINISTRATION: 'administration',
+	BRANDS: 'brands',
 } as const
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS]
@@ -29,4 +30,5 @@ export const ROLE_PERMISSIONS: Record<Permission, UserRole[]> = {
 	[PERMISSIONS.USERS]: [ALLOW_ROLES.ADMIN],
 	[PERMISSIONS.CUSTOMERS]: [ALLOW_ROLES.ADMIN, ALLOW_ROLES.MANAGER],
 	[PERMISSIONS.ADMINISTRATION]: [ALLOW_ROLES.ADMIN],
+	[PERMISSIONS.BRANDS]: [ALLOW_ROLES.ADMIN, ALLOW_ROLES.MANAGER],
 }

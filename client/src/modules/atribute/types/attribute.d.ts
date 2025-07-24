@@ -47,4 +47,6 @@ export interface I_AttributesResponse {
 		firstPage: number
 		lastPage: number
 	}
+	
 }
+
