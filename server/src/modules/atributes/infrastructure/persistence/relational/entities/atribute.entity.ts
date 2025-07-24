@@ -32,8 +32,8 @@ export class AtributeEntity extends EntityRelationalHelper {
   @Column({ default: false })
   required: boolean
 
-  @ManyToMany(() => TemplateEntity, (template) => template.atributes)
-  templates: TemplateEntity[]
+  @ManyToMany(() => TemplateEntity, (template) => template.atribute)
+  template: TemplateEntity[]
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date

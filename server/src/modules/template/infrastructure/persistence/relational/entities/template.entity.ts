@@ -29,7 +29,7 @@ export class TemplateEntity extends EntityRelationalHelper {
   @JoinColumn()
   category: CategoryEntity | null
 
-  @ManyToMany(() => AtributeEntity, (atribute) => atribute.templates, {
+  @ManyToMany(() => AtributeEntity, (atribute) => atribute.template, {
     cascade: true,
   })
   @JoinTable({
@@ -37,7 +37,7 @@ export class TemplateEntity extends EntityRelationalHelper {
     joinColumn: { name: 'templateId', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'atributeId', referencedColumnName: 'id' },
   })
-  atributes: AtributeEntity[]
+  atribute: AtributeEntity[]
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date
