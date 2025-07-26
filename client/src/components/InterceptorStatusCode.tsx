@@ -2,12 +2,10 @@
 
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft, RefreshCw } from 'lucide-react'
+import { useRouter, usePathname } from 'next/navigation'
+import { useSession, signOut } from 'next-auth/react'
 import { emitter } from '@/common/events/sessionEmitter-event'
 import { ROUTE_PATH } from '@/common/constants/routes-const'
-import { useSession, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { ActionButton } from './layout/atoms/ActionButton'
 import { Icons } from './icons'
 
@@ -15,6 +13,12 @@ export function InterceptorStatusCode({ children }: { children: React.ReactNode 
 	const [errorState, setErrorState] = useState<{ type: '401' | '403' } | null>(null)
 	const { data: session, update } = useSession()
 	const router = useRouter()
+	const pathname = usePathname() // obtiene la ruta actual
+
+	// 🧹 Resetea el estado de error al cambiar de ruta (navegación)
+	useEffect(() => {
+		setErrorState(null)
+	}, [pathname]) // se ejecuta cada vez que cambias de ruta
 
 	const goBack = () => {
 		if (window.history.length > 1) {
@@ -27,13 +31,9 @@ export function InterceptorStatusCode({ children }: { children: React.ReactNode 
 	const handleExtendSession = async () => {
 		try {
 			const updatedSession = await update()
-
 			if (updatedSession?.error === 'RefreshAccessTokenError') {
 				await signOut({ callbackUrl: ROUTE_PATH.AUTH.SIGNIN })
-				return
-			}
-
-			if (updatedSession) {
+			} else if (updatedSession) {
 				setErrorState(null)
 				window.location.reload()
 			} else {
@@ -59,10 +59,7 @@ export function InterceptorStatusCode({ children }: { children: React.ReactNode 
 
 	const container = {
 		hidden: { opacity: 0 },
-		visible: {
-			opacity: 1,
-			transition: { staggerChildren: 0.03 },
-		},
+		visible: { opacity: 1, transition: { staggerChildren: 0.03 } },
 	}
 
 	const item = {
@@ -118,23 +115,18 @@ export function InterceptorStatusCode({ children }: { children: React.ReactNode 
 					initial='hidden'
 					animate='visible'
 					className='relative z-10 w-full max-w-xs px-4 text-center'>
-					{/* Código de error */}
-					<motion.div variants={item} className='relative'>
+					{/* Código */}
+					<motion.div variants={item}>
 						<motion.span
 							className='text-foreground/90 block text-7xl font-medium tracking-tighter sm:text-8xl'
 							animate={{
 								textShadow: '0 0 5px rgba(255,255,255,0.2)',
-								transition: {
-									duration: 3,
-									repeat: Infinity,
-									repeatType: 'reverse',
-								},
+								transition: { duration: 3, repeat: Infinity, repeatType: 'reverse' },
 							}}>
 							{type}
 						</motion.span>
 					</motion.div>
 
-					{/* Divisor */}
 					<motion.div
 						variants={item}
 						className='pt-4 sm:pt-6'
@@ -146,18 +138,15 @@ export function InterceptorStatusCode({ children }: { children: React.ReactNode 
 						<div className='via-foreground/15 h-px w-full bg-gradient-to-r from-transparent to-transparent' />
 					</motion.div>
 
-					{/* Mensaje */}
 					<motion.div variants={item} className='mt-4 space-y-1 sm:mt-6'>
 						<h2 className='text-foreground text-base font-medium sm:text-lg'>{title}</h2>
 						<p className='text-foreground/60 text-xs sm:text-sm'>{description}</p>
 					</motion.div>
 
-					{/* Botones */}
 					<motion.div variants={item} className='mt-6 flex flex-col space-y-2 sm:mt-8 sm:space-y-3'>
 						{showSessionOptions ? (
 							<>
-								<ActionButton text='Extender sesión' onClick={handleExtendSession} variant='default' />
-
+								<ActionButton text='Extender sesión' onClick={handleExtendSession} />
 								<ActionButton
 									icon={<Icons.iconArrowLeft />}
 									text='Cerrar sesión'
@@ -166,7 +155,7 @@ export function InterceptorStatusCode({ children }: { children: React.ReactNode 
 								/>
 							</>
 						) : showBackButton ? (
-							<ActionButton icon={<Icons.iconArrowLeft />} text='Volver atrás' onClick={goBack} variant='default' />
+							<ActionButton icon={<Icons.iconArrowLeft />} text='Volver atrás' onClick={goBack} className='w-full' />
 						) : null}
 					</motion.div>
 				</motion.div>
