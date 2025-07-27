@@ -70,4 +70,12 @@ export const API_TAGS_CONFIG = [
       url: 'https://docs.example.com/brand/templates',
     },
   },
+  {
+    name: PATH_SOURCE.PRODUCT,
+    description: 'prodctuos',
+    externalDocs: {
+      description: 'prodctuos Management Guide',
+      url: 'https://docs.example.com/prodctuos/templates',
+    },
+  },
 ]

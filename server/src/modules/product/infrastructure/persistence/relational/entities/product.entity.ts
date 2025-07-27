@@ -1,30 +1,61 @@
 import {
-  Entity,
+  Check,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
   DeleteDateColumn,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  ManyToMany,
-  JoinTable,
+  Entity,
+  Generated,
+  Index,
   JoinColumn,
+  ManyToOne,
   OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm'
+
 import { ProductStatus } from '@/modules/product/status.enum'
+import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 import { EntityRelationalHelper } from '@/utils/relational-entity-helper'
+
+import { FileEntity } from '@/modules/files/infrastructure/persistence/relational/entities/file.entity'
 import { BrandEntity } from '@/modules/brand/infrastructure/persistence/relational/entities/brand.entity'
 import { TemplateEntity } from '@/modules/template/infrastructure/persistence/relational/entities/template.entity'
 import { SupplierEntity } from '@/modules/suppliers/infrastructure/persistence/relational/entities/supplier.entity'
 import { CategoryEntity } from '@/modules/categories/infrastructure/persistence/relational/entities/category.entity'
-import { ProductVariantEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product-variant.entity'
+import { ProductVariationEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product-variant.entity'
 import { ProductAttributeValueEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product-attribute-value.entity'
-import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 
 @Entity({ name: PATH_SOURCE.PRODUCT })
+@Index(['isVariant']) // ✅ Separar productos base de variantes
+@Index(['status', 'deletedAt']) // Para consultas por estado
+@Index(['categoryId', 'status']) // Para filtros por categoría
+@Index(['brandId', 'status']) // Para filtros por marca
+@Index(['templateId', 'status']) // Para consultas por template
+@Index(['code']) // Búsquedas por código
+@Index(['name']) // Búsquedas por nombre
+@Index(['sku']) // Búsquedas por SKU
+@Index(['barCode']) // Búsquedas por código de barras
+@Check(`"price" >= 0`) // Validación de precio
+@Check(`"stock" >= 0`) // Validación de stock
 export class ProductEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn('uuid')
   id: string
+
+  @Column({
+    type: 'integer',
+    unique: true,
+    comment: 'Secuencia autoincremental para generar código único',
+  })
+  @Generated('increment')
+  sequence: number
+
+  @Column({
+    type: 'boolean',
+    default: false,
+    comment: 'true = es una variante, false = es producto base',
+  })
+  isVariant: boolean
 
   @Column({
     type: 'varchar',
@@ -44,12 +75,12 @@ export class ProductEntity extends EntityRelationalHelper {
   @Column({ type: 'text', nullable: true })
   description?: string | null
 
-  @Column({
-    type: 'enum',
-    enum: ProductStatus,
-    default: ProductStatus.ACTIVE,
+  @OneToOne(() => FileEntity, {
+    eager: true,
+    onDelete: 'CASCADE',
   })
-  status: ProductStatus
+  @JoinColumn()
+  photo?: FileEntity | null
 
   @Column({
     type: 'decimal',
@@ -57,7 +88,14 @@ export class ProductEntity extends EntityRelationalHelper {
     scale: 6,
     nullable: false,
   })
-  basePrice: number
+  price: number
+
+  @Column({
+    type: 'enum',
+    enum: ProductStatus,
+    default: ProductStatus.DRAFT,
+  })
+  status: ProductStatus
 
   @Column({
     type: 'varchar',
@@ -76,45 +114,68 @@ export class ProductEntity extends EntityRelationalHelper {
   @Column({
     type: 'int',
     nullable: false,
+    default: 0,
   })
   stock: number
 
-  // Relación con marca (muchos productos pueden pertenecer a una marca)
-  @ManyToOne(() => BrandEntity, { onDelete: 'SET NULL' })
-  @JoinColumn()
-  brand: BrandEntity | null
+  // ✅ RELACIONES - Solo para productos base (no variantes)
+  @Column({ type: 'uuid', nullable: true })
+  @Index()
+  categoryId?: string | null
 
-  // Relación con proveedores (muchos a muchos)
-  @ManyToMany(() => SupplierEntity, { cascade: false })
-  @JoinTable({
-    name: 'product_supplier',
-    joinColumn: { name: 'productId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'supplierId', referencedColumnName: 'id' },
-  })
-  suppliers: SupplierEntity[]
+  @ManyToOne(() => CategoryEntity, { onDelete: 'SET NULL', eager: false })
+  @JoinColumn({ name: 'categoryId' })
+  category?: CategoryEntity | null
 
-  // Relación con template (muchos productos pueden usar el mismo template)
-  @ManyToOne(() => TemplateEntity, { onDelete: 'SET NULL' })
-  @JoinColumn()
-  template: TemplateEntity | null
+  @Column({ type: 'uuid', nullable: true })
+  @Index()
+  brandId?: string | null
 
-  // Relación con categoría (muchos productos pueden pertenecer a una categoría)
-  @ManyToOne(() => CategoryEntity, { onDelete: 'SET NULL' })
-  @JoinColumn()
-  category: CategoryEntity | null
+  @ManyToOne(() => BrandEntity, { onDelete: 'SET NULL', eager: false })
+  @JoinColumn({ name: 'brandId' })
+  brand?: BrandEntity | null
 
-  // Variantes del producto
-  @OneToMany(() => ProductVariantEntity, (variant) => variant.product, {
+  @Column({ type: 'uuid', nullable: true })
+  @Index()
+  supplierId?: string | null
+
+  @ManyToOne(() => SupplierEntity, { onDelete: 'SET NULL', eager: false })
+  @JoinColumn({ name: 'supplierId' })
+  supplier?: SupplierEntity | null
+
+  // ✅ Template obligatorio para definir estructura dinámica
+  @Column({ type: 'uuid', nullable: false })
+  @Index()
+  templateId: string
+
+  @ManyToOne(() => TemplateEntity, { onDelete: 'RESTRICT', eager: false })
+  @JoinColumn({ name: 'templateId' })
+  template: TemplateEntity
+
+  // ✅ RELACIÓN CONSIGO MISMO: Variantes del producto
+  @OneToMany(() => ProductVariationEntity, (variation) => variation.product, {
     cascade: true,
+    eager: false,
   })
-  variants: ProductVariantEntity[]
+  variations: ProductVariationEntity[]
 
-  // Valores de atributos del producto
+  // ✅ RELACIÓN CONSIGO MISMO: Si es variante, referencia al producto padre
+  @OneToMany(
+    () => ProductVariationEntity,
+    (variation) => variation.productVariant,
+    {
+      eager: false,
+    },
+  )
+  parentProducts: ProductVariationEntity[]
+
+  // ✅ Valores de atributos del producto/variante
   @OneToMany(
     () => ProductAttributeValueEntity,
     (attrValue) => attrValue.product,
     {
       cascade: true,
+      eager: false,
     },
   )
   attributeValues: ProductAttributeValueEntity[]

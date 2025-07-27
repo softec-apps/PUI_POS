@@ -11,43 +11,12 @@ import { animations } from '@/modules/supplier/components/atoms/animations'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { TableActions } from '@/modules/supplier/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/supplier/components/organisms/Table/TableInfoDate'
+import { generateBackgroundColor } from '@/common/utils/generateColor-util'
 
 interface Props {
 	recordsData: ReactTable<I_Supplier>
 	onEdit: (recordData: I_Supplier) => void
 	onHardDelete: (recordData: I_Supplier) => void
-}
-
-// Función para generar color sólido basado en el nombre
-const generateBackgroundColor = (name: string): string => {
-	const colors = [
-		'#667eea',
-		'#f093fb',
-		'#4facfe',
-		'#43e97b',
-		'#fa709a',
-		'#a8edea',
-		'#ff9a9e',
-		'#ffecd2',
-		'#a18cd1',
-		'#84fab0',
-		'#fad0c4',
-		'#d299c2',
-		'#ff6b6b',
-		'#4ecdc4',
-		'#45b7d1',
-		'#96ceb4',
-		'#ffeaa7',
-		'#dda0dd',
-		'#98d8c8',
-		'#f7dc6f',
-		'#bb8fce',
-		'#85c1e9',
-	]
-
-	let hash = 0
-	for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
-	return colors[Math.abs(hash) % colors.length]
 }
 
 export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => {
@@ -81,7 +50,7 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => {
 										<div className='relative flex h-32 w-full items-center justify-center'>
 											{/* Ícono con fondo de color aleatorio */}
 											<div className='flex h-32 w-full items-center justify-center' style={{ backgroundColor }}>
-												<Icons.building className='text-muted h-12 w-12' />
+												<Icons.truck className='text-muted h-12 w-12' />
 											</div>
 
 											{/* Acciones con mejor posicionamiento */}

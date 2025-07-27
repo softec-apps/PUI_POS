@@ -82,14 +82,14 @@ export default function Page404() {
 						text='Volver atrás'
 						icon={<Icons.iconArrowLeft />}
 						onClick={goBack}
-						variant='ghost'
 						className='w-full'
+						variant='default'
 					/>
 
 					<Link
 						href={status === 'unauthenticated' ? ROUTE_PATH.AUTH.SIGNIN : ROUTE_PATH.ADMIN.DASHBOARD}
 						className='pointer-events-auto block'>
-						<ActionButton text='Ir al inicio' className='w-full' />
+						<ActionButton text='Ir al inicio' className='w-full' variant='ghost' />
 					</Link>
 				</motion.div>
 			</motion.div>

@@ -1,16 +1,17 @@
 'use client'
 
-
 import { Separator } from '@/components/ui/separator'
 import { Typography } from '@/components/ui/typography'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Badge } from '@/components/layout/atoms/Badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table as ReactTable } from '@tanstack/react-table'
-import { I_Brand} from '@/modules/brand/types/brand'
+import { I_Brand } from '@/modules/brand/types/brand'
 import { animations } from '@/modules/brand/components/atoms/animations'
 import { TableActions } from '@/modules/brand/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/brand/components/organisms/Table/TableInfoDate'
+import { Icons } from '@/components/icons'
+import { generateBackgroundColor } from '@/common/utils/generateColor-util'
 
 interface ListViewProps {
 	table: ReactTable<I_Brand>
@@ -29,6 +30,8 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 			<AnimatePresence mode='sync'>
 				{table.getRowModel().rows.map(row => {
 					const brandData = row.original
+					const backgroundColor = generateBackgroundColor(brandData.name)
+
 					return (
 						<motion.div
 							key={row.id}
@@ -42,8 +45,11 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 							<Card className='border-border/50 overflow-hidden border shadow-none transition-all duration-300'>
 								<CardContent className='px-4'>
 									<div className='flex items-start space-x-4'>
-
-
+										<div
+											className='flex h-32 w-32 flex-shrink-0 items-center justify-center rounded-lg'
+											style={{ backgroundColor }}>
+											<Icons.truck className='text-muted h-12 w-12 drop-shadow-sm' />
+										</div>
 										<div className='min-w-0 flex-1'>
 											<div className='flex items-start justify-between gap-2'>
 												<div className='min-w-0 flex-1 space-y-3'>

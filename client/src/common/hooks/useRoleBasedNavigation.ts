@@ -1,30 +1,60 @@
 import { useMemo } from 'react'
-import { useUserData } from '@/common/hooks/useSession'
 import { ALL_NAV_ITEMS } from '@/common/constants/navItem-const'
-import { ROLE_PERMISSIONS } from '@/common/constants/rolePermissions-const'
+import { hasPermission, shouldShowGroup } from '@/common/utils/permissions'
+import { useUserData } from '@/common/hooks/useSession'
+import { NavConfig } from '@/common/types/navItem'
 
 export const useRoleBasedNavigation = () => {
-	const { userData, loading, userRole } = useUserData()
+	const { userData, loading } = useUserData()
+	const userRole = userData?.role?.name
 
 	const filteredNavItems = useMemo(() => {
-		if (!userRole || !userData) return []
+		if (!userRole) return []
 
-		return ALL_NAV_ITEMS.filter(item => {
-			// Si el item tiene una propiedad permission, verificar si el rol tiene acceso
-			if (item.permission) {
-				const allowedRoles = ROLE_PERMISSIONS[item.permission]
-				return allowedRoles?.includes(userRole)
+		const filtered: NavConfig = ALL_NAV_ITEMS.map(group => {
+			// Filtrar items del grupo basado en permisos individuales
+			const filteredItems = group.items
+				.filter(item => {
+					// Si el item tiene permiso específico, verificarlo
+					if (item.permission && !hasPermission(userRole, item.permission)) {
+						return false
+					}
+
+					// Si tiene subitems, verificar que al menos uno sea accesible
+					if (item.items) {
+						const accessibleSubItems = item.items.filter(
+							subItem => !subItem.permission || hasPermission(userRole, subItem.permission)
+						)
+						return accessibleSubItems.length > 0
+					}
+
+					return true
+				})
+				.map(item => ({
+					...item,
+					// Filtrar subitems basado en permisos
+					items:
+						item.items?.filter(subItem => !subItem.permission || hasPermission(userRole, subItem.permission)) || [],
+				}))
+
+			return {
+				...group,
+				items: filteredItems,
 			}
-
-			// Si no tiene permission definida, permitir acceso (fallback)
-			return true
+		}).filter(group => {
+			// Verificar si el grupo debe mostrarse:
+			// 1. El usuario debe tener permiso para ver el grupo (si está definido)
+			// 2. Debe tener al menos un item visible dentro del grupo
+			const hasVisibleItems = group.items.length > 0
+			return shouldShowGroup(userRole, group.permission, hasVisibleItems)
 		})
-	}, [userRole, userData])
+
+		return filtered
+	}, [userRole])
 
 	return {
 		navItems: filteredNavItems,
-		userRole,
-		userData,
 		isLoading: loading,
+		userRole,
 	}
 }

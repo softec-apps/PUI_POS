@@ -41,7 +41,7 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 							layout
 							className='group'>
 							<Card className='border-border/50 overflow-hidden border shadow-none transition-all duration-300'>
-								<CardContent className='px-4'>
+								<CardContent>
 									<div className='flex items-start space-x-4'>
 										<div className='bg-muted/20 relative h-32 w-40 flex-shrink-0 rounded-xl'>
 											{categoryData?.photo ? (

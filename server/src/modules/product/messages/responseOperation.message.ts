@@ -14,5 +14,6 @@ export const MESSAGE_RESPONSE = {
   NOT_FOUND: {
     ID: 'No se encontro el producto por su ID',
     NAME: 'No se encontro el producto por su nombre',
+    IMAGE: 'No se encontro la imagen',
   },
 }

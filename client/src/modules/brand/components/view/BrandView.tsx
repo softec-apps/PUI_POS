@@ -19,7 +19,6 @@ import { PaginationControls } from '@/modules/brand/components/templates/Paginat
 import { BrandTable } from '@/modules/brand/components/organisms/Table/TableBrand'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
 
-
 export function BrandView() {
 	const [retryCount, setRetryCount] = useState(0)
 	const [viewType, setViewType] = useState<ViewType>('table')
@@ -96,7 +95,6 @@ export function BrandView() {
 			hasNextPage: brands?.data?.pagination?.hasNextPage,
 		}),
 		[brands?.data]
-		
 	)
 
 	if (errorBrand && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
@@ -165,10 +163,7 @@ export function BrandView() {
 			)}
 
 			{/* Modales */}
-			<BrandModals
-				modalState={modalState}
-				brandHandlers={brandHandlers}
-			/>
+			<BrandModals modalState={modalState} brandHandlers={brandHandlers} />
 		</div>
 	)
 }

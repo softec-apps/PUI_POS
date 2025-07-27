@@ -6,9 +6,11 @@ import { Badge } from '@/components/layout/atoms/Badge'
 import { Table as ReactTable } from '@tanstack/react-table'
 import { I_Brand } from '@/modules/brand/types/brand'
 import { animations } from '@/modules/brand/components/atoms/animations'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { TableActions } from '@/modules/brand/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/brand/components/organisms/Table/TableInfoDate'
+import { generateBackgroundColor } from '@/common/utils/generateColor-util'
+import { Icons } from '@/components/icons'
 
 interface CardViewProps {
 	table: ReactTable<I_Brand>
@@ -26,7 +28,9 @@ export const CardView = ({ table, onEdit, onHardDelete }: CardViewProps) => (
 			layout>
 			<AnimatePresence mode='sync'>
 				{table.getRowModel().rows.map(row => {
-					const brandData = row.original
+					const recordData = row.original
+					const backgroundColor = generateBackgroundColor(recordData.name)
+
 					return (
 						<motion.div
 							key={row.id}
@@ -37,17 +41,28 @@ export const CardView = ({ table, onEdit, onHardDelete }: CardViewProps) => (
 							whileHover='hover'
 							layout
 							className='group relative'>
-							<Card className='border-border/50 flex h-full flex-col overflow-hidden border transition-all duration-300'>
-								<CardContent className='flex-grow'>
-									<div className='bg-card/50 shadow- absolute top-2 right-2 z-10 rounded-full backdrop-blur-sm'>
-										<TableActions brandData={brandData} onEdit={onEdit} onHardDelete={onHardDelete} />
+							<Card className='border-border/50 flex h-full flex-col overflow-hidden border p-0 transition-all duration-300'>
+								<CardHeader className='flex-none p-0'>
+									<div className='relative flex h-32 w-full items-center justify-center'>
+										{/* Ícono con fondo de color aleatorio */}
+										<div className='flex h-32 w-full items-center justify-center' style={{ backgroundColor }}>
+											<Icons.trademark className='text-muted h-12 w-12' />
+										</div>
+
+										{/* Acciones con mejor posicionamiento */}
+										<div className='bg-card/50 shadow- absolute top-2 right-2 z-10 rounded-full backdrop-blur-sm'>
+											<TableActions brandData={recordData} onEdit={onEdit} onHardDelete={onHardDelete} />
+										</div>
 									</div>
+								</CardHeader>
+
+								<CardContent className='flex-grow'>
 									<div className='flex h-full flex-col space-y-2'>
 										<Typography variant='h5' className='line-clamp-1'>
-											{brandData.name}
+											{recordData.name}
 										</Typography>
 										<Typography variant='span' className='text-muted-foreground line-clamp-2 flex-grow text-sm'>
-											{brandData.description || 'Sin descripción'}
+											{recordData.description || 'Sin descripción'}
 										</Typography>
 									</div>
 								</CardContent>
@@ -55,12 +70,12 @@ export const CardView = ({ table, onEdit, onHardDelete }: CardViewProps) => (
 								<CardFooter className='flex flex-none items-center justify-between p-4 pt-0'>
 									<Badge
 										decord={false}
-										variant={brandData.status === 'active' ? 'success' : 'warning'}
-										text={brandData.status === 'active' ? 'Activo' : 'Inactivo'}
+										variant={recordData.status === 'active' ? 'success' : 'warning'}
+										text={recordData.status === 'active' ? 'Activo' : 'Inactivo'}
 									/>
 
 									<div className='text-muted-foreground text-xs'>
-										<TableInfoDate brandData={brandData} />
+										<TableInfoDate brandData={recordData} />
 									</div>
 								</CardFooter>
 							</Card>

@@ -1,18 +1,27 @@
-import { UserRole } from '@/common/types/roles'
-import { ROLE_PERMISSIONS } from '@/common/constants/rolePermissions-const'
+import { UserRole, ALLOW_ROLES } from '@/common/constants/roles-const'
 
-export const hasPermission = (userRole: UserRole, permission: string): boolean => {
-	const allowedRoles = ROLE_PERMISSIONS[permission]
-	return allowedRoles?.includes(userRole) ?? false
-}
-
-export const getRoleDisplayName = (role: UserRole): string => {
-	const roleNames: Record<UserRole, string> = {
-		admin: 'Administrador',
-		manager: 'Gerente',
-		employee: 'Empleado',
-		viewer: 'Visualizador',
+/**
+ * Obtiene el nombre de visualización para un rol
+ */
+export const getRoleDisplayName = (role: UserRole | string): string => {
+	const roleDisplayNames: Record<UserRole, string> = {
+		[ALLOW_ROLES.ADMIN]: 'Administrador',
+		[ALLOW_ROLES.MANAGER]: 'Gerente',
 	}
 
-	return roleNames[role] || role
+	return roleDisplayNames[role as UserRole] || 'Rol Desconocido'
+}
+
+/**
+ * Verifica si un rol es válido
+ */
+export const isValidRole = (role: string): role is UserRole => {
+	return Object.values(ALLOW_ROLES).includes(role as UserRole)
+}
+
+/**
+ * Obtiene todos los roles disponibles
+ */
+export const getAllRoles = (): UserRole[] => {
+	return Object.values(ALLOW_ROLES)
 }

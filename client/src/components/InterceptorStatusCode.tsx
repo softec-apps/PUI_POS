@@ -8,6 +8,9 @@ import { emitter } from '@/common/events/sessionEmitter-event'
 import { ROUTE_PATH } from '@/common/constants/routes-const'
 import { ActionButton } from './layout/atoms/ActionButton'
 import { Icons } from './icons'
+import { Card, CardContent, CardHeader } from './ui/card'
+import { UtilBanner } from './UtilBanner'
+import { AlertMessage } from './layout/atoms/Alert'
 
 export function InterceptorStatusCode({ children }: { children: React.ReactNode }) {
 	const [errorState, setErrorState] = useState<{ type: '401' | '403' } | null>(null)
@@ -63,11 +66,11 @@ export function InterceptorStatusCode({ children }: { children: React.ReactNode 
 	}
 
 	const item = {
-		hidden: { y: 50, opacity: 0 },
+		hidden: { y: 20, opacity: 0 },
 		visible: {
 			y: 0,
 			opacity: 1,
-			transition: { type: 'spring', stiffness: 120 },
+			transition: { type: 'lineal', stiffness: 50 },
 		},
 	}
 
@@ -109,41 +112,21 @@ export function InterceptorStatusCode({ children }: { children: React.ReactNode 
 		const { title, description, showSessionOptions, showBackButton } = errorConfig[type]
 
 		return (
-			<div className='bg-background relative flex h-screen items-center justify-center overflow-hidden'>
+			<div className='bg-background flex h-screen items-center justify-center'>
 				<motion.div
 					variants={container}
 					initial='hidden'
 					animate='visible'
-					className='relative z-10 w-full max-w-xs px-4 text-center'>
-					{/* Código */}
-					<motion.div variants={item}>
-						<motion.span
-							className='text-foreground/90 block text-7xl font-medium tracking-tighter sm:text-8xl'
-							animate={{
-								textShadow: '0 0 5px rgba(255,255,255,0.2)',
-								transition: { duration: 3, repeat: Infinity, repeatType: 'reverse' },
-							}}>
-							{type}
-						</motion.span>
-					</motion.div>
+					className='relative z-50 w-full max-w-md px-4 text-center'>
+					<Card className='border-none bg-transparent shadow-none'>
+						<CardHeader>
+							<UtilBanner icon={<Icons.alertCircle />} title={title} />
+						</CardHeader>
 
-					<motion.div
-						variants={item}
-						className='pt-4 sm:pt-6'
-						initial={{ scaleX: 0 }}
-						animate={{
-							scaleX: 1,
-							transition: { delay: 0.3, type: 'spring', stiffness: 80 },
-						}}>
-						<div className='via-foreground/15 h-px w-full bg-gradient-to-r from-transparent to-transparent' />
-					</motion.div>
+						<AlertMessage variant='destructive' message={description} />
+					</Card>
 
-					<motion.div variants={item} className='mt-4 space-y-1 sm:mt-6'>
-						<h2 className='text-foreground text-base font-medium sm:text-lg'>{title}</h2>
-						<p className='text-foreground/60 text-xs sm:text-sm'>{description}</p>
-					</motion.div>
-
-					<motion.div variants={item} className='mt-6 flex flex-col space-y-2 sm:mt-8 sm:space-y-3'>
+					<motion.div variants={item} className='flex flex-col space-y-2 sm:space-y-3'>
 						{showSessionOptions ? (
 							<>
 								<ActionButton text='Extender sesión' onClick={handleExtendSession} />
@@ -155,7 +138,15 @@ export function InterceptorStatusCode({ children }: { children: React.ReactNode 
 								/>
 							</>
 						) : showBackButton ? (
-							<ActionButton icon={<Icons.iconArrowLeft />} text='Volver atrás' onClick={goBack} className='w-full' />
+							<>
+								<ActionButton icon={<Icons.iconArrowLeft />} text='Volver atrás' onClick={goBack} className='w-full' />
+								<ActionButton
+									text='Intentar de nuevo'
+									onClick={() => window.location.reload()}
+									variant='ghost'
+									className='w-full'
+								/>
+							</>
 						) : null}
 					</motion.div>
 				</motion.div>
