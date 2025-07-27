@@ -13,8 +13,8 @@ export class TemplateMapper {
       name: raw.name!,
       description: raw.description ?? null,
       category: raw.category ? CategoryMapper.toDomain(raw.category) : null,
-      atributes: Array.isArray(raw.atributes)
-        ? raw.atributes.map((attr) =>
+      atributes: Array.isArray(raw.atribute)
+        ? raw.atribute.map((attr) =>
             AtributeMapper.toDomain(attr as AtributeEntity),
           )
         : [],
@@ -50,7 +50,7 @@ export class TemplateMapper {
     }
 
     // Manejo de atributos
-    persistenceEntity.atributes = Array.isArray(domainEntity.atributes)
+    persistenceEntity.atribute = Array.isArray(domainEntity.atributes)
       ? domainEntity.atributes.map((attr) => AtributeMapper.toPersistence(attr))
       : []
 

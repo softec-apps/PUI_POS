@@ -51,7 +51,7 @@ export function AlertMessage({ variant = 'default', title, message, className = 
 				className
 			)}>
 			{icon || selectedVariant.icon}
-			<div className='flex flex-col space-y-1'>
+			<div className='flex flex-col items-start space-y-1'>
 				<AlertTitle className={cn('text-sm font-medium', selectedVariant.text)}>{title || 'Información'}</AlertTitle>
 				<AlertDescription className={cn('text-sm', selectedVariant.text)}>{message}</AlertDescription>
 			</div>

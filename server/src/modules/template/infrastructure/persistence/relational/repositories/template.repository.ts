@@ -59,7 +59,7 @@ export class TemplateRelationalRepository implements TemplateRepository {
       throw new NotFoundException('Algunos atributos no fueron encontrados')
 
     // Asignamos nuevos atributos
-    template.atributes = atributes.map(AtributeMapper.toPersistence)
+    template.atribute = atributes.map(AtributeMapper.toPersistence)
 
     await repository.save(template)
   }
@@ -224,7 +224,7 @@ export class TemplateRelationalRepository implements TemplateRepository {
     if (!template) throw new NotFoundException('Template no encontrado')
 
     // Limpiar las relaciones de atributos
-    template.atributes = []
+    template.atribute = []
 
     // Guardar el template sin atributos (esto eliminará las relaciones)
     await repository.save(template)
