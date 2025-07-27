@@ -13,7 +13,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetCl
 import { AlertMessage } from '@/components/layout/atoms/Alert'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { Icons } from '@/components/icons'
-import { ScrollArea } from '@/components/ui/scroll-area'
 
 export function TemplateFormModal({ isOpen, currentTemplate, onClose, onSubmit }: TemplateFormProps) {
 	const {

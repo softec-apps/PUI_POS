@@ -3,6 +3,45 @@
 import React from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, FormProvider } from 'react-hook-form'
+import {
+	IconBuilding,
+	IconBriefcase,
+	IconStar,
+	IconHeart,
+	IconDiamond,
+	IconCrown,
+	IconRocket,
+	IconTarget,
+	IconShield,
+	IconFlame,
+	IconLeaf,
+	IconWorld,
+	IconBulb,
+	IconCoffee,
+	IconCar,
+	IconHome,
+	IconMusic,
+	IconCamera,
+	IconPalette,
+	IconGift,
+	IconShoppingBag,
+	IconUsers,
+	IconChartLine,
+	IconSettings,
+	IconLock,
+	IconShoe,
+	IconShirt,
+	IconHanger,
+	IconEyeglass,
+	IconBottle,
+	IconGlass,
+	IconMeat,
+	IconBread,
+	IconTag,
+	IconBrandApple,
+	IconTruckDelivery,
+	IconCreditCard,
+} from '@tabler/icons-react'
 
 import { Icons } from '@/components/icons'
 import { I_Brand } from '@/modules/brand/types/brand'
@@ -34,13 +73,13 @@ export function BrandFormModal({ isOpen, currentBrand, isUploading, onClose, onS
 		defaultValues: {
 			name: '',
 			description: '',
+			icon: '',
 		},
 	})
 
 	const {
 		handleSubmit,
 		reset,
-		control,
 		formState: { errors, isValid, isDirty },
 		formState,
 	} = methods
@@ -48,10 +87,10 @@ export function BrandFormModal({ isOpen, currentBrand, isUploading, onClose, onS
 	// Efecto para cargar datos cuando se abre para editar
 	React.useEffect(() => {
 		if (isOpen && currentBrand) {
-			// CAMBIO: Asegurarse de que los valores se establezcan correctamente
 			const formData = {
 				name: currentBrand.name || '',
 				description: currentBrand.description || '',
+				icon: currentBrand.icon || '',
 			}
 
 			reset(formData)
@@ -60,6 +99,7 @@ export function BrandFormModal({ isOpen, currentBrand, isUploading, onClose, onS
 			const emptyData = {
 				name: '',
 				description: '',
+				icon: '',
 			}
 
 			reset(emptyData)
@@ -69,7 +109,6 @@ export function BrandFormModal({ isOpen, currentBrand, isUploading, onClose, onS
 	const handleFormSubmit = async (data: BrandFormData) => {
 		try {
 			await onSubmit(data)
-			// No resetear aquí, se hace en el onClose
 		} catch (error) {
 			console.error('Error al enviar formulario:', error)
 		}
@@ -79,6 +118,7 @@ export function BrandFormModal({ isOpen, currentBrand, isUploading, onClose, onS
 		reset({
 			name: '',
 			description: '',
+			icon: '',
 		})
 		onClose()
 	}
@@ -130,7 +170,7 @@ export function BrandFormModal({ isOpen, currentBrand, isUploading, onClose, onS
 							</CardHeader>
 
 							<UniversalFormField
-								control={control}
+								control={methods.control}
 								name='name'
 								label='Nombre'
 								placeholder='Ingresa el nombre de la marca'
@@ -139,8 +179,21 @@ export function BrandFormModal({ isOpen, currentBrand, isUploading, onClose, onS
 								showValidationIcons={true}
 							/>
 
+							{/* 
 							<UniversalFormField
-								control={control}
+								control={methods.control}
+								name='icon'
+								label='Ícono'
+								type='select'
+								options={PRODUCT_BRAND_ICONS}
+								groupByCategory={true}
+								showIconsInSelect={true}
+								placeholder='Selecciona un ícono que represente tu marca'
+							/>
+							*/}
+
+							<UniversalFormField
+								control={methods.control}
 								name='description'
 								label='Descripción'
 								placeholder='Descripción opcional'
@@ -152,7 +205,6 @@ export function BrandFormModal({ isOpen, currentBrand, isUploading, onClose, onS
 					</form>
 				</FormProvider>
 
-				{/* Usar el FormFooter */}
 				<FormFooter
 					formState={formState}
 					errors={errors}

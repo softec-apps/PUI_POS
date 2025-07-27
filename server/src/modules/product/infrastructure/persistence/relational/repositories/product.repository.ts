@@ -124,7 +124,7 @@ export class ProductRelationalRepository implements ProductRepository {
         relations: [
           PATH_SOURCE.CATEGORY,
           PATH_SOURCE.BRAND,
-          `${PATH_SOURCE.TEMPLATE}.${PATH_SOURCE.ATRIBUTE}`,
+          PATH_SOURCE.SUPPLIER,
         ],
       }),
       // 2. Total CON filtros (para paginación)
@@ -149,6 +149,12 @@ export class ProductRelationalRepository implements ProductRepository {
     const entity = await this.productRepository.findOne({
       where: { id: String(id) },
       withDeleted: true,
+      relations: [
+        PATH_SOURCE.CATEGORY,
+        PATH_SOURCE.BRAND,
+        PATH_SOURCE.SUPPLIER,
+        PATH_SOURCE.TEMPLATE,
+      ],
     })
 
     return entity ? ProductMapper.toDomain(entity) : null

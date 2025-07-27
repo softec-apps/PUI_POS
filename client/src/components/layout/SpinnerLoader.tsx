@@ -2,6 +2,7 @@
 
 import { Icons } from '@/components/icons'
 import { Typography } from '@/components/ui/typography'
+import { motion } from 'framer-motion'
 
 type Props = {
 	text?: string
@@ -9,9 +10,13 @@ type Props = {
 
 export const SpinnerLoader = ({ text }: Props) => {
 	return (
-		<div className='flex items-center justify-center gap-2'>
+		<div className='flex flex-col items-center justify-center gap-4'>
 			<Icons.spinnerDecored className='animate-spin' />
-			{text && <Typography variant='span'>{text}</Typography>}
+			{text && (
+				<motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+					<Typography variant='small'>{text}</Typography>
+				</motion.div>
+			)}
 		</div>
 	)
 }

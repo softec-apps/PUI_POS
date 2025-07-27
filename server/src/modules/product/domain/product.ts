@@ -10,14 +10,16 @@ import {
   MinLength,
   IsPositive,
   IsInt,
+  IsBoolean,
 } from 'class-validator'
-import { ProductStatus } from '@/modules/product/status.enum'
 import { Brand } from '@/modules/brand/domain/brand'
-import { Supplier } from '@/modules/suppliers/domain/supplier'
+import { FileType } from '@/modules/files/domain/file'
 import { Template } from '@/modules/template/domain/template'
+import { Supplier } from '@/modules/suppliers/domain/supplier'
+import { ProductStatus } from '@/modules/product/status.enum'
 import { Category } from '@/modules/categories/domain/category'
+import { Atribute } from '@/modules/atributes/domain/atribute'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { Exclude } from 'class-transformer'
 
 export class Product {
   @ApiProperty({
@@ -27,16 +29,24 @@ export class Product {
   @IsUUID('4')
   id: string
 
-  @Exclude()
+  @ApiProperty({
+    type: Boolean,
+    example: 'true',
+    description: 'True = Si es un producto variante',
+  })
+  @IsNotEmpty({ message: 'El isVariant es obligatorio' })
+  @IsBoolean({ message: 'El isVariant debe ser boolean' })
+  isVariant: boolean
+
   @ApiProperty({
     type: String,
-    example: 'CA-A001',
+    example: 'PROD-00001',
     description: 'Código del producto',
-    maxLength: 20,
+    maxLength: 10,
   })
   @IsNotEmpty({ message: 'El código es obligatorio' })
   @IsString({ message: 'El código debe ser texto' })
-  @Length(3, 20, { message: 'El código debe tener entre 3 y 20 caracteres' })
+  @Length(10, 10, { message: 'El código debe tener exactamente 10 caracteres' })
   code: string
 
   @ApiProperty({
@@ -77,6 +87,11 @@ export class Product {
   status: ProductStatus = ProductStatus.ACTIVE
 
   @ApiProperty({
+    type: () => FileType,
+  })
+  photo?: FileType | null
+
+  @ApiProperty({
     type: Number,
     example: 29.123456,
     description:
@@ -92,7 +107,7 @@ export class Product {
     },
   )
   @IsPositive({ message: 'El Precio base debe ser un número positivo' })
-  basePrice: number
+  price: number
 
   @ApiPropertyOptional({
     type: String,
@@ -131,43 +146,59 @@ export class Product {
   @IsInt({ message: 'El stock debe ser un número entero' })
   stock: number
 
+  // Relations
   @ApiPropertyOptional({
     type: () => Brand,
-    example: '123e4567-e89b-12d3-a456-426614174000',
     description: 'Marca del producto',
     nullable: true,
   })
-  @IsOptional()
-  @IsUUID('4', { message: 'El ID de la marca debe ser un UUID válido' })
   brand?: Brand | null
 
   @ApiPropertyOptional({
-    type: () => [Supplier],
-    description: 'Proveedores del producto',
+    type: () => Supplier,
+    description: 'Proveedor del producto',
     nullable: true,
   })
-  suppliers?: Supplier[]
+  supplier?: Supplier | null
 
   @ApiPropertyOptional({
     type: () => Template,
-    example: '123e4567-e89b-12d3-a456-426614174000',
     description: 'Template del producto',
     nullable: true,
   })
-  @IsOptional()
-  @IsUUID('4', { message: 'El ID del template debe ser un UUID válido' })
   template?: Template | null
 
   @ApiPropertyOptional({
     type: () => Category,
-    example: '123e4567-e89b-12d3-a456-426614174000',
     description: 'Categoría del producto',
     nullable: true,
   })
-  @IsOptional()
-  @IsUUID('4', { message: 'El ID de la categoría debe ser un UUID válido' })
   category?: Category | null
 
+  // Product variations relationships
+  @ApiPropertyOptional({
+    type: () => [ProductVariation],
+    description: 'Variaciones del producto (si es producto base)',
+    isArray: true,
+  })
+  variation?: ProductVariation[]
+
+  @ApiPropertyOptional({
+    type: () => [ProductVariation],
+    description: 'Productos padre (si es una variante)',
+    isArray: true,
+  })
+  parentProducts?: ProductVariation[]
+
+  // Attribute values
+  @ApiPropertyOptional({
+    type: () => [ProductAttributeValue],
+    description: 'Valores de atributos del producto',
+    isArray: true,
+  })
+  attributeValues?: ProductAttributeValue[]
+
+  // Timestamps
   @ApiProperty({
     type: Date,
     example: '2024-06-16T12:34:56.789Z',
@@ -189,4 +220,85 @@ export class Product {
     nullable: true,
   })
   deletedAt?: Date | null
+}
+
+export class ProductVariation {
+  @ApiProperty({
+    type: String,
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'ID del producto base',
+  })
+  @IsNotEmpty({ message: 'El ID del producto base es obligatorio' })
+  @IsUUID('4', { message: 'El ID del producto debe ser un UUID válido' })
+  productId: string
+
+  @ApiProperty({
+    type: String,
+    example: '456e7890-e89b-12d3-a456-426614174111',
+    description: 'ID del producto que es variante',
+  })
+  @IsNotEmpty({ message: 'El ID del producto variante es obligatorio' })
+  @IsUUID('4', {
+    message: 'El ID del producto variante debe ser un UUID válido',
+  })
+  productVariantId: string
+
+  // Relations
+  @ApiPropertyOptional({
+    type: () => Product,
+    description: 'Producto base',
+  })
+  product?: Product
+
+  @ApiPropertyOptional({
+    type: () => Product,
+    description: 'Producto variante',
+  })
+  productVariant?: Product
+}
+
+export class ProductAttributeValue {
+  @ApiProperty({
+    type: String,
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'ID del producto',
+  })
+  @IsNotEmpty({ message: 'El ID del producto es obligatorio' })
+  @IsUUID('4', { message: 'El ID del producto debe ser un UUID válido' })
+  productId: string
+
+  @ApiProperty({
+    type: String,
+    example: '456e7890-e89b-12d3-a456-426614174111',
+    description: 'ID del atributo',
+  })
+  @IsNotEmpty({ message: 'El ID del atributo es obligatorio' })
+  @IsUUID('4', { message: 'El ID del atributo debe ser un UUID válido' })
+  attributeId: string
+
+  @ApiProperty({
+    type: String,
+    example: 'Rojo',
+    description: 'Valor del atributo para este producto',
+    maxLength: 1000,
+  })
+  @IsNotEmpty({ message: 'El valor del atributo es obligatorio' })
+  @IsString({ message: 'El valor del atributo debe ser texto' })
+  @MaxLength(1000, {
+    message: 'El valor del atributo debe tener máximo 1000 caracteres',
+  })
+  value: string
+
+  // Relations
+  @ApiPropertyOptional({
+    type: () => Product,
+    description: 'Producto al que pertenece este valor de atributo',
+  })
+  product?: Product
+
+  @ApiPropertyOptional({
+    type: () => Atribute,
+    description: 'Atributo al que corresponde este valor',
+  })
+  atribute?: Atribute
 }

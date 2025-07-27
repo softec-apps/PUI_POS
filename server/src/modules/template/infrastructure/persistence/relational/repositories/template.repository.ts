@@ -159,7 +159,7 @@ export class TemplateRelationalRepository implements TemplateRepository {
     const entity = await this.templateRepository.findOne({
       where: { id: String(id) },
       withDeleted: true,
-      relations: ['category', 'atributes'],
+      relations: [PATH_SOURCE.CATEGORY, PATH_SOURCE.ATRIBUTE],
     })
     return entity ? TemplateMapper.toDomain(entity) : null
   }

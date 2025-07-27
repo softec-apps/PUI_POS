@@ -6,12 +6,14 @@ import { BrandModule } from '@/modules/brand/brand.module'
 import { CategoriesModule } from '@/modules/categories/categories.module'
 import { TemplateProductModule } from '@/modules/template/templates.module'
 import { RelationalProductPersistenceModule } from '@/modules/product/infrastructure/persistence/relational/relational-persistence.module'
+import { FilesModule } from '@/modules/files/files.module'
 
 const infrastructurePersistenceModule = RelationalProductPersistenceModule
 
 @Module({
   imports: [
     infrastructurePersistenceModule,
+    FilesModule,
     forwardRef(() => SupplierModule),
     forwardRef(() => BrandModule),
     forwardRef(() => CategoriesModule),

@@ -56,6 +56,7 @@ export class CategoriesRelationalRepository implements CategoryRepository {
     // Aplicar filtros
     if (filterOptions) {
       const filteredEntries = Object.entries(filterOptions).filter(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         ([_, value]) => value !== undefined && value !== null,
       )
       if (filteredEntries.length > 0) {

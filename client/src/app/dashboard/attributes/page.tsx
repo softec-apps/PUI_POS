@@ -7,7 +7,7 @@ import { AttributesView } from '@/modules/atribute/components/view/AttributesVie
 
 export default function AtributesPage() {
 	return (
-		<RoleGuard requiredRole={[ALLOW_ROLES.ADMIN, ALLOW_ROLES.MANAGER]}>
+		<RoleGuard requiredRole={ALLOW_ROLES.ADMIN}>
 			<PageContainer>
 				<AttributesView />
 			</PageContainer>
