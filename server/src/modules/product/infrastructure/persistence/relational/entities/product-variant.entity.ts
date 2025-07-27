@@ -1,97 +1,41 @@
 import {
-  Entity,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-  PrimaryGeneratedColumn,
-  ManyToOne,
+  Entity,
+  Index,
   JoinColumn,
-  OneToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm'
-import { ProductVariantStatus } from '@/modules/product/status.enum'
 import { EntityRelationalHelper } from '@/utils/relational-entity-helper'
-import { ProductEntity } from '@/modules/product/infrastructure/persistence/relational/entities//product.entity'
-import { ProductVariantAttributeValueEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product-variant-attribute-value.entity'
+import { ProductEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product.entity'
 
-@Entity({ name: 'product_variant' })
-export class ProductVariantEntity extends EntityRelationalHelper {
+@Entity({ name: 'product_variation' })
+@Index(['productId', 'productVariantId'], { unique: true }) // ✅ Evitar duplicados
+@Index(['productId']) // Para consultas de variantes por producto
+@Index(['productVariantId']) // Para consultas de producto padre por variante
+export class ProductVariationEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @Column({
-    type: 'varchar',
-    length: 100,
-    unique: true,
-    nullable: false,
-  })
-  code: string // Código único de la variante
+  // ✅ ID del producto base
+  @Column({ type: 'uuid', nullable: false })
+  productId: string
 
-  @Column({
-    type: 'varchar',
-    length: 300,
-    nullable: false,
-  })
-  name: string
+  // ✅ ID del producto que es variante
+  @Column({ type: 'uuid', nullable: false })
+  productVariantId: string
 
-  @Column({
-    type: 'enum',
-    enum: ProductVariantStatus,
-    default: ProductVariantStatus.ACTIVE,
-  })
-  status: ProductVariantStatus
-
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    nullable: true,
-  })
-  price?: number | null
-
-  @Column({
-    type: 'varchar',
-    length: 20,
-    nullable: true,
-  })
-  sku?: string | null
-
-  @Column({
-    type: 'varchar',
-    length: 50,
-    nullable: true,
-  })
-  barcode?: string | null
-
-  @Column({
-    type: 'int',
-    default: 0,
-  })
-  stock: number
-
-  // Relación con producto padre
-  @ManyToOne(() => ProductEntity, (product) => product.variants, {
+  @ManyToOne(() => ProductEntity, (product) => product.variations, {
     onDelete: 'CASCADE',
+    eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ name: 'productId' })
   product: ProductEntity
 
-  // Valores de atributos específicos de esta variante
-  @OneToMany(
-    () => ProductVariantAttributeValueEntity,
-    (attrValue) => attrValue.productVariant,
-    {
-      cascade: true,
-    },
-  )
-  attributeValues: ProductVariantAttributeValueEntity[]
-
-  @CreateDateColumn({ type: 'timestamptz' })
-  createdAt: Date
-
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt: Date
-
-  @DeleteDateColumn({ type: 'timestamptz' })
-  deletedAt?: Date | null
+  @ManyToOne(() => ProductEntity, (product) => product.parentProducts, {
+    onDelete: 'CASCADE',
+    eager: false,
+  })
+  @JoinColumn({ name: 'productVariantId' })
+  productVariant: ProductEntity
 }

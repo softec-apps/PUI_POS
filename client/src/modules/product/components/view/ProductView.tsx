@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
-import { useSupplier } from '@/common/hooks/useSupplier'
+import { useProduct } from '@/common/hooks/useProduct'
 
 import { useModalState } from '@/modules/product/hooks/useModalState'
 import { usePagination } from '@/modules/product/hooks/usePagination'
@@ -16,7 +16,7 @@ import { SupplierHeader } from '@/modules/product/components/templates/Header'
 import { ModalsSupplier } from '@/modules/product/components/templates/Modals'
 import { AttributeFilters } from '@/modules/product/components/templates/Filters'
 import { PaginationControls } from '@/modules/product/components/templates/Pagination'
-import { TableSupplier } from '@/modules/product/components/organisms/Table/TableSupplier'
+import { TableProduct } from '@/modules/product/components/organisms/Table/TableProduct'
 import { ViewType } from '@/modules/product/components/molecules/ViewSelector'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
 
@@ -53,14 +53,14 @@ export function ProductView() {
 	)
 
 	const {
-		supplierData,
+		recordsData,
 		loading,
-		error: errorSupplier,
+		error: errorProducts,
 		createRecord,
 		updateRecord,
 		hardDeleteRecord,
 		refetchRecords,
-	} = useSupplier(paginationParams)
+	} = useProduct(paginationParams)
 
 	// Hook de refresh data
 	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchRecords)
@@ -69,7 +69,7 @@ export function ProductView() {
 	const modalState = useModalState()
 
 	// Handlers
-	const atributesHandlers = useSupplierHandlers({
+	const recordsHandlers = useSupplierHandlers({
 		modalState,
 		createRecord,
 		updateRecord,
@@ -78,17 +78,17 @@ export function ProductView() {
 
 	// ✅ Optimized next page handler
 	const handleNext = useCallback(() => {
-		handleNextPage(supplierData?.data?.pagination?.hasNextPage)
-	}, [handleNextPage, supplierData?.data?.pagination?.hasNextPage])
+		handleNextPage(recordsData?.data?.pagination?.hasNextPage)
+	}, [handleNextPage, recordsData?.data?.pagination?.hasNextPage])
 
 	// ✅ Memoizar datos derivados
 	const dataPaginated = useMemo(
 		() => ({
-			items: supplierData?.data?.items || [],
-			pagination: supplierData?.data?.pagination,
-			hasNextPage: supplierData?.data?.pagination?.hasNextPage,
+			items: recordsData?.data?.items || [],
+			pagination: recordsData?.data?.pagination,
+			hasNextPage: recordsData?.data?.pagination?.hasNextPage,
 		}),
-		[supplierData?.data]
+		[recordsData?.data]
 	)
 
 	// Función para reintentar la carga
@@ -97,9 +97,9 @@ export function ProductView() {
 		refetchRecords()
 	}, [refetchRecords])
 
-	if (errorSupplier && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
+	if (errorProducts && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
 
-	if (errorSupplier) return <FatalErrorState />
+	if (errorProducts) return <FatalErrorState />
 
 	return (
 		<div className='flex flex-1 flex-col space-y-6'>
@@ -115,7 +115,7 @@ export function ProductView() {
 						size='lg'
 						variant='default'
 						icon={<Icons.plus />}
-						text='Nuevo proveedor'
+						text='Nuevo producto'
 						className='rounded-xl'
 						onClick={modalState.openCreateDialog}
 					/>
@@ -141,10 +141,10 @@ export function ProductView() {
 					/>
 
 					{/* Tabla */}
-					<TableSupplier
+					<TableProduct
 						recordsData={dataPaginated.items}
 						loading={loading}
-						onEdit={atributesHandlers.handleEdit}
+						onEdit={recordsHandlers.handleEdit}
 						onHardDelete={modalState.openHardDeleteModal}
 						viewType={viewType}
 					/>
@@ -157,13 +157,13 @@ export function ProductView() {
 						onPageChange={handlePageChange}
 						onNextPage={handleNext}
 						onLimitChange={handleLimitChange}
-						metaDataPagination={supplierData?.data?.pagination}
+						metaDataPagination={recordsData?.data?.pagination}
 					/>
 				</>
 			)}
 
 			{/* Modales */}
-			<ModalsSupplier modalState={modalState} recordHandlers={atributesHandlers} />
+			<ModalsSupplier modalState={modalState} recordHandlers={recordsHandlers} />
 		</div>
 	)
 }

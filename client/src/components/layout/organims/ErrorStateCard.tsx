@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-
 import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
 import { UtilBanner } from '@/components/UtilBanner'
@@ -14,11 +13,10 @@ interface Props {
 	actions: React.ReactNode
 }
 
-function ErrorStateCard({ title, description, icon, actions }: Props) {
+function ErrorStateCard({ title, description, icon }: Props) {
 	return (
 		<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
 			<UtilBanner icon={icon} title={title} description={description} />
-			<div className='flex gap-2 pt-4'>{actions}</div>
 		</Card>
 	)
 }

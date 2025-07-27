@@ -1,37 +1,35 @@
 import { Icons } from '@/components/icons'
 import { Permission } from '@/common/constants/rolePermissions-const'
 
-export interface NavItem {
+export interface BaseNavItem {
 	title: string
-	url: string
+	url?: string // Hacer opcional para items padre que pueden no tener URL
+	icon?: keyof typeof Icons
+	isActive?: boolean
+	permission: Permission
 	disabled?: boolean
 	external?: boolean
-	shortcut?: [string, string]
-	icon?: keyof typeof Icons
 	label?: string
 	description?: string
-	isActive?: boolean
-	items?: NavItem[]
-	permission: Permission
+	permission?: Permission
 }
 
-export interface NavItemWithChildren extends NavItem {
-	items: NavItemWithChildren[]
+export interface NavItemLeaf extends BaseNavItem {
+	url: string // Obligatorio para hojas
+	items?: never // No permitir items en hojas
 }
 
-export interface NavItemWithOptionalChildren extends NavItem {
-	items?: NavItemWithChildren[]
+export interface NavItemParent extends BaseNavItem {
+	items: NavItem[] // Obligatorio para padres
+	url?: string // Opcional para padres
 }
 
-export interface FooterItem {
-	title: string
-	items: {
-		title: string
-		href: string
-		external?: boolean
-	}[]
+export type NavItem = NavItemLeaf | NavItemParent
+
+export interface NavGroup {
+	groupName: string
+	items: NavItem[]
+	permission: Permission[]
 }
 
-export type MainNavItem = NavItemWithOptionalChildren
-
-export type SidebarNavItem = NavItemWithChildren
+export type NavConfig = NavGroup[]

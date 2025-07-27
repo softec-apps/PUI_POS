@@ -28,7 +28,7 @@ const typographyVariants = cva('', {
 			success: 'text-green-600 dark:text-green-400 font-medium',
 			warning: 'text-amber-600 dark:text-amber-400 font-medium',
 			display: 'text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tighter text-foreground leading-none',
-			overline: 'text-xs uppercase tracking-widest font-semibold text-muted-foreground/80 mb-2',
+			overline: 'text-xs uppercase tracking-widest font-semibold text-muted-foreground/80',
 		},
 	},
 	defaultVariants: {

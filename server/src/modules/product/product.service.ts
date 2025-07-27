@@ -7,7 +7,11 @@ import {
   updatedResponse,
 } from '@/common/helpers/responseSuccess.helper'
 import { Product } from '@/modules/product/domain/product'
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 
 import { ProductStatus } from '@/modules/product/status.enum'
 import { ApiResponse } from '@/utils/types/request-response.type'
@@ -22,61 +26,116 @@ import { EnhancedInfinityPaginationResponseDto } from '@/utils/dto/enhanced-infi
 import { MESSAGE_RESPONSE } from '@/modules/product/messages/responseOperation.message'
 
 import { BrandRepository } from '@/modules/brand/infrastructure/persistence/brand.repository'
+import { FileRepository } from '@/modules/files/infrastructure/persistence/file.repository'
 import { ProductRepository } from '@/modules/product/infrastructure/persistence/product.repository'
+import { SupplierRepository } from '@/modules/suppliers/infrastructure/persistence/supplier.repository'
 import { TemplateRepository } from '@/modules/template/infrastructure/persistence/template.repository'
 import { CategoryRepository } from '@/modules/categories/infrastructure/persistence/category.repository'
+import { Category } from '@/modules/categories/domain/category'
+import { Brand } from '@/modules/brand/domain/brand'
+import { Supplier } from '@/modules/suppliers/domain/supplier'
+import { FileType } from '@/modules/files/domain/file'
+import { FilesService } from '@/modules/files/files.service'
 
 @Injectable()
 export class ProductService {
   constructor(
     private readonly dataSource: DataSource,
-    private readonly productRepository: ProductRepository,
+    private readonly fileRepository: FileRepository,
     private readonly brandRepository: BrandRepository,
+    private readonly productRepository: ProductRepository,
+    private readonly supplierRepository: SupplierRepository,
     private readonly templateRepository: TemplateRepository,
     private readonly categoryRepository: CategoryRepository,
+
+    private readonly filesService: FilesService,
   ) {}
 
   async create(
     createProductDto: CreateProductDto,
   ): Promise<ApiResponse<Product>> {
     return this.dataSource.transaction(async (entityManager) => {
-      // Validación y asignación del status con valor por defecto
-      const status =
-        createProductDto.status &&
-        Object.values(ProductStatus).includes(createProductDto.status)
-          ? createProductDto.status
-          : ProductStatus.ACTIVE
+      if (!createProductDto.templateId) {
+        throw new BadRequestException(
+          'El template es obligatorio para crear un producto',
+        )
+      }
 
-      // Generar código del producto (implementación de ejemplo)
-      const code = this.generateProductCode()
+      const template = await this.templateRepository.findById(
+        createProductDto.templateId,
+      )
+      if (!template) {
+        throw new NotFoundException(
+          `Template con ID ${createProductDto.templateId} no encontrado`,
+        )
+      }
 
-      // Verificar relaciones opcionales
-      const brand = createProductDto.brandId
-        ? await this.brandRepository.findById(createProductDto.brandId)
-        : null
+      let brand: Brand | null | undefined = undefined
+      if (createProductDto.brandId) {
+        brand = await this.brandRepository.findById(createProductDto.brandId)
+        if (!brand) {
+          throw new NotFoundException(
+            `Marca con ID ${createProductDto.brandId} no encontrada`,
+          )
+        }
+      }
 
-      const template = createProductDto.templateId
-        ? await this.templateRepository.findById(createProductDto.templateId)
-        : null
+      let category: Category | null | undefined = undefined
+      if (createProductDto.categoryId) {
+        category = await this.categoryRepository.findById(
+          createProductDto.categoryId,
+        )
+        if (!category) {
+          throw new NotFoundException(
+            `Categoría con ID ${createProductDto.categoryId} no encontrada`,
+          )
+        }
+      }
 
-      const category = createProductDto.categoryId
-        ? await this.categoryRepository.findById(createProductDto.categoryId)
-        : null
+      let supplier: Supplier | null | undefined = undefined
+      if (createProductDto.supplierId) {
+        supplier = await this.supplierRepository.findById(
+          createProductDto.supplierId,
+        )
+        if (!supplier) {
+          throw new NotFoundException(
+            `Proveedor con ID ${createProductDto.supplierId} no encontrado`,
+          )
+        }
+      }
 
-      // Crear el producto
+      let photo: FileType | null | undefined = undefined
+      if (createProductDto.photo?.id) {
+        const fileObject = await this.filesService.findById(
+          createProductDto.photo.id,
+        )
+        if (!fileObject) {
+          throw new NotFoundException({
+            message: MESSAGE_RESPONSE.NOT_FOUND.IMAGE,
+          })
+        }
+        photo = fileObject
+      } else if (createProductDto.photo === null) {
+        photo = null
+      }
+
+      // Crear el producto con todas las propiedades requeridas
       await this.productRepository.create(
         {
-          code,
+          isVariant: createProductDto.isVariant || false,
           name: createProductDto.name,
           description: createProductDto.description || null,
-          status,
-          basePrice: createProductDto.basePrice,
+          price: createProductDto.price,
+          status: createProductDto.status || ProductStatus.DRAFT,
           sku: createProductDto.sku || null,
-          barCode: createProductDto.barcode || null,
+          barCode: createProductDto.barCode || null,
           stock: createProductDto.stock || 0,
-          brand,
-          template,
-          category,
+          code: '',
+          photo,
+          brand: brand || null,
+          template: template,
+          category: category || null,
+          supplier: supplier || null,
         },
         entityManager,
       )
@@ -155,6 +214,11 @@ export class ProductService {
       // Preparar objeto de actualización
       const updateData: Partial<Product> = {}
 
+      // Actualización de propiedades básicas
+      if (updateProductDto.name !== undefined) {
+        updateData.name = updateProductDto.name
+      }
+
       // Manejo de la descripción
       if (updateProductDto.description !== undefined) {
         updateData.description =
@@ -166,16 +230,17 @@ export class ProductService {
 
       // Validación del status
       if (updateProductDto.status !== undefined) {
-        updateData.status = Object.values(ProductStatus).includes(
-          updateProductDto.status,
-        )
-          ? updateProductDto.status
-          : ProductStatus.ACTIVE
+        if (!Object.values(ProductStatus).includes(updateProductDto.status)) {
+          throw new BadRequestException(
+            `Estado inválido. Debe ser uno de: ${Object.values(ProductStatus).join(', ')}`,
+          )
+        }
+        updateData.status = updateProductDto.status
       }
 
       // Actualización de propiedades numéricas
-      if (updateProductDto.basePrice !== undefined) {
-        updateData.basePrice = updateProductDto.basePrice
+      if (updateProductDto.price !== undefined) {
+        updateData.price = updateProductDto.price
       }
 
       if (updateProductDto.stock !== undefined) {
@@ -187,35 +252,116 @@ export class ProductService {
         updateData.sku = updateProductDto.sku || null
       }
 
-      if (updateProductDto.barcode !== undefined) {
-        updateData.barCode = updateProductDto.barcode || null
+      if (updateProductDto.barCode !== undefined) {
+        updateData.barCode = updateProductDto.barCode || null
       }
 
-      // Manejo de relaciones
+      // Actualización de isVariant si está presente
+      if (updateProductDto.isVariant !== undefined) {
+        updateData.isVariant = updateProductDto.isVariant
+      }
+
+      // Manejo de relaciones con validación
       if (updateProductDto.brandId !== undefined) {
-        updateData.brand = updateProductDto.brandId
-          ? await this.brandRepository.findById(updateProductDto.brandId)
-          : null
+        if (updateProductDto.brandId) {
+          const brand = await this.brandRepository.findById(
+            updateProductDto.brandId,
+          )
+          if (!brand) {
+            throw new NotFoundException(
+              `Marca con ID ${updateProductDto.brandId} no encontrada`,
+            )
+          }
+          updateData.brand = brand
+        } else {
+          updateData.brand = null
+        }
       }
 
       if (updateProductDto.templateId !== undefined) {
-        updateData.template = updateProductDto.templateId
-          ? await this.templateRepository.findById(updateProductDto.templateId)
-          : null
+        if (updateProductDto.templateId) {
+          const template = await this.templateRepository.findById(
+            updateProductDto.templateId,
+          )
+          if (!template) {
+            throw new NotFoundException(
+              `Template con ID ${updateProductDto.templateId} no encontrado`,
+            )
+          }
+          updateData.template = template
+        } else {
+          // El template es obligatorio según tu DTO de creación
+          throw new BadRequestException(
+            'El template es obligatorio y no puede ser null',
+          )
+        }
       }
 
       if (updateProductDto.categoryId !== undefined) {
-        updateData.category = updateProductDto.categoryId
-          ? await this.categoryRepository.findById(updateProductDto.categoryId)
-          : null
+        if (updateProductDto.categoryId) {
+          const category = await this.categoryRepository.findById(
+            updateProductDto.categoryId,
+          )
+          if (!category) {
+            throw new NotFoundException(
+              `Categoría con ID ${updateProductDto.categoryId} no encontrada`,
+            )
+          }
+          updateData.category = category
+        } else {
+          updateData.category = null
+        }
+      }
+
+      if (updateProductDto.supplierId !== undefined) {
+        if (updateProductDto.supplierId) {
+          const supplier = await this.supplierRepository.findById(
+            updateProductDto.supplierId,
+          )
+          if (!supplier) {
+            throw new NotFoundException(
+              `Proveedor con ID ${updateProductDto.supplierId} no encontrado`,
+            )
+          }
+          updateData.supplier = supplier
+        } else {
+          updateData.supplier = null
+        }
+      }
+
+      // Manejo de la foto
+      if (updateProductDto.photo !== undefined) {
+        if (updateProductDto.photo?.id) {
+          const fileObject = await this.filesService.findById(
+            updateProductDto.photo.id,
+          )
+          if (!fileObject) {
+            throw new NotFoundException({
+              message: MESSAGE_RESPONSE.NOT_FOUND.IMAGE,
+            })
+          }
+          updateData.photo = fileObject
+        } else if (updateProductDto.photo === null) {
+          updateData.photo = null
+        }
+      }
+
+      // Verificar que hay algo que actualizar
+      if (Object.keys(updateData).length === 0) {
+        throw new BadRequestException('No hay datos para actualizar')
       }
 
       // Ejecutar la actualización
-      await this.productRepository.update(id, updateData, entityManager)
+      const updatedProduct = await this.productRepository.update(
+        id,
+        updateData,
+        entityManager,
+      )
 
       return updatedResponse({
         resource: PATH_SOURCE.PRODUCT,
         message: MESSAGE_RESPONSE.UPDATED,
+        data: updatedProduct, // Opcional: incluir el producto actualizado
       })
     })
   }
@@ -269,9 +415,70 @@ export class ProductService {
   /*
    * METHODS PRIVATES
    **/
-  private generateProductCode(): string {
-    const uuidPart = Math.random().toString(36).substring(2, 10).toUpperCase()
-    const sequencePart = '00001' // TODO: cambiar por el campo real de la tabla
-    return `PROD-${uuidPart}-${sequencePart}`
+  private async validateRelations(createProductDto: CreateProductDto): Promise<{
+    brand?: any
+    category?: any
+    supplier?: any
+    template: any
+    photo?: any
+  }> {
+    const relations: any = {}
+
+    // Template es obligatorio
+    relations.template = await this.templateRepository.findById(
+      createProductDto.templateId,
+    )
+    if (!relations.template) {
+      throw new NotFoundException(
+        `Template con ID ${createProductDto.templateId} no encontrado`,
+      )
+    }
+
+    // Relaciones opcionales
+    if (createProductDto.brandId) {
+      relations.brand = await this.brandRepository.findById(
+        createProductDto.brandId,
+      )
+      if (!relations.brand) {
+        throw new NotFoundException(
+          `Marca con ID ${createProductDto.brandId} no encontrada`,
+        )
+      }
+    }
+
+    if (createProductDto.categoryId) {
+      relations.category = await this.categoryRepository.findById(
+        createProductDto.categoryId,
+      )
+      if (!relations.category) {
+        throw new NotFoundException(
+          `Categoría con ID ${createProductDto.categoryId} no encontrada`,
+        )
+      }
+    }
+
+    if (createProductDto.supplierId) {
+      relations.supplier = await this.supplierRepository.findById(
+        createProductDto.supplierId,
+      )
+      if (!relations.supplier) {
+        throw new NotFoundException(
+          `Proveedor con ID ${createProductDto.supplierId} no encontrado`,
+        )
+      }
+    }
+
+    if (createProductDto.photo) {
+      relations.photo = await this.fileRepository.findById(
+        createProductDto.photo.id,
+      )
+      if (!relations.photo) {
+        throw new NotFoundException(
+          `Archivo con ID ${createProductDto.photo} no encontrado`,
+        )
+      }
+    }
+
+    return relations
   }
 }

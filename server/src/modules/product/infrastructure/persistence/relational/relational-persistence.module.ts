@@ -5,6 +5,7 @@ import { ProductEntity } from '@/modules/product/infrastructure/persistence/rela
 import { SupplierEntity } from '@/modules/suppliers/infrastructure/persistence/relational/entities/supplier.entity'
 import { CategoryEntity } from '@/modules/categories/infrastructure/persistence/relational/entities/category.entity'
 import { BrandEntity } from '@/modules/brand/infrastructure/persistence/relational/entities/brand.entity'
+import { FileEntity } from '@/modules/files/infrastructure/persistence/relational/entities/file.entity'
 import { TemplateEntity } from '@/modules/template/infrastructure/persistence/relational/entities/template.entity'
 import { ProductRelationalRepository } from '@/modules/product/infrastructure/persistence/relational/repositories/product.repository'
 
@@ -15,6 +16,7 @@ import { ProductRelationalRepository } from '@/modules/product/infrastructure/pe
       SupplierEntity,
       CategoryEntity,
       BrandEntity,
+      FileEntity,
       TemplateEntity,
     ]),
   ],

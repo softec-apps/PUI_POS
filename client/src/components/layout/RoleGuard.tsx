@@ -13,7 +13,7 @@ import { useUserData, clearUserCache } from '@/common/hooks/useSession'
 
 export interface Role {
 	id: number
-	name: 'admin' | 'manager' | 'employee' | 'viewer'
+	name: 'admin' | 'manager'
 }
 
 interface AuthGuardProps {
@@ -67,7 +67,7 @@ const UnauthenticatedState = () => {
 	const router = useRouter()
 
 	const handleLogin = useCallback(() => {
-		router.push('/auth/signin') // Ajusta la ruta según tu configuración
+		router.push('/sign-in') // Ajusta la ruta según tu configuración
 	}, [router])
 
 	return (
@@ -113,31 +113,21 @@ export function RoleGuard({ children, requiredRole, fallback }: AuthGuardProps) 
 	const unauthenticatedComponent = useMemo(() => <UnauthenticatedState />, [])
 
 	// Si NextAuth está cargando
-	if (sessionStatus === 'loading') {
-		return loadingComponent
-	}
+	if (sessionStatus === 'loading') return loadingComponent
 
 	// Si no hay sesión en NextAuth
-	if (sessionStatus === 'unauthenticated' || !session) {
-		return unauthenticatedComponent
-	}
+	if (sessionStatus === 'unauthenticated' || !session) return unauthenticatedComponent
 
 	// Si estamos cargando datos del usuario desde la API
-	if (userLoading) {
-		return loadingComponent
-	}
+	if (userLoading) return loadingComponent
 
 	// Si hay error o el usuario no está autenticado según la API
-	if (error || !isAuthenticated || !userData) {
-		return unauthorizedComponent
-	}
+	if (error || !isAuthenticated || !userData) return unauthorizedComponent
 
 	// Verificar rol si es requerido
 	if (requiredRole) {
 		const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
-		if (!userRole || !allowedRoles.includes(userRole)) {
-			return unauthorizedComponent
-		}
+		if (!userRole || !allowedRoles.includes(userRole)) return unauthorizedComponent
 	}
 
 	// Si todo está bien, renderizar los children

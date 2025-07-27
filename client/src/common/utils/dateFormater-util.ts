@@ -1,8 +1,8 @@
-import dayjs from 'dayjs'
 import 'dayjs/locale/es'
-import localizedFormat from 'dayjs/plugin/localizedFormat'
+import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
+import localizedFormat from 'dayjs/plugin/localizedFormat'
 
 // Configurar plugins
 dayjs.extend(localizedFormat)
@@ -16,7 +16,11 @@ dayjs.extend(timezone)
  * @param locale - Configuración regional (ej: 'es', 'en'). Por defecto 'es'.
  * @returns Fecha formateada según el locale.
  */
-export const formatDate = (isoDate: string | Date, includeTime: boolean = false, locale: string = 'es'): string => {
+export const formatDate = (
+	isoDate: string | Date | null,
+	includeTime: boolean = false,
+	locale: string = 'es'
+): string => {
 	if (!isoDate) return ''
 
 	try {

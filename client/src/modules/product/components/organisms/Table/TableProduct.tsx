@@ -9,26 +9,26 @@ import {
 } from '@tanstack/react-table'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { I_Supplier } from '@/modules/supplier/types/supplier'
-import { animations } from '@/modules/supplier/components/atoms/animations'
+import { I_Product } from '@/modules/product/types/product'
+import { animations } from '@/modules/product/components/atoms/animations'
 
 import { EmptyState } from '@/components/layout/organims/EmptyState'
-import { CardView } from '@/modules/supplier/components/organisms/ViewCard'
-import { ListView } from '@/modules/supplier/components/organisms/ViewList'
-import { TableView } from '@/modules/supplier/components/organisms/ViewTable'
-import { ViewType } from '@/modules/supplier/components/molecules/ViewSelector'
-import { LoadingStates } from '@/modules/supplier/components/organisms/Table/StateLoading'
-import { createTableColumns } from '@/modules/supplier/components/organisms/Table/TableColumns'
+import { CardView } from '@/modules/product/components/organisms/ViewCard'
+import { ListView } from '@/modules/product/components/organisms/ViewList'
+import { TableView } from '@/modules/product/components/organisms/ViewTable'
+import { ViewType } from '@/modules/product/components/molecules/ViewSelector'
+import { LoadingStates } from '@/modules/product/components/organisms/Table/StateLoading'
+import { createTableColumns } from '@/modules/product/components/organisms/Table/TableColumns'
 
 interface Props {
 	loading: boolean
-	recordsData: I_Supplier[]
+	recordsData: I_Product[]
 	viewType: ViewType
-	onEdit: (recordsData: I_Supplier) => void
-	onHardDelete: (recordsData: I_Supplier) => void
+	onEdit: (recordsData: I_Product) => void
+	onHardDelete: (recordsData: I_Product) => void
 }
 
-export function TableSupplier({ recordsData, loading, viewType, onEdit, onHardDelete }: Props) {
+export function TableProduct({ recordsData, loading, viewType, onEdit, onHardDelete }: Props) {
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState('')
