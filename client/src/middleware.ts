@@ -17,24 +17,22 @@ export async function middleware(request: NextRequest) {
 		const isSignInPage = pathname.startsWith(ROUTE_PATH.AUTH.SIGNIN)
 
 		// 1. No hay sesión y trata de acceder a ruta protegida -> login
-		if (!session && isProtected) {
-			return NextResponse.redirect(new URL(ROUTE_PATH.AUTH.SIGNIN, request.url))
-		}
+		if (!session && isProtected) return NextResponse.redirect(new URL(ROUTE_PATH.AUTH.SIGNIN, request.url))
 
 		// 2. Hay sesión y está en página de login -> redirigir fuera del login
 		if (session && isSignInPage) {
 			// Redirigir a dashboard en lugar de HOME para evitar loops
-			return NextResponse.redirect(new URL('/dashboard', request.url))
+			return NextResponse.redirect(new URL(ROUTE_PATH.ADMIN.DASHBOARD, request.url))
 		}
 
 		// 3. IMPORTANTE: Solo redirigir desde "/" si HOME no es "/"
-		if (session && pathname === '/' && ROUTE_PATH.HOME !== '/') {
+		if (session && pathname === ROUTE_PATH.HOME && ROUTE_PATH.HOME !== ROUTE_PATH.HOME) {
 			return NextResponse.redirect(new URL(ROUTE_PATH.HOME, request.url))
 		}
 
 		// 4. Si HOME es "/" y hay sesión, redirigir a dashboard
-		if (session && pathname === '/' && ROUTE_PATH.HOME === '/') {
-			return NextResponse.redirect(new URL('/dashboard', request.url))
+		if (session && pathname === ROUTE_PATH.HOME && ROUTE_PATH.HOME === ROUTE_PATH.HOME) {
+			return NextResponse.redirect(new URL(ROUTE_PATH.ADMIN.DASHBOARD, request.url))
 		}
 
 		return NextResponse.next()
