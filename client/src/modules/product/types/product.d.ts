@@ -5,6 +5,11 @@ import { I_Supplier } from '@/modules/supplier/types/supplier'
 
 export type ProductStatus = 'draft' | 'active' | 'inactive' | 'discontinued' | 'out_of_stock'
 
+interface I_Photo {
+	id: string
+	path: string
+}
+
 export interface I_Product {
 	id: string
 	code: string
@@ -12,7 +17,7 @@ export interface I_Product {
 	name: string
 	description: string | null
 	status: ProductStatus
-	photo?: object
+	photo?: I_Photo
 	price: number
 	sku: string | null
 	barCode: string | null
@@ -30,7 +35,7 @@ export interface I_CreateProduct {
 	name: string
 	description?: string | null
 	status?: ProductStatus
-	photo?: object
+	photo?: I_Photo
 	price: number
 	sku?: string | null
 	barCode?: string | null
@@ -45,7 +50,7 @@ export interface I_UpdateProduct {
 	name?: string
 	description?: string | null
 	status?: ProductStatus
-	photo?: object
+	photo?: I_Photo
 	price?: number
 	sku?: string | null
 	barCode?: string | null
