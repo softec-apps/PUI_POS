@@ -2,39 +2,56 @@ import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { ROUTE_PATH } from '@/common/constants/routes-const'
+import { ALLOW_ROLES } from '@/common/constants/roles-const'
 
 const adminRoutes = Object.values(ROUTE_PATH.ADMIN).flatMap(route =>
 	typeof route === 'string' ? route : Object.values(route)
 )
+
+const posRoutes = Object.values(ROUTE_PATH.POS).flatMap(route =>
+	typeof route === 'string' ? route : Object.values(route)
+)
+
+const protectedRoutes = [...adminRoutes, ...posRoutes]
 
 export async function middleware(request: NextRequest) {
 	try {
 		const session = await auth()
 		const { pathname } = request.nextUrl
 
-		const protectedRoutes = [...adminRoutes]
-		const isProtected = protectedRoutes.some(route => pathname.startsWith(route))
+		const isProtected = protectedRoutes.some(route => typeof route === 'string' && pathname.startsWith(route))
 		const isSignInPage = pathname.startsWith(ROUTE_PATH.AUTH.SIGNIN)
+		const isPosPage = pathname.startsWith(ROUTE_PATH.POS.MAIN)
 
-		// 1. No hay sesión y trata de acceder a ruta protegida -> login
-		if (!session && isProtected) {
-			return NextResponse.redirect(new URL(ROUTE_PATH.AUTH.SIGNIN, request.url))
-		}
+		// ✅ AGREGAR: Excluir rutas de autenticación
+		const isAuthRoute =
+			pathname.startsWith('/api/auth') || pathname.startsWith(ROUTE_PATH.AUTH.SIGNIN) || pathname.startsWith('/auth')
 
-		// 2. Hay sesión y está en página de login -> redirigir fuera del login
-		if (session && isSignInPage) {
-			// Redirigir a dashboard en lugar de HOME para evitar loops
-			return NextResponse.redirect(new URL('/dashboard', request.url))
-		}
+		// No sesión y accede a ruta protegida
+		if (!session && isProtected) return NextResponse.redirect(new URL(ROUTE_PATH.AUTH.SIGNIN, request.url))
 
-		// 3. IMPORTANTE: Solo redirigir desde "/" si HOME no es "/"
-		if (session && pathname === '/' && ROUTE_PATH.HOME !== '/') {
-			return NextResponse.redirect(new URL(ROUTE_PATH.HOME, request.url))
-		}
+		if (session) {
+			const role = session?.user?.role?.name
 
-		// 4. Si HOME es "/" y hay sesión, redirigir a dashboard
-		if (session && pathname === '/' && ROUTE_PATH.HOME === '/') {
-			return NextResponse.redirect(new URL('/dashboard', request.url))
+			// Login con sesión activa
+			if (isSignInPage) {
+				if (role === ALLOW_ROLES.CASHIER) return NextResponse.redirect(new URL(ROUTE_PATH.POS.MAIN, request.url))
+				return NextResponse.redirect(new URL(ROUTE_PATH.ADMIN.DASHBOARD, request.url))
+			}
+
+			// Solo cashier puede estar en /pos
+			if (isPosPage && role !== ALLOW_ROLES.CASHIER)
+				return NextResponse.redirect(new URL(ROUTE_PATH.ADMIN.DASHBOARD, request.url))
+
+			// Cashier no puede entrar a rutas fuera de /pos, EXCEPTO rutas de auth
+			if (role === ALLOW_ROLES.CASHIER && !isPosPage && !isAuthRoute)
+				return NextResponse.redirect(new URL(ROUTE_PATH.POS.MAIN, request.url))
+
+			// Redirección desde "/" según el rol
+			if (pathname === ROUTE_PATH.HOME) {
+				if (role === ALLOW_ROLES.CASHIER) return NextResponse.redirect(new URL(ROUTE_PATH.POS.MAIN, request.url))
+				return NextResponse.redirect(new URL(ROUTE_PATH.ADMIN.DASHBOARD, request.url))
+			}
 		}
 
 		return NextResponse.next()

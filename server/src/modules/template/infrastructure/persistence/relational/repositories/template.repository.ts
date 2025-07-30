@@ -218,7 +218,7 @@ export class TemplateRelationalRepository implements TemplateRepository {
     // Cargar el template con sus relaciones
     const template = await repository.findOne({
       where: { id: templateId },
-      relations: ['atributes'],
+      relations: [PATH_SOURCE.ATRIBUTE],
     })
 
     if (!template) throw new NotFoundException('Template no encontrado')

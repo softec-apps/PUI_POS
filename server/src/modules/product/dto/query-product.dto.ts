@@ -20,6 +20,30 @@ export class FilterProductDto {
     message: `El estado debe ser uno de: ${Object.values(ProductStatus).join(', ')}`,
   })
   status?: ProductStatus
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por categoría (UUID)',
+    example: 'd28c1dfe-e546-4b6f-812d-0c1a1ee42a3e',
+  })
+  @IsOptional()
+  @IsString()
+  categoryId?: string
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por marca (UUID)',
+    example: 'a61c238a-2313-4c9f-8f52-8d0c5a2a68b2',
+  })
+  @IsOptional()
+  @IsString()
+  brandId?: string
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por proveedor (UUID)',
+    example: 'f22c8450-d1c2-42f6-91cc-4a6f2bc46df3',
+  })
+  @IsOptional()
+  @IsString()
+  supplierId?: string
 }
 
 export class SortProductDto {

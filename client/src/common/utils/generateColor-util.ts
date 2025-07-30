@@ -1,10 +1,10 @@
 export const generateBackgroundColor = (name: string): string => {
 	const colors = [
-		'#667eea',
-		'#f093fb',
-		'#4facfe',
-		'#43e97b',
-		'#fa709a',
+		'#c9caee',
+		'#c2dbe9',
+		'#fac2d9',
+		'#c3e9de',
+		'#e6dade',
 		'#a8edea',
 		'#ff9a9e',
 		'#ffecd2',

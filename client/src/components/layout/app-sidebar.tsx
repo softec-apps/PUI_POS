@@ -30,7 +30,6 @@ import { useRoleBasedNavigation } from '@/common/hooks/useRoleBasedNavigation'
 import {
 	IconBell,
 	IconChevronRight,
-	IconChevronsDown,
 	IconCreditCard,
 	IconLogout,
 	IconPhotoUp,
@@ -185,11 +184,8 @@ export default function AppSidebar() {
 					) : (
 						// Solo mostrar "Sin acceso" cuando definitivamente no hay items y no está cargando
 						!isLoading && (
-							<SidebarGroup>
+							<SidebarGroup className='flex h-screen items-center justify-center'>
 								<SidebarGroupLabel>Sin acceso</SidebarGroupLabel>
-								<div className='text-muted-foreground px-3 py-2 text-sm'>
-									No tienes permisos para acceder a ninguna sección.
-								</div>
 							</SidebarGroup>
 						)
 					)}
