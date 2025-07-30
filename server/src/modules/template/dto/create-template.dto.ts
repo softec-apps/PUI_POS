@@ -12,7 +12,6 @@ import {
 } from 'class-validator'
 import { Transform, Type } from 'class-transformer'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { ParamCategoryDto } from '@/modules/categories/dto/param-category.dto'
 
 export class CreateTemplateDto {
   @ApiProperty({

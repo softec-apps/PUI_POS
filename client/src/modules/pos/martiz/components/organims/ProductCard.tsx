@@ -49,6 +49,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
 									alt={product.name}
 									width={400}
 									height={300}
+									unoptimized
 									className='h-full w-full object-cover'
 								/>
 							) : (
@@ -56,19 +57,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
 							)}
 						</div>
 
-						<div className='flex flex-col items-start gap-4 p-4'>
+						<div className='flex flex-col items-start gap-4 px-4'>
 							<div className='flex w-full items-center justify-between gap-4'>
 								<ProductStatusBadge status={product.status} />
 								<Badge text={`${product.stock} ud`} />
 							</div>
-							<div className='min-w-0 flex-1'>
-								<h3 className='truncate text-xs font-semibold lg:text-sm'>{product.name}</h3>
-								<p className='text-primary text-sm font-bold lg:text-lg'>${product.price.toFixed(2)}</p>
-							</div>
+
+							<Typography variant='h5' className='line-clamp-1 break-words'>
+								{product.name}
+							</Typography>
+
+							<Typography variant='overline' className='line-clamp-1 break-words'>
+								${product.price.toFixed(2)} USD
+							</Typography>
 						</div>
 					</CardContent>
 
-					<div className='flex flex-col gap-4 p-4'>
+					<div className='flex flex-col gap-2 p-4'>
+						<Button size='lg' variant='ghost' onClick={() => setOpen(true)} className='w-full'>
+							Detalles
+						</Button>
+
 						<ActionButton
 							onClick={() => onAddToCart(product)}
 							size='lg'
@@ -76,9 +85,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
 							className='w-full'
 							icon={<Icons.plus className='mr-1 h-3 w-3' />}
 						/>
-						<Button size='lg' variant='ghost' onClick={() => setOpen(true)} className='w-full'>
-							Detalles
-						</Button>
 					</div>
 				</Card>
 			</motion.div>

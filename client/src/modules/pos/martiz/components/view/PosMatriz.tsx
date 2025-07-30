@@ -1,19 +1,24 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Star, Search, ImageIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
-import { CategoryCard, CategoryCardSkeleton } from '../organims/CategoryCard'
-import { ProductCard, ProductCardSkeleton } from '../organims/ProductCard'
-import { PosFooter } from '../organims/PosFooter'
-import { CartSidebar } from '../organims/CartSidebar'
-import { PaginationControls } from '../template/Pagination'
-import { useCategory } from '@/common/hooks/useCategory'
+import React, { useState, useEffect } from 'react'
+
 import { useProduct } from '@/common/hooks/useProduct'
+import { useCategory } from '@/common/hooks/useCategory'
 import { useDebounce } from '@/common/hooks/useDebounce'
+
+import { Separator } from '@/components/ui/separator'
+import { Star, Search, ImageIcon } from 'lucide-react'
+import { Typography } from '@/components/ui/typography'
 import { EmptyState } from '@/components/layout/organims/EmptyState'
+
+import { I_Category } from '@/modules/category/types/category'
+import { PosFooter } from '@/modules/pos/martiz/components/organims/PosFooter'
+import { CartSidebar } from '@/modules/pos/martiz/components/organims/CartSidebar'
+import { PaginationControls } from '@/modules/pos/martiz/components/template/Pagination'
+import { ProductCard, ProductCardSkeleton } from '@/modules/pos/martiz/components/organims/ProductCard'
+import { CategoryCard, CategoryCardSkeleton } from '@/modules/pos/martiz/components/organims/CategoryCard'
 
 interface OrderItem {
 	id: string
@@ -27,13 +32,6 @@ interface Customer {
 	name: string
 	email?: string
 	phone?: string
-}
-
-interface Category {
-	id: string
-	name: string
-	photo: React.ComponentType<{ className?: string }>
-	itemCount: number
 }
 
 const containerVariants = {
@@ -64,13 +62,14 @@ export function POSMatriz() {
 		refetchRecords: refetchProducts,
 	} = useProduct({
 		search: debouncedSearchTerm,
+		filters: selectedCategory !== 'all' ? { categoryId: selectedCategory } : undefined,
 		page,
 		limit,
 	})
 
 	useEffect(() => {
 		refetchProducts()
-	}, [debouncedSearchTerm, page, limit])
+	}, [debouncedSearchTerm, page, limit, selectedCategory])
 
 	const allProducts = productResponse?.data?.items || []
 
@@ -85,22 +84,18 @@ export function POSMatriz() {
 		firstPage: 1,
 	}
 
-	// Filtra productos según categoría seleccionada
-	const filteredProducts =
-		selectedCategory === 'all' ? allProducts : allProducts.filter(product => product.category?.id === selectedCategory)
-
-	const categories: Category[] = [
+	const categories: I_Category[] = [
 		{
 			id: 'all',
 			name: 'Todos',
 			photo: Star,
-			itemCount: allProducts.length,
+			itemCount: productResponse?.data?.pagination?.totalRecords || 0,
 		},
 		...(categoryData?.data?.items.map(cat => ({
 			id: cat.id,
 			name: cat.name,
 			photo: ImageIcon,
-			itemCount: allProducts.filter(p => p.category?.id === cat.id).length,
+			itemCount: 0, // si backend soporta conteo por categoría, aquí ponerlo
 		})) ?? []),
 	]
 
@@ -112,7 +107,6 @@ export function POSMatriz() {
 
 	const handleAddToCart = (product: { id: string; name: string; price: number }) => {
 		const existingItem = orderItems.find(item => item.id === product.id)
-
 		if (existingItem) {
 			setOrderItems(orderItems.map(item => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)))
 		} else {
@@ -162,21 +156,10 @@ export function POSMatriz() {
 		<div className='flex h-full min-h-[calc(100vh-4rem)] w-full gap-4'>
 			{/* Main Content */}
 			<div className='flex flex-1 flex-col'>
-				{/* Search input with icon */}
-				<div className='relative mb-4 w-full sm:w-64'>
-					<Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform' />
-					<Input
-						placeholder='Buscar productos...'
-						value={searchTerm}
-						onChange={e => setSearchTerm(e.target.value)}
-						className='h-9 pl-9'
-					/>
-				</div>
-
 				<div className='flex-1 space-y-4 overflow-auto lg:space-y-6'>
 					{/* Categories */}
-					<div className='px-1'>
-						<h2 className='mb-3 text-base font-semibold lg:text-lg'>Categorías</h2>
+					<div className='space-y-4 px-1'>
+						<Typography variant='lead'>Categorias</Typography>
 						{loadingCategories ? (
 							<motion.div
 								variants={containerVariants}
@@ -205,20 +188,35 @@ export function POSMatriz() {
 
 					<Separator />
 
-					{/* Paginación */}
-					<PaginationControls
-						loading={productLoading}
-						pagination={{ page, limit }}
-						onPrevPage={onPrevPage}
-						onNextPage={onNextPage}
-						onLimitChange={onLimitChange}
-						metaDataPagination={pagination}
-						onPageChange={setPage}
-					/>
+					<div className='flex items-center justify-between px-1'>
+						{/* Pagination */}
+						<PaginationControls
+							loading={productLoading}
+							pagination={{ page, limit }}
+							onPrevPage={onPrevPage}
+							onNextPage={onNextPage}
+							onLimitChange={onLimitChange}
+							metaDataPagination={pagination}
+							onPageChange={setPage}
+						/>
 
-					{/* Productos */}
-					<div>
-						<h2 className='mb-3 text-base font-semibold lg:text-lg'>Productos ({filteredProducts.length})</h2>
+						{/* Search input */}
+						<div className='relative mb-4 w-full sm:w-64'>
+							<Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform' />
+							<Input
+								placeholder='Buscar productos...'
+								value={searchTerm}
+								onChange={e => setSearchTerm(e.target.value)}
+								className='h-9 pl-9'
+							/>
+						</div>
+					</div>
+
+					{/* Products */}
+					<div className='space-y-4'>
+						<Typography variant='lead' className=''>
+							Productos ({allProducts.length})
+						</Typography>
 
 						{productLoading ? (
 							<motion.div
@@ -228,7 +226,7 @@ export function POSMatriz() {
 								className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 lg:gap-4 xl:grid-cols-5'>
 								<ProductCardSkeleton count={10} />
 							</motion.div>
-						) : filteredProducts.length === 0 ? (
+						) : allProducts.length === 0 ? (
 							<EmptyState />
 						) : (
 							<motion.div
@@ -236,7 +234,7 @@ export function POSMatriz() {
 								initial='hidden'
 								animate='visible'
 								className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 lg:gap-4 xl:grid-cols-5'>
-								{filteredProducts.map(product => (
+								{allProducts.map(product => (
 									<ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
 								))}
 							</motion.div>
