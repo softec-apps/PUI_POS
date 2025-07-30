@@ -32,7 +32,7 @@ interface Props {
 	onViewChange: (type: ViewType) => void
 }
 
-export function AttributeFilters({
+export function ProductFilters({
 	searchValue,
 	isRefreshing,
 	currentSort,

@@ -1,8 +1,8 @@
 'use client'
 
-import { ModalState } from '@/modules/supplier/types/modalState'
-import { HardDeleteModal } from '@/modules/supplier/components/organisms/Modal/ModalHardDelete'
-import { RecordFormModal } from '@/modules/supplier/components/organisms/Modal/ModalForm'
+import { ModalState } from '@/modules/product/types/modalState'
+import { HardDeleteModal } from '@/modules/product/components/organisms/Modal/ModalHardDelete'
+import { RecordFormModal } from '@/modules/product/components/organisms/Modal/ModalForm'
 
 interface Props {
 	modalState: ModalState
@@ -10,7 +10,7 @@ interface Props {
 	recordHandlers: any
 }
 
-export function ModalsSupplier({ modalState, recordHandlers }: Props) {
+export function ModalsProduct({ modalState, recordHandlers }: Props) {
 	return (
 		<>
 			<RecordFormModal
