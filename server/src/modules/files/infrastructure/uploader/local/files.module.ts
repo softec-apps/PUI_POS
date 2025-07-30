@@ -39,26 +39,15 @@ const infrastructurePersistenceModule = RelationalFilePersistenceModule
           destination: (req, file, cb) => {
             // 👇 CORREGIDO: Crear directorio si no existe y usar ruta absoluta
             const uploadPath = path.resolve('./files')
-            console.log('=== MODULE DESTINATION DEBUG ===')
-            console.log('Upload path:', uploadPath)
-            console.log('Directory exists before:', fs.existsSync(uploadPath))
 
             if (!fs.existsSync(uploadPath)) {
               fs.mkdirSync(uploadPath, { recursive: true })
-              console.log('Directory created')
             }
-            console.log('Directory exists after:', fs.existsSync(uploadPath))
-            console.log('==============================')
             cb(null, uploadPath)
           },
           filename: (req, file, cb) => {
             // 👇 CORREGIDO: Generar nombre único
             const uniqueName = `${randomStringGenerator()}.${file.originalname.split('.').pop()?.toLowerCase()}`
-            console.log('=== MODULE FILENAME DEBUG ===')
-            console.log('Original filename:', file.originalname)
-            console.log('Generated filename:', uniqueName)
-            console.log('File mimetype:', file.mimetype)
-            console.log('============================')
             cb(null, uniqueName)
           },
         }),
