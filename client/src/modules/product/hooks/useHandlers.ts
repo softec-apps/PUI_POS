@@ -1,71 +1,69 @@
 import { useCallback } from 'react'
-import { ModalState } from '@/modules/supplier/types/modalState'
-import { supplierFormData } from '@/modules/supplier/components/organisms/Modal/ModalForm'
-import { I_Supplier, I_CreateSupplier, I_UpdateSupplier } from '@/modules/supplier/types/supplier'
+import { toast } from 'sonner'
+import { I_Product, I_CreateProduct, I_UpdateProduct } from '@/modules/product/types/product'
+import { ModalState } from '@/modules/product/types/modalState'
 
-interface Props {
-	modalState: ModalState
-	createRecord: (data: I_CreateSupplier) => Promise<void>
-	updateRecord: (id: string, data: I_UpdateSupplier) => Promise<void>
-	hardDeleteRecord: (id: string) => Promise<void>
+interface UseProductHandlersProps {
+  modalState: ModalState
+  createRecord: (data: I_CreateProduct) => Promise<I_Product>
+  updateRecord: (id: string, data: I_UpdateProduct) => Promise<I_Product>
+  hardDeleteRecord: (id: string) => Promise<void>
 }
 
-export function useSupplierHandlers({ modalState, createRecord, updateRecord, hardDeleteRecord }: Props) {
-	// Form handlers para el nuevo modal con react-hook-form
-	const handleFormSubmit = useCallback(
-		async (data: supplierFormData) => {
-			try {
-				const newRecord = {
-					ruc: data.ruc,
-					legalName: data.legalName,
-					commercialName: data.commercialName,
-				}
+export const useProductHandlers = ({
+  modalState,
+  createRecord,
+  updateRecord,
+  hardDeleteRecord,
+}: UseProductHandlersProps) => {
+  const handleDialogClose = useCallback(() => {
+    modalState.closeDialog()
+  }, [modalState])
 
-				if (modalState.currentRecord?.id) {
-					await updateRecord(modalState.currentRecord.id, newRecord)
-				} else {
-					await createRecord(newRecord)
-				}
+  const handleFormSubmit = useCallback(
+    async (data: I_CreateProduct | I_UpdateProduct) => {
+      try {
+        if (modalState.currentRecord) {
+          await updateRecord(modalState.currentRecord.id, data as I_UpdateProduct)
+          toast.success('Producto actualizado con éxito')
+        } else {
+          await createRecord(data as I_CreateProduct)
+          toast.success('Producto creado con éxito')
+        }
+        modalState.closeDialog()
+      } catch (error) {
+        console.error('Error al procesar el formulario:', error)
+        toast.error('Ocurrió un error al procesar el formulario')
+      }
+    },
+    [modalState, createRecord, updateRecord]
+  )
 
-				modalState.closeDialog()
-			} catch (error) {
-				console.error('Save error:', error)
-				throw error // Re-throw para que el form maneje el error
-			}
-		},
-		[modalState, updateRecord, createRecord]
-	)
+  const handleEdit = useCallback(
+    (record: I_Product) => {
+      modalState.openEditDialog(record)
+    },
+    [modalState]
+  )
 
-	const handleDialogClose = useCallback(() => {
-		modalState.closeDialog()
-	}, [modalState])
+  const handleConfirmHardDelete = useCallback(async () => {
+    if (modalState.recordToHardDelete) {
+      try {
+        await hardDeleteRecord(modalState.recordToHardDelete.id)
+        toast.success('Producto eliminado permanentemente')
+      } catch (error) {
+        console.error('Error al eliminar permanentemente:', error)
+        toast.error('Error al eliminar el producto')
+      } finally {
+        modalState.closeHardDeleteModal()
+      }
+    }
+  }, [modalState, hardDeleteRecord])
 
-	// Modal handlers
-	const handleEdit = useCallback((record: I_Supplier) => modalState.openEditDialog(record), [modalState])
-
-	const handleConfirmHardDelete = useCallback(async () => {
-		if (!modalState.recordToHardDelete) return
-
-		try {
-			modalState.setIsHardDeleting(true)
-			await hardDeleteRecord(modalState.recordToHardDelete.id)
-			modalState.closeHardDeleteModal()
-		} catch (error) {
-			console.error('Delete error:', error)
-		} finally {
-			modalState.setIsHardDeleting(false)
-		}
-	}, [modalState, hardDeleteRecord])
-
-	return {
-		// Form handlers actualizados
-		handleFormSubmit,
-		handleDialogClose,
-
-		// Modal handlers
-		handleEdit,
-
-		// Confirmation handlers
-		handleConfirmHardDelete,
-	}
+  return {
+    handleDialogClose,
+    handleFormSubmit,
+    handleEdit,
+    handleConfirmHardDelete,
+  }
 }

@@ -5,16 +5,16 @@ import { useProduct } from '@/common/hooks/useProduct'
 
 import { useModalState } from '@/modules/product/hooks/useModalState'
 import { usePagination } from '@/modules/product/hooks/usePagination'
-import { useSupplierHandlers } from '@/modules/product/hooks/useHandlers'
+import { useProductHandlers } from '@/modules/product/hooks/useHandlers'
 import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
 
 import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
 import { UtilBanner } from '@/components/UtilBanner'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { SupplierHeader } from '@/modules/product/components/templates/Header'
-import { ModalsSupplier } from '@/modules/product/components/templates/Modals'
-import { AttributeFilters } from '@/modules/product/components/templates/Filters'
+import { ProductHeader } from '@/modules/product/components/templates/ProductHeader'
+import { ModalsProduct } from '@/modules/product/components/templates/Modals'
+import { ProductFilters } from '@/modules/product/components/templates/ProductFilters'
 import { PaginationControls } from '@/modules/product/components/templates/Pagination'
 import { TableProduct } from '@/modules/product/components/organisms/Table/TableProduct'
 import { ViewType } from '@/modules/product/components/molecules/ViewSelector'
@@ -69,7 +69,7 @@ export function ProductView() {
 	const modalState = useModalState()
 
 	// Handlers
-	const recordsHandlers = useSupplierHandlers({
+	const recordsHandlers = useProductHandlers({
 		modalState,
 		createRecord,
 		updateRecord,
@@ -123,10 +123,10 @@ export function ProductView() {
 			) : (
 				<>
 					{/* Header */}
-					<SupplierHeader onCreateClick={modalState.openCreateDialog} />
+					<ProductHeader onCreateClick={modalState.openCreateDialog} />
 
 					{/* Filtros y búsqueda */}
-					<AttributeFilters
+					<ProductFilters
 						searchValue={searchTerm}
 						currentSort={currentSort}
 						currentStatus={currentStatus}
@@ -163,7 +163,7 @@ export function ProductView() {
 			)}
 
 			{/* Modales */}
-			<ModalsSupplier modalState={modalState} recordHandlers={recordsHandlers} />
+			<ModalsProduct modalState={modalState} recordHandlers={recordsHandlers} />
 		</div>
 	)
 }
