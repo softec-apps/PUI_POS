@@ -7,6 +7,7 @@ export const getRoleDisplayName = (role: UserRole | string): string => {
 	const roleDisplayNames: Record<UserRole, string> = {
 		[ALLOW_ROLES.ADMIN]: 'Administrador',
 		[ALLOW_ROLES.MANAGER]: 'Gerente',
+		[ALLOW_ROLES.CASHIER]: 'Vendedor',
 	}
 
 	return roleDisplayNames[role as UserRole] || 'Rol Desconocido'
