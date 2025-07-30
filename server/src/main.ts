@@ -12,30 +12,36 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify'
 
+// 👇 Importa multipart y static
+import multipart from '@fastify/multipart'
+import fastifyStatic from '@fastify/static'
+import path from 'path'
+
 async function bootstrap() {
+  const adapter = new FastifyAdapter({ logger: false })
+
+  // 👇 Registro de multipart
+  await adapter.register(multipart)
+
+  // 👇 Registro de static
+  await adapter.register(fastifyStatic, {
+    root: path.join(__dirname, '..', 'files'), // ruta a tu carpeta de archivos
+    prefix: '/files/', // esta será la URL base
+  })
+
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({
-      logger: false, // Ya tienes esto, pero también necesitas silenciar NestJS
-    }),
-    {
-      // Silenciar completamente los logs de NestJS
-      logger: false,
-    },
+    adapter,
+    { logger: false },
   )
 
-  // Configuración global de la aplicación
   configureGlobalAppSettings(app)
 
   const configService = app.get(ConfigService<AllConfigType>)
 
-  // Configuración de Swagger
   const document = configureSwaggerDocument(app)
-
-  // Configuración de UI de Swagger
   setupSwaggerUI(app, document)
 
-  // Iniciar la aplicación
   await startApplication(app, configService)
 }
 

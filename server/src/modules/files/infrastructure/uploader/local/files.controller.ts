@@ -3,12 +3,12 @@ import {
   Get,
   Param,
   Post,
-  Response,
-  UploadedFile,
+  Req,
+  Res,
   UseGuards,
-  UseInterceptors,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common'
-import { FileInterceptor } from '@nestjs/platform-express'
 import {
   ApiBearerAuth,
   ApiBody,
@@ -18,6 +18,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger'
 import { AuthGuard } from '@nestjs/passport'
+import { FastifyRequest, FastifyReply } from 'fastify'
+import { MultipartFile } from '@fastify/multipart'
 import { FilesLocalService } from './files.service'
 import { FileResponseDto } from './dto/file-response.dto'
 
@@ -29,12 +31,9 @@ import { FileResponseDto } from './dto/file-response.dto'
 export class FilesLocalController {
   constructor(private readonly filesService: FilesLocalService) {}
 
-  @ApiCreatedResponse({
-    type: FileResponseDto,
-  })
+  @Post('upload')
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Post('upload')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -47,16 +46,41 @@ export class FilesLocalController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
-  ): Promise<FileResponseDto> {
-    return this.filesService.create(file)
+  @ApiCreatedResponse({ type: FileResponseDto })
+  async uploadFile(@Req() req: FastifyRequest): Promise<FileResponseDto> {
+    const parts = req.parts()
+
+    for await (const part of parts) {
+      // ✅ Verificamos que sea archivo
+      if (part.type === 'file') {
+        const buffer = await part.toBuffer()
+
+        const file: Express.Multer.File = {
+          fieldname: part.fieldname,
+          originalname: part.filename,
+          encoding: part.encoding,
+          mimetype: part.mimetype,
+          size: buffer.length,
+          buffer,
+          stream: part.file,
+          destination: '',
+          filename: part.filename,
+          path: part.filename,
+        }
+
+        return this.filesService.create(file)
+      }
+    }
+
+    throw new HttpException('No file received', HttpStatus.BAD_REQUEST)
   }
 
   @Get(':path')
   @ApiExcludeEndpoint()
-  download(@Param('path') path, @Response() response) {
-    return response.sendFile(path, { root: './files' })
+  async download(@Param('path') path: string, @Res() res: FastifyReply) {
+    // ✅ usamos reply.sendFile solo si has registrado fastify-static
+    // Si no lo has hecho aún:
+    // await app.register(require('@fastify/static'), { root: path.resolve('./files'), prefix: '/files/' })
+    return res.sendFile(path)
   }
 }
