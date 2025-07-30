@@ -11,11 +11,10 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify'
-
-// 👇 Importa multipart y static
 import multipart from '@fastify/multipart'
 import fastifyStatic from '@fastify/static'
 import path from 'path'
+import * as fs from 'fs'
 
 async function bootstrap() {
   const adapter = new FastifyAdapter({ logger: false })
@@ -23,10 +22,15 @@ async function bootstrap() {
   // 👇 Registro de multipart
   await adapter.register(multipart)
 
-  // 👇 Registro de static
+  // 👇 Registro de static - CORREGIDO: usar ruta absoluta consistente
+  const staticPath = path.resolve('./files')
+  console.log('=== MAIN.TS DEBUG ===')
+  console.log('Static files path:', staticPath)
+  console.log('Static files exists:', fs.existsSync(staticPath))
+
   await adapter.register(fastifyStatic, {
-    root: path.join(__dirname, '..', 'files'), // ruta a tu carpeta de archivos
-    prefix: '/files/', // esta será la URL base
+    root: staticPath,
+    prefix: '/files/',
   })
 
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -36,12 +40,9 @@ async function bootstrap() {
   )
 
   configureGlobalAppSettings(app)
-
   const configService = app.get(ConfigService<AllConfigType>)
-
   const document = configureSwaggerDocument(app)
   setupSwaggerUI(app, document)
-
   await startApplication(app, configService)
 }
 
