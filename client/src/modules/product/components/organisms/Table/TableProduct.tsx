@@ -52,6 +52,7 @@ export function TableProduct({ recordsData, loading, viewType, onEdit, onHardDel
 	})
 
 	if (loading) return <LoadingStates viewType={viewType} />
+
 	if (recordsData?.length === 0) return <EmptyState />
 
 	return (
@@ -62,9 +63,8 @@ export function TableProduct({ recordsData, loading, viewType, onEdit, onHardDel
 				animate='animate'
 				exit='exit'
 				variants={animations.viewTransition}
-				className='h-full'
 				layout>
-				<motion.div variants={animations.container} className='h-full' layout>
+				<motion.div variants={animations.container} layout>
 					{viewType === 'table' && <TableView recordsData={table} />}
 					{viewType === 'card' && <CardView recordsData={table} onEdit={onEdit} onHardDelete={onHardDelete} />}
 					{viewType === 'list' && <ListView recordsData={table} onEdit={onEdit} onHardDelete={onHardDelete} />}
