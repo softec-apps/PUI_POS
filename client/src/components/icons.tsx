@@ -99,6 +99,7 @@ import {
 	IconLogout,
 	IconLogout2,
 	IconMail,
+	IconMinus,
 	IconMoneybag,
 	IconMoon,
 	IconPencilMinus,
@@ -284,6 +285,7 @@ export const Icons = {
 	bug: IconBug,
 
 	upload: IconUpload,
+	minus: IconMinus,
 
 	// CHARTS
 	chartArcs: IconChartArcs,

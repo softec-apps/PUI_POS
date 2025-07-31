@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { SidebarInset } from '@/components/ui/sidebar'
-import { NavbarPOSMatriz } from '@/modules/pos/martiz/components/organims/PosNavbar'
+import { NavbarPOSMatriz } from '@/modules/pos/martiz/components/template/PosNavbar'
 
 export const metadata: Metadata = {
 	title: 'POS',

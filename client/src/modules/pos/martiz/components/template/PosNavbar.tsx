@@ -1,8 +1,8 @@
 'use client'
 
+import { LogoutButton } from '@/components/logout-button'
 import { UserAvatarProfile } from '@/components/user-avatar-profile'
 import { ModeToggle } from '@/components/layout/ThemeToggle/theme-toggle'
-import { LogoutButton } from '@/components/logout-button'
 
 export const NavbarPOSMatriz = () => {
 	return (
@@ -12,7 +12,7 @@ export const NavbarPOSMatriz = () => {
 			<div className='flex items-center gap-2'>
 				<ModeToggle />
 				<LogoutButton />
-				<UserAvatarProfile showInfo={false} />
+				<UserAvatarProfile showInfo={true} />
 			</div>
 		</header>
 	)

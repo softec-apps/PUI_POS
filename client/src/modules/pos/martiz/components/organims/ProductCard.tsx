@@ -1,27 +1,17 @@
 'use client'
 
-import React, { useState } from 'react'
 import Image from 'next/image'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Icons } from '@/components/icons'
-import { I_Product } from '@/modules/product/types/product'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogDescription,
-	DialogFooter,
-	DialogTrigger,
-	DialogClose,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductStatusBadge'
 import { Typography } from '@/components/ui/typography'
 import { Badge } from '@/components/layout/atoms/Badge'
+import { Card, CardContent } from '@/components/ui/card'
+import { I_Product } from '@/modules/product/types/product'
+import { ProductDetailDialog } from './ProductDetailDialog'
+import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductStatusBadge'
 
 const itemVariants = {
 	hidden: { opacity: 0, y: 20 },
@@ -35,12 +25,12 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
 	const isTouch = typeof window !== 'undefined' && 'ontouchstart' in window
-	const [open, setOpen] = useState(false)
+	const [openDetail, setProductDetailOpen] = useState(false)
 
 	return (
 		<>
-			<motion.div variants={itemVariants} {...(isTouch ? {} : { whileHover: { scale: 1 }, whileTap: { scale: 0.9 } })}>
-				<Card className='hover:border-primary/50 cursor-pointer p-0 transition-all duration-500'>
+			<motion.div variants={itemVariants} {...(isTouch ? {} : { whileHover: { scale: 1 }, whileTap: { scale: 1 } })}>
+				<Card className='hover:border-primary/50 p-0 shadow-none transition-all duration-500'>
 					<CardContent className='space-y-2 p-0 lg:space-y-3'>
 						<div className='bg-muted flex aspect-video w-full items-center justify-center overflow-hidden rounded-t-xl'>
 							{product.photo ? (
@@ -50,7 +40,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
 									width={400}
 									height={300}
 									unoptimized
-									className='h-full w-full object-cover'
+									className='h-full w-full object-contain'
 								/>
 							) : (
 								<Icons.media className='text-muted-foreground h-8 w-8' />
@@ -73,70 +63,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
 						</div>
 					</CardContent>
 
-					<div className='flex flex-col gap-2 p-4'>
-						<Button size='lg' variant='ghost' onClick={() => setOpen(true)} className='w-full'>
-							Detalles
-						</Button>
-
+					<div className='flex justify-between gap-2 px-4 pb-4'>
 						<ActionButton
-							onClick={() => onAddToCart(product)}
-							size='lg'
-							text='Agregar'
-							className='w-full'
-							icon={<Icons.plus className='mr-1 h-3 w-3' />}
+							onClick={() => setProductDetailOpen(true)}
+							size='pos'
+							variant='secondary'
+							tooltip='Detalles'
+							icon={<Icons.infoCircle />}
 						/>
+
+						<ActionButton onClick={() => onAddToCart(product)} size='pos' tooltip='Agregar' icon={<Icons.plus />} />
 					</div>
 				</Card>
 			</motion.div>
 
-			{/* Modal Detalles */}
-			<Dialog open={open} onOpenChange={setOpen}>
-				<DialogContent className='max-w-lg'>
-					<DialogHeader>
-						<DialogTitle>{product.name}</DialogTitle>
-						<DialogDescription>{product.description ?? 'Sin descripción disponible.'}</DialogDescription>
-					</DialogHeader>
-
-					{product.photo && (
-						<div className='my-4 w-full overflow-hidden rounded-md'>
-							<Image
-								src={product.photo.path}
-								alt={product.name}
-								width={600}
-								height={400}
-								className='w-full object-cover'
-							/>
-						</div>
-					)}
-
-					<div className='space-y-2 text-sm'>
-						<p>
-							<strong>Precio:</strong> ${product.price.toFixed(2)}
-						</p>
-						<p>
-							<strong>Stock:</strong> {product.stock}
-						</p>
-						<p>
-							<strong>Categoría:</strong> {product.category?.name ?? 'N/A'}
-						</p>
-						<p>
-							<strong>Marca:</strong> {product.brand?.name ?? 'N/A'}
-						</p>
-						<p>
-							<strong>Estado:</strong> {product.status}
-						</p>
-						<p>
-							<strong>Código:</strong> {product.code}
-						</p>
-					</div>
-
-					<DialogFooter>
-						<DialogClose asChild>
-							<Button variant='outline'>Cerrar</Button>
-						</DialogClose>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+			{/* Diálogo de Detalles */}
+			<ProductDetailDialog
+				productId={product.id}
+				isOpen={openDetail}
+				onClose={() => setProductDetailOpen(false)}
+				onAddToCart={onAddToCart}
+			/>
 		</>
 	)
 }

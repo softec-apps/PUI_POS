@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default async function PosPage() {
 	return (
-		<PageContainer>
+		<PageContainer scrollable={false}>
 			<POSMatriz />
 		</PageContainer>
 	)

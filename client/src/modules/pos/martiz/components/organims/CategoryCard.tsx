@@ -18,13 +18,13 @@ interface CardProps {
 }
 
 export const CategoryCard: React.FC<CardProps> = ({ category, isSelected = false, onSelect = () => {} }) => {
-	const IconComponent = category.photo
+	const IconComponent = category?.photo
 
 	return (
 		<motion.div variants={itemVariants} whileHover={{ scale: 1 }} whileTap={{ scale: 0.95 }}>
 			<Card
 				className={cn(
-					'cursor-pointer p-0 transition-all duration-500',
+					'cursor-pointer p-0 shadow-none transition-all duration-500',
 					isSelected ? 'border-primary bg-primary/5 ring-1' : 'border-border hover:border-primary/50'
 				)}
 				onClick={onSelect}>
@@ -38,8 +38,8 @@ export const CategoryCard: React.FC<CardProps> = ({ category, isSelected = false
 							<IconComponent className='h-4 w-4 lg:h-5 lg:w-5' />
 						</div>
 						<div className='min-w-0 flex-1'>
-							<h3 className='truncate text-xs font-semibold lg:text-sm'>{category.name}</h3>
-							<p className='text-muted-foreground text-xs'>{category.itemCount} items</p>
+							<h3 className='truncate text-xs font-semibold lg:text-sm'>{category?.name}</h3>
+							<p className='text-muted-foreground text-xs'>{category?.itemCount} items</p>
 						</div>
 					</div>
 				</CardContent>
