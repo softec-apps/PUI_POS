@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { I_Supplier } from '@/modules/supplier/types/supplier'
 import { ProductFormData } from '@/modules/product/components/organisms/Modal/ModalForm'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -14,29 +15,14 @@ interface SupplierSelectorProps {
 	setValue: UseFormSetValue<ProductFormData>
 	suppliers: I_Supplier[]
 	loadingSuppliers: boolean
-	supplierSearch: string
-	setSupplierSearch: (search: string) => void
-	supplierOpen: boolean
-	setSupplierOpen: (open: boolean) => void
-	loadMoreSuppliers: () => void
 	value: string
 }
 
-export function SupplierSelector({
-	control,
-	setValue,
-	suppliers,
-	loadingSuppliers,
-	supplierSearch,
-	setSupplierSearch,
-	supplierOpen,
-	setSupplierOpen,
-	loadMoreSuppliers,
-	value,
-}: SupplierSelectorProps) {
+export function SupplierSelector({ control, setValue, value, suppliers, loadingSuppliers }: SupplierSelectorProps) {
+	const [open, setOpen] = useState(false)
 	const supplierOptions =
 		suppliers?.map(supplier => ({
-			value: supplier.id,
+			value: supplier,
 			label: supplier.legalName,
 		})) || []
 
@@ -47,15 +33,15 @@ export function SupplierSelector({
 			render={({ field }) => (
 				<FormItem>
 					<FormLabel>Selecciona un proveedor</FormLabel>
-					<Popover open={supplierOpen} onOpenChange={setSupplierOpen}>
+					<Popover open={open} onOpenChange={setOpen}>
 						<PopoverTrigger asChild>
 							<FormControl>
 								<Button
 									variant='outline'
 									role='combobox'
-									className={`w-full justify-between ${!value && 'text-muted-foreground'}`}>
-									{value
-										? supplierOptions.find(supplier => supplier.value === value)?.label
+									className={`w-full justify-between ${!field.value && 'text-muted-foreground'}`}>
+									{field.value
+										? supplierOptions.find(supplier => supplier.value.id === field.value.id)?.label
 										: 'Buscar proveedor...'}
 									<Icons.chevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
 								</Button>
@@ -63,35 +49,32 @@ export function SupplierSelector({
 						</PopoverTrigger>
 
 						<PopoverContent className='min-w-full p-0' align='start'>
-							<Command shouldFilter={false}>
-								<CommandInput
-									placeholder='Buscar proveedor...'
-									value={supplierSearch}
-									onValueChange={setSupplierSearch}
-								/>
+							<Command>
+								<CommandInput placeholder='Buscar proveedor...' />
 								<CommandList>
-									<CommandEmpty>{loadingSuppliers ? 'Buscando...' : 'No se encontraron proveedores'}</CommandEmpty>
-
+									<CommandEmpty>No se encontraron proveedores</CommandEmpty>
 									<CommandGroup>
-										{supplierOptions.map(supplier => (
-											<CommandItem
-												key={supplier.value}
-												value={supplier.value}
-												onSelect={() => {
-													setValue('supplierId', supplier.value, { shouldValidate: true })
-													setSupplierOpen(false)
-												}}>
-												<Icons.check
-													className={`mr-2 h-4 w-4 ${supplier.value === value ? 'opacity-100' : 'opacity-0'}`}
-												/>
-												{supplier.label}
-											</CommandItem>
-										))}
-										{suppliers?.data?.hasNextPage && (
-											<CommandItem onSelect={loadMoreSuppliers}>
-												<Icons.plus className='mr-2 h-4 w-4' />
-												Cargar más proveedores...
-											</CommandItem>
+										{loadingSuppliers ? (
+											<div className='flex items-center justify-center p-2'>
+												<SpinnerLoader />
+											</div>
+										) : (
+											supplierOptions.map(supplier => (
+												<CommandItem
+													key={supplier.value.id}
+													value={supplier.label}
+													onSelect={() => {
+														setValue('supplierId', supplier.value, { shouldValidate: true })
+														setOpen(false)
+													}}>
+													<Icons.check
+														className={`mr-2 h-4 w-4 ${
+															supplier.value.id === field.value?.id ? 'opacity-100' : 'opacity-0'
+														}`}
+													/>
+													{supplier.label}
+												</CommandItem>
+											))
 										)}
 									</CommandGroup>
 								</CommandList>

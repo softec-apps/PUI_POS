@@ -11,44 +11,30 @@ interface Props {
   setValue: UseFormSetValue<ProductFormData>
   templates: I_Template[]
   loadingTemplates: boolean
-  templateSearch: string
-  setTemplateSearch: (value: string) => void
-  templateOpen: boolean
-  setTemplateOpen: (value: boolean) => void
-  loadMoreTemplates: () => void
   value: string
 }
 
-export function TemplateSelector({
-  control,
-  setValue,
-  templates,
-  loadingTemplates,
-  templateSearch,
-  setTemplateSearch,
-  templateOpen,
-  setTemplateOpen,
-  loadMoreTemplates,
-  value,
-}: Props) {
-  const templateOptions =
-    templates?.map((template) => ({
-      value: template.id,
-      label: template.name,
-    })) || []
-  return (
-    <div>
-      <SelectFieldZod
-        control={control}
-        name='templateId'
-        label='Plantilla'
-        options={templateOptions}
-        required
-        value={value}
-        onChange={(value) => {
-          setValue('templateId', value, { shouldDirty: true })
-        }}
-      />
-    </div>
-  )
+export function TemplateSelector({ control, setValue, value, templates, loadingTemplates }: Props) {
+	const templateOptions =
+		templates?.map(template => ({
+			value: template.id,
+			label: template.name,
+		})) || []
+	return (
+		<div>
+			<SelectFieldZod
+				control={control}
+				name='templateId'
+				label='Plantilla'
+				options={templateOptions}
+				required
+				value={value?.id}
+				onChange={value => {
+					const template = templates.find(t => t.id === value)
+					setValue('templateId', template, { shouldDirty: true })
+				}}
+				isLoading={loadingTemplates}
+			/>
+		</div>
+	)
 }

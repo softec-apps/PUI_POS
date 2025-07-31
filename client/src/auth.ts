@@ -41,7 +41,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 					)
 					if (data) {
 						return {
-							id: data.user.id.toString(),
+							id: data.user.id,
 							email: data.user.email,
 							name: `${data.user.firstName} ${data.user.lastName}`,
 							firstName: data.user.firstName,
@@ -50,10 +50,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 							token: data.token,
 							refreshToken: data.refreshToken,
 							tokenExpires: data.tokenExpires,
-							role: {
-								id: data.user.role.id,
-								name: data.user.role.name,
-							},
 						}
 					}
 					return null
@@ -66,17 +62,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 	],
 	callbacks: {
 		async session({ session, token }) {
-			console.log('Session callback - token:', token)
-
 			// Verificar si el token ha expirado
 			const now = Date.now()
-			const tokenExpires = token.tokenExpires ? new Date(token.tokenExpires as string).getTime() : 0
+			const tokenExpires = token.tokenExpires ? new Date(token.tokenExpires).getTime() : 0
 
 			if (tokenExpires && now >= tokenExpires) {
 				// Token expirado, intentar refrescar
 				try {
 					const refreshedTokens = await refreshAccessToken()
 					if (refreshedTokens) {
+						// Actualizar el token en la sesión
 						token.token = refreshedTokens.token
 						token.refreshToken = refreshedTokens.refreshToken
 						token.tokenExpires = refreshedTokens.tokenExpires
@@ -99,68 +94,76 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 			}
 
 			// Asignar datos del usuario a la sesión
-			if (token.sub) {
+			if (token.user) {
 				session.user = {
-					id: token.sub,
-					name: token.name || '',
-					email: token.email || '',
-					image: token.image,
-					firstName: token.firstName as string,
-					lastName: token.lastName as string,
-					role: {
-						id: token.roleId as number,
-						name: token.roleName as string,
-					},
+					id: token.user.id,
+					name: token.user.name,
+					email: token.user.email,
+					image: token.user.image,
+					firstName: token.user.firstName,
+					lastName: token.user.lastName,
 				}
 			}
 
 			// Asignar tokens a la sesión
-			session.token = token.token as string
-			session.refreshToken = token.refreshToken as string
-			session.tokenExpires = token.tokenExpires as number
+			session.token = token.token
+			session.refreshToken = token.refreshToken
+			session.tokenExpires = token.tokenExpires
 
-			console.log('Session callback - final session:', session)
 			return session
 		},
 
 		async jwt({ token, user, account, profile }) {
-			console.log('JWT callback - user:', user, 'account:', account)
-
-			// Si es un nuevo login con credenciales
-			if (user && account?.provider === 'credentials') {
+			// Si es un nuevo login
+			if (user) {
+				token.user = {
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					image: user.image,
+					firstName: user.firstName,
+					lastName: user.lastName,
+				}
 				token.token = user.token
 				token.refreshToken = user.refreshToken
 				token.tokenExpires = user.tokenExpires
-				token.firstName = user.firstName
-				token.lastName = user.lastName
-				token.roleId = user.role?.id
-				token.roleName = user.role?.name
-
-				console.log('JWT callback - credentials login, role:', user.role?.name)
 				return token
 			}
 
-			// Para login con Google (después del signIn callback)
-			if (user && account?.provider === 'google') {
-				token.token = user.token
-				token.refreshToken = user.refreshToken
-				token.tokenExpires = user.tokenExpires
-				token.firstName = user.firstName
-				token.lastName = user.lastName
-				token.roleId = user.role?.id
-				token.roleName = user.role?.name
-
-				console.log('JWT callback - google login, role:', user.role?.name)
+			// Para login con Google
+			if (account?.provider === 'google' && profile) {
+				token.user = {
+					id: profile.sub,
+					name: profile.name,
+					email: profile.email,
+					image: profile.picture,
+					firstName: profile.given_name,
+					lastName: profile.family_name,
+				}
 				return token
 			}
 
-			console.log('JWT callback - existing token, role:', token.roleName)
+			// Verificar si el token necesita ser refrescado
+			const now = Date.now()
+			const tokenExpires = token.tokenExpires ? new Date(token.tokenExpires as string).getTime() : 0
+
+			// Si el token expira en menos de 5 minutos, intentar refrescarlo
+			try {
+				const refreshedTokens = await refreshAccessToken()
+				if (refreshedTokens) {
+					token.token = refreshedTokens.token
+					token.refreshToken = refreshedTokens.refreshToken
+					token.tokenExpires = refreshedTokens.tokenExpires
+				}
+			} catch (error) {
+				console.error('Error al refrescar token en JWT:', error)
+				// Marcar el token como expirado
+				token.error = 'RefreshAccessTokenError'
+			}
 			return token
 		},
 
 		async signIn({ user, account, profile }) {
-			console.log('SignIn callback - provider:', account?.provider)
-
 			// Solo para proveedor Google
 			if (account?.provider === 'google') {
 				try {
@@ -174,7 +177,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 					}
 
 					// Asignamos los datos recibidos del backend
-					user.id = data.user.id.toString()
+					user.id = data.user.id
 					user.name = `${data.user.firstName} ${data.user.lastName}`
 					user.firstName = data.user.firstName
 					user.lastName = data.user.lastName
@@ -183,12 +186,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 					user.token = data.token
 					user.refreshToken = data.refreshToken
 					user.tokenExpires = data.tokenExpires
-					user.role = {
-						id: data.user.role.id,
-						name: data.user.role.name,
-					}
-
-					console.log('SignIn callback - Google user role:', data.user.role.name)
 				} catch (error) {
 					console.error('Error en login con Google:', error)
 					return false
@@ -198,8 +195,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 		},
 
 		async redirect({ url, baseUrl }) {
-			// Si viene de signOut, permitir la redirección
-			if (url.includes(ROUTE_PATH.AUTH.SIGNIN)) return url
 			return url.startsWith(baseUrl) ? url : baseUrl
 		},
 	},
@@ -209,6 +204,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 	session: {
 		strategy: 'jwt',
 		maxAge: 60 * 60 * 24, // 1 dia
+		//updateAge: 60 * 15, // Actualizar sesión cada 15 minutos si está activa
 	},
 	jwt: {
 		maxAge: 60 * 60 * 24, // 1 dia
@@ -219,7 +215,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 async function refreshAccessToken() {
 	try {
 		const response = await api.post('/auth/refresh')
+
 		const { token, refreshToken: newRefreshToken, tokenExpires } = response.data
+
 		return {
 			token,
 			refreshToken: newRefreshToken,

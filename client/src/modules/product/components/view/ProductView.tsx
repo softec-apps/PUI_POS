@@ -53,17 +53,17 @@ export function ProductView() {
 	)
 
 	const {
-		recordsData,
+		products,
 		loading,
 		error: errorProducts,
-		createRecord,
-		updateRecord,
-		hardDeleteRecord,
-		refetchRecords,
+		createProduct,
+		updateProduct,
+		hardDeleteProduct,
+		refetchProducts,
 	} = useProduct(paginationParams)
 
 	// Hook de refresh data
-	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchRecords)
+	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchProducts)
 
 	// Hooks de formulario y modales
 	const modalState = useModalState()
@@ -71,31 +71,31 @@ export function ProductView() {
 	// Handlers
 	const recordsHandlers = useProductHandlers({
 		modalState,
-		createRecord,
-		updateRecord,
-		hardDeleteRecord,
+		createRecord: createProduct,
+		updateRecord: updateProduct,
+		hardDeleteRecord: hardDeleteProduct,
 	})
 
 	// ✅ Optimized next page handler
 	const handleNext = useCallback(() => {
-		handleNextPage(recordsData?.data?.pagination?.hasNextPage)
-	}, [handleNextPage, recordsData?.data?.pagination?.hasNextPage])
+		handleNextPage(products?.pagination?.hasNextPage)
+	}, [handleNextPage, products?.pagination?.hasNextPage])
 
 	// ✅ Memoizar datos derivados
 	const dataPaginated = useMemo(
 		() => ({
-			items: recordsData?.data?.items || [],
-			pagination: recordsData?.data?.pagination,
-			hasNextPage: recordsData?.data?.pagination?.hasNextPage,
+			items: products?.items || [],
+			pagination: products?.pagination,
+			hasNextPage: products?.pagination?.hasNextPage,
 		}),
-		[recordsData?.data]
+		[products]
 	)
 
 	// Función para reintentar la carga
 	const handleRetry = useCallback(() => {
 		setRetryCount(prev => prev + 1)
-		refetchRecords()
-	}, [refetchRecords])
+		refetchProducts()
+	}, [refetchProducts])
 
 	if (errorProducts && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
 
@@ -157,7 +157,7 @@ export function ProductView() {
 						onPageChange={handlePageChange}
 						onNextPage={handleNext}
 						onLimitChange={handleLimitChange}
-						metaDataPagination={recordsData?.data?.pagination}
+						metaDataPagination={products?.pagination}
 					/>
 				</>
 			)}

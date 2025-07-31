@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { I_Brand } from '@/modules/brand/types/brand'
 import { ProductFormData } from '@/modules/product/components/organisms/Modal/ModalForm'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -14,27 +15,14 @@ interface BrandSelectorProps {
 	setValue: UseFormSetValue<ProductFormData>
 	brands: I_Brand[]
 	loadingBrands: boolean
-	brandSearch: string
-	setBrandSearch: (search: string) => void
-	brandOpen: boolean
-	setBrandOpen: (open: boolean) => void
-	loadMoreBrands: () => void
+	value: string
 }
 
-export function BrandSelector({
-	control,
-	setValue,
-	brands,
-	loadingBrands,
-	brandSearch,
-	setBrandSearch,
-	brandOpen,
-	setBrandOpen,
-	loadMoreBrands,
-}: BrandSelectorProps) {
+export function BrandSelector({ control, setValue, value, brands, loadingBrands }: BrandSelectorProps) {
+	const [open, setOpen] = useState(false)
 	const brandOptions =
-		brands?.data?.items?.map(brand => ({
-			value: brand.id,
+		brands?.map(brand => ({
+			value: brand,
 			label: brand.name,
 		})) || []
 
@@ -45,49 +33,48 @@ export function BrandSelector({
 			render={({ field }) => (
 				<FormItem>
 					<FormLabel>Selecciona una marca</FormLabel>
-					<Popover open={brandOpen} onOpenChange={setBrandOpen}>
+					<Popover open={open} onOpenChange={setOpen}>
 						<PopoverTrigger asChild>
 							<FormControl>
 								<Button
 									variant='outline'
 									role='combobox'
 									className={`w-full justify-between ${!field.value && 'text-muted-foreground'}`}>
-									{field.value ? brandOptions.find(brand => brand.value === field.value)?.label : 'Buscar marca...'}
+									{field.value
+										? brandOptions.find(brand => brand.value.id === field.value.id)?.label
+										: 'Buscar marca...'}
 									<Icons.chevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
 								</Button>
 							</FormControl>
 						</PopoverTrigger>
 
 						<PopoverContent className='min-w-full p-0' align='start'>
-							<Command shouldFilter={false}>
-								<CommandInput
-									placeholder='Buscar marca...'
-									value={brandSearch}
-									onValueChange={setBrandSearch}
-								/>
+							<Command>
+								<CommandInput placeholder='Buscar marca...' />
 								<CommandList>
-									<CommandEmpty>{loadingBrands ? 'Buscando...' : 'No se encontraron marcas'}</CommandEmpty>
-
+									<CommandEmpty>No se encontraron marcas</CommandEmpty>
 									<CommandGroup>
-										{brandOptions.map(brand => (
-											<CommandItem
-												key={brand.value}
-												value={brand.value}
-												onSelect={() => {
-													setValue('brandId', brand.value, { shouldValidate: true })
-													setBrandOpen(false)
-												}}>
-												<Icons.check
-													className={`mr-2 h-4 w-4 ${brand.value === field.value ? 'opacity-100' : 'opacity-0'}`}
-												/>
-												{brand.label}
-											</CommandItem>
-										))}
-										{brands?.data?.hasNextPage && (
-											<CommandItem onSelect={loadMoreBrands}>
-												<Icons.plus className='mr-2 h-4 w-4' />
-												Cargar más marcas...
-											</CommandItem>
+										{loadingBrands ? (
+											<div className='flex items-center justify-center p-2'>
+												<SpinnerLoader />
+											</div>
+										) : (
+											brandOptions.map(brand => (
+												<CommandItem
+													key={brand.value.id}
+													value={brand.label}
+													onSelect={() => {
+														setValue('brandId', brand.value, { shouldValidate: true })
+														setOpen(false)
+													}}>
+													<Icons.check
+														className={`mr-2 h-4 w-4 ${
+															brand.value.id === field.value?.id ? 'opacity-100' : 'opacity-0'
+														}`}
+													/>
+													{brand.label}
+												</CommandItem>
+											))
 										)}
 									</CommandGroup>
 								</CommandList>

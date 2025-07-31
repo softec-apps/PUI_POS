@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Icons } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { I_Category } from '@/modules/category/types/category'
@@ -15,27 +16,14 @@ interface CategorySelectorProps {
 	setValue: UseFormSetValue<ProductFormData>
 	categories: I_Category[]
 	loadingCategories: boolean
-	categorySearch: string
-	setCategorySearch: (search: string) => void
-	categoryOpen: boolean
-	setCategoryOpen: (open: boolean) => void
-	loadMoreCategories: () => void
+	value: string
 }
 
-export function CategorySelector({
-	control,
-	setValue,
-	categories,
-	loadingCategories,
-	categorySearch,
-	setCategorySearch,
-	categoryOpen,
-	setCategoryOpen,
-	loadMoreCategories,
-}: CategorySelectorProps) {
+export function CategorySelector({ control, setValue, value, categories, loadingCategories }: CategorySelectorProps) {
+	const [open, setOpen] = useState(false)
 	const categoryOptions =
-		categories?.data?.items?.map(category => ({
-			value: category.id,
+		categories?.map(category => ({
+			value: category,
 			label: category.name,
 		})) || []
 
@@ -46,7 +34,7 @@ export function CategorySelector({
 			render={({ field }) => (
 				<FormItem>
 					<FormLabel>Selecciona una categoría</FormLabel>
-					<Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+					<Popover open={open} onOpenChange={setOpen}>
 						<PopoverTrigger asChild>
 							<FormControl>
 								<Button
@@ -54,7 +42,7 @@ export function CategorySelector({
 									role='combobox'
 									className={`w-full justify-between ${!field.value && 'text-muted-foreground'}`}>
 									{field.value
-										? categoryOptions.find(cat => cat.value === field.value)?.label
+										? categoryOptions.find(cat => cat.value.id === field.value.id)?.label
 										: 'Buscar categoría...'}
 									<Icons.chevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
 								</Button>
@@ -62,37 +50,32 @@ export function CategorySelector({
 						</PopoverTrigger>
 
 						<PopoverContent className='min-w-full p-0' align='start'>
-							<Command shouldFilter={false}>
-								<CommandInput
-									placeholder='Buscar categoría...'
-									value={categorySearch}
-									onValueChange={setCategorySearch}
-								/>
+							<Command>
+								<CommandInput placeholder='Buscar categoría...' />
 								<CommandList>
-									<CommandEmpty>
-										{loadingCategories ? 'Buscando...' : 'No se encontraron categorías'}
-									</CommandEmpty>
-
+									<CommandEmpty>No se encontraron categorías</CommandEmpty>
 									<CommandGroup>
-										{categoryOptions.map(category => (
-											<CommandItem
-												key={category.value}
-												value={category.value}
-												onSelect={() => {
-													setValue('categoryId', category.value, { shouldValidate: true })
-													setCategoryOpen(false)
-												}}>
-												<Icons.check
-													className={`mr-2 h-4 w-4 ${category.value === field.value ? 'opacity-100' : 'opacity-0'}`}
-												/>
-												{category.label}
-											</CommandItem>
-										))}
-										{categories?.data?.hasNextPage && (
-											<CommandItem onSelect={loadMoreCategories}>
-												<Icons.plus className='mr-2 h-4 w-4' />
-												Cargar más categorías...
-											</CommandItem>
+										{loadingCategories ? (
+											<div className='flex items-center justify-center p-2'>
+												<SpinnerLoader />
+											</div>
+										) : (
+											categoryOptions.map(category => (
+												<CommandItem
+													key={category.value.id}
+													value={category.label}
+													onSelect={() => {
+														setValue('categoryId', category.value, { shouldValidate: true })
+														setOpen(false)
+													}}>
+													<Icons.check
+														className={`mr-2 h-4 w-4 ${
+															category.value.id === field.value?.id ? 'opacity-100' : 'opacity-0'
+														}`}
+													/>
+													{category.label}
+												</CommandItem>
+											))
 										)}
 									</CommandGroup>
 								</CommandList>

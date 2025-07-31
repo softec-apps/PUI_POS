@@ -4,11 +4,11 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
-import { useTemplate } from '@/common/hooks/useTemplate'
 import { UtilBanner } from '@/components/UtilBanner'
 import { useHandlers } from '@/modules/template/hooks/useHandlers'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { useModalState } from '@/modules/template/hooks/useModalState'
+import { useTemplateV2 } from '@/common/hooks/useTemplateV2'
 import { usePagination } from '@/modules/template/hooks/usePagination'
 import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
 import { TemplateModals } from '@/modules/template/components/templates/Modals'
@@ -58,7 +58,7 @@ export function TemplateView() {
 		updateTemplate,
 		hardDeleteTemplate,
 		refetchTemplate,
-	} = useTemplate(paginationParams)
+	} = useTemplateV2(paginationParams)
 
 	// ✅ Data refresh hook
 	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchTemplate)

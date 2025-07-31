@@ -9,11 +9,15 @@ import { I_Product } from '@/modules/product/types/product'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
 import { FormFooter } from '@/modules/product/components/organisms/Modal/FormFooter'
-import { useProductModal } from '@/modules/product/hooks/useProductModal'
+import { useProduct } from '@/common/hooks/useProduct'
+import { useCategory } from '@/common/hooks/useCategory'
+import { useBrand } from '@/common/hooks/useBrand'
+import { useSupplier } from '@/common/hooks/useSupplier'
+import { useTemplate } from '@/common/hooks/useTemplate'
+import { useFileUpload } from '@/common/hooks/useFileUpload'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet'
 import { SelectFieldZod } from '@/components/layout/atoms/SelectFieldZod'
-import { TextareaFieldZod } from '@/components/layout/atoms/TextareaFieldZod'
 import { CategorySelector } from './CategorySelector'
 import { BrandSelector } from './BrandSelector'
 import { SupplierSelector } from './SupplierSelector'
@@ -34,12 +38,14 @@ const productSchema = z.object({
     z.number({ invalid_type_error: 'Debe ser un número' }).int('Debe ser un entero').min(0, 'Debe ser un número positivo').optional()
   ),
   status: z.enum(['draft', 'active', 'inactive', 'discontinued', 'out_of_stock']),
-  categoryId: z.string().optional(),
-  brandId: z.string().optional(),
-  supplierId: z.string().optional(),
+  categoryId: z.any().optional(),
+  brandId: z.any().optional(),
+  supplierId: z.any().optional(),
   photo: z.any().optional(),
   removePhoto: z.boolean().optional(),
-  templateId: z.string().nonempty('El ID del template es obligatorio'),
+  templateId: z.any().refine(value => value && value.id, {
+    message: 'El ID del template es obligatorio',
+  }),
 });
 
 export type ProductFormData = z.infer<typeof productSchema>
@@ -52,43 +58,20 @@ interface Props {
 }
 
 export function RecordFormModal({ isOpen, currentRecord, onClose, onSubmit }: Props) {
+  const { getProductById } = useProduct({ enabled: false })
+  const { categories } = useCategory()
+  const { brands } = useBrand()
+  const { suppliers } = useSupplier()
+  const { templates } = useTemplate()
   const {
-    categoriesData,
-    loadingCategories,
-    categorySearch,
-    setCategorySearch,
-    categoryOpen,
-    setCategoryOpen,
-    loadMoreCategories,
-    brandsData,
-    loadingBrands,
-    brandSearch,
-    setBrandSearch,
-    brandOpen,
-    setBrandOpen,
-    loadMoreBrands,
-    suppliersData,
-    loadingSuppliers,
-    supplierSearch,
-    setSupplierSearch,
-    supplierOpen,
-    setSupplierOpen,
-    loadMoreSuppliers,
-    templatesData,
-    loadingTemplates,
-    templateSearch,
-    setTemplateSearch,
-    templateOpen,
-    setTemplateOpen,
-    loadMoreTemplates,
-    fileInputRef,
     previewImage,
     isUploading,
+    fileInputRef,
     handleFileChange,
-    triggerFileInput,
     clearPreview,
+    triggerFileInput,
     setPreviewImage,
-  } = useProductModal(currentRecord)
+  } = useFileUpload()
 
   const methods = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -113,28 +96,29 @@ export function RecordFormModal({ isOpen, currentRecord, onClose, onSubmit }: Pr
   const { errors, isSubmitting, isValid, isDirty } = formState
 
   useEffect(() => {
-    if (isOpen) {
-      if (currentRecord) {
-        reset({
-          name: currentRecord.name,
-          description: currentRecord.description || '',
-          price: currentRecord.price,
-          sku: currentRecord.sku || '',
-          barCode: currentRecord.barCode || '',
-          stock: currentRecord.stock,
-          status: currentRecord.status,
-          categoryId: currentRecord.category?.id || '',
-          brandId: currentRecord.brand?.id || '',
-          supplierId: currentRecord.supplier?.id || '',
-          templateId: currentRecord.template?.id || '',
-          photo: currentRecord.photo?.id || '',
-          removePhoto: false,
-        });
-
-        if (currentRecord.photo) {
-          setPreviewImage(currentRecord.photo.path)
-        } else {
-          setPreviewImage(null)
+    const fetchProduct = async () => {
+      if (currentRecord?.id) {
+        const response = await getProductById(currentRecord.id);
+        if (response) {
+          const productData = response.data
+          reset({
+            name: productData.name,
+            description: productData.description || '',
+            price: productData.price,
+            sku: productData.sku || '',
+            barCode: productData.barCode || '',
+            stock: productData.stock,
+            status: productData.status,
+            categoryId: productData.category,
+            brandId: productData.brand,
+            supplierId: productData.supplier,
+            templateId: productData.template,
+            photo: productData.photo?.id || '',
+            removePhoto: false,
+          });
+          if (productData.photo) {
+            setPreviewImage(productData.photo.path);
+          }
         }
       } else {
         reset({
@@ -152,23 +136,28 @@ export function RecordFormModal({ isOpen, currentRecord, onClose, onSubmit }: Pr
           photo: '',
           removePhoto: false,
         });
-        clearPreview()
+        setPreviewImage(null);
       }
+    };
+
+    if (isOpen) {
+      fetchProduct();
     }
-  }, [isOpen, currentRecord, reset, setPreviewImage, clearPreview]);
+  }, [isOpen, currentRecord, reset, getProductById, categories, brands, suppliers, templates, setPreviewImage]);
 
   const handleFormSubmit = async (data: ProductFormData) => {
     
     try {
       const dataToSend = {
         ...data,
+        categoryId: data.categoryId?.id,
+        brandId: data.brandId?.id,
+        supplierId: data.supplierId?.id,
+        templateId: data.templateId?.id,
         photo: data.photo ? { id: data.photo } : undefined,
         description: data.description || null,
       };
       delete dataToSend.removePhoto;
-      if (!dataToSend.templateId) {
-        delete dataToSend.templateId;
-      }
    
       await onSubmit(dataToSend)
       handleClose()
@@ -183,28 +172,18 @@ export function RecordFormModal({ isOpen, currentRecord, onClose, onSubmit }: Pr
     clearPreview()
   }
 
-  const removePhoto = watch('removePhoto')
-
-  const handleClearPreviewWithForm = () => {
-    const currentPhoto = currentRecord?.photo?.id
-
-    if (currentPhoto) {
-      setValue('removePhoto', true, { shouldDirty: true })
-      setValue('photo', '', { shouldDirty: true })
-    } else {
-      setValue('photo', '', { shouldDirty: true })
-      setValue('removePhoto', false, { shouldDirty: true })
-    }
-
-    clearPreview()
-  }
-
   const handleFileChangeWithForm = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileId = await handleFileChange(e)
     if (fileId) {
       setValue('photo', fileId, { shouldDirty: true })
       setValue('removePhoto', false, { shouldDirty: true })
     }
+  }
+
+  const handleClearPreviewWithForm = () => {
+    setValue('photo', '', { shouldDirty: true })
+    setValue('removePhoto', true, { shouldDirty: true })
+    clearPreview()
   }
 
   return (
@@ -240,7 +219,7 @@ export function RecordFormModal({ isOpen, currentRecord, onClose, onSubmit }: Pr
               </CardHeader>
               <CardContent className='space-y-4 p-0'>
                 <UniversalFormField control={control} name='name' label='Nombre' placeholder='Ej. Camiseta de algodón' type='text' required />
-                <TextareaFieldZod control={control} name='description' label='Descripción' placeholder='Ej. Camiseta de algodón peinado, suave al tacto...' required={false}/>
+                <UniversalFormField control={control} name='description' label='Descripción' placeholder='Ej. Camiseta de algodón peinado, suave al tacto...' required={false}  />
                 <UniversalFormField control={control} name='price' label='Precio' placeholder='Ej. 25.99' type='number' required />
                 <UniversalFormField control={control} name='sku' label='SKU' placeholder='Ej. CAM-ALG-001' type='text' />
                 <UniversalFormField control={control} name='barCode' label='Código de barras' placeholder='Ej. 7861234567890' type='text' />
@@ -265,48 +244,22 @@ export function RecordFormModal({ isOpen, currentRecord, onClose, onSubmit }: Pr
                 <CategorySelector
                   control={control}
                   setValue={methods.setValue}
-                  categories={categoriesData}
-                  loadingCategories={loadingCategories}
-                  categorySearch={categorySearch}
-                  setCategorySearch={setCategorySearch}
-                  categoryOpen={categoryOpen}
-                  setCategoryOpen={setCategoryOpen}
-                  loadMoreCategories={loadMoreCategories}
+                  value={watch('categoryId')}
+                  categories={categories?.data.items}
+                  loadingCategories={categories?.loading}
                 />
                 <BrandSelector
                   control={control}
                   setValue={methods.setValue}
-                  brands={brandsData}
-                  loadingBrands={loadingBrands}
-                  brandSearch={brandSearch}
-                  setBrandSearch={setBrandSearch}
-                  brandOpen={brandOpen}
-                  setBrandOpen={setBrandOpen}
-                  loadMoreBrands={loadMoreBrands}
-                />
-                <SupplierSelector
-                  control={control}
-                  setValue={methods.setValue}
-                  suppliers={suppliersData}
-                  loadingSuppliers={loadingSuppliers}
-                  supplierSearch={supplierSearch}
-                  setSupplierSearch={setSupplierSearch}
-                  supplierOpen={supplierOpen}
-                  setSupplierOpen={setSupplierOpen}
-                  loadMoreSuppliers={loadMoreSuppliers}
-                  value={watch('supplierId')}
+                  value={watch('brandId')}
+                  brands={brands?.data.items}
+                  loadingBrands={brands?.loading}
                 />
                 <TemplateSelector
                   control={control}
                   setValue={methods.setValue}
-                  templates={templatesData}
-                  loadingTemplates={loadingTemplates}
-                  templateSearch={templateSearch}
-                  setTemplateSearch={setTemplateSearch}
-                  templateOpen={templateOpen}
-                  setTemplateOpen={setTemplateOpen}
-                  loadMoreTemplates={loadMoreTemplates}
                   value={watch('templateId')}
+                  templates={templates?.data.items}
                 />
                 <FileUploadSection
                   fileInputRef={fileInputRef}
@@ -316,7 +269,14 @@ export function RecordFormModal({ isOpen, currentRecord, onClose, onSubmit }: Pr
                   onTriggerFileInput={triggerFileInput}
                   onClearPreview={handleClearPreviewWithForm}
                   currentImage={currentRecord?.photo}
-                  shouldHideCurrentImage={removePhoto}
+                  shouldHideCurrentImage={watch('removePhoto')}
+                />
+                <SupplierSelector
+                  control={control}
+                  setValue={methods.setValue}
+                  value={watch('supplierId')}
+                  suppliers={suppliers?.data.items}
+                  loadingSuppliers={suppliers?.loading}
                 />
               </CardContent>
             </Card>

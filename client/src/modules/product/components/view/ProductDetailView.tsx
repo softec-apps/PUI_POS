@@ -1,6 +1,6 @@
 'use client'
 
-import { useProduct } from '@/common/hooks/useProduct'
+import { useProductV2 } from '@/common/hooks/useProduct'
 import { Icons } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/layout/atoms/Badge'
@@ -24,18 +24,18 @@ type Props = {
 }
 
 export function ProductDetailView({ productId }: Props) {
-	const { getAttributeById, isHardDeleting } = useProduct({ enabled: false })
+	const { getProductById } = useProductV2()
 	const [product, setProduct] = useState<I_Product | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
-	const router = useRouter()
 
 	useEffect(() => {
 		const fetchProduct = async () => {
 			try {
 				setLoading(true)
 				setError(null)
-				const productData = await getAttributeById(productId)
+				const productData = await getProductById(productId)
+		
 				setProduct(productData)
 			} catch (err) {
 				setError(err.response.data.error.message)
@@ -46,7 +46,7 @@ export function ProductDetailView({ productId }: Props) {
 		}
 
 		if (productId) fetchProduct()
-	}, [productId, getAttributeById])
+	}, [productId, getProductById])
 
 	const InfoRow = ({
 		label,
@@ -155,12 +155,12 @@ export function ProductDetailView({ productId }: Props) {
 							</Card>
 
 							<Card className='border-border/50 bg-accent/20 w-full rounded-2xl border-none p-4 shadow-none'>
-								<Typography variant='h4'>{product.price.toFixed(2)} USD</Typography>
+								<Typography variant='h4'>{product.price?.toFixed(2)} USD</Typography>
 								<Typography variant='overline'>Precio base</Typography>
 							</Card>
 
 							<Card className='border-border/50 bg-accent/20 w-full rounded-2xl border-none p-4 shadow-none'>
-								<Typography variant='h4'>{(product.price * product.stock).toFixed(2)} USD</Typography>
+								<Typography variant='h4'>{(product.price * product.stock)?.toFixed(2)} USD</Typography>
 								<Typography variant='overline'>Caja total</Typography>
 							</Card>
 						</CardContent>
