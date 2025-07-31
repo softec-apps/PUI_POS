@@ -1,5 +1,5 @@
 import axios from 'axios'
-import api from '@/shared/lib/axios'
+import api from '@/lib/axios'
 import { getSession, signOut } from 'next-auth/react'
 import { LoginResponse, User } from '@/common/types/auth'
 

@@ -17,7 +17,7 @@ interface UseProductParamsProps {
 	search?: string
 	filters?: Record<string, string>
 	sort?: Array<{ orderBy: keyof I_Product; order: 'asc' | 'desc' }>
-	enabled?: boolean // ✅ Agregamos enabled para controlar cuándo ejecutar el query
+	enabled?: boolean // ✅ Control para cuándo ejecutar el query
 }
 
 export const useProduct = (paginationParams: UseProductParamsProps = {}) => {
@@ -72,7 +72,6 @@ export const useProduct = (paginationParams: UseProductParamsProps = {}) => {
 		try {
 			// ✅ Primer enfoque: usar el apiService del genericApi
 			if (genericApi.apiService?.getById) {
-			
 				return await genericApi.apiService.getById(id)
 			}
 			
@@ -143,6 +142,7 @@ export const useProduct = (paginationParams: UseProductParamsProps = {}) => {
 		}
 	}
 }
+
 interface UseProductV2ParamsProps {
 	productId?: I_IdProduct
 	enabled?: boolean
@@ -170,17 +170,12 @@ export const useProductV2 = (params: UseProductV2ParamsProps = {}) => {
 		}
 
 		try {
-	
-			
 			// ✅ Intentar con apiService primero
 			if (genericApi.apiService?.getById) {
-		
 				const result = await genericApi.apiService.getById(id)
-			
 				
 				// ✅ Extraer solo los datos del producto de la respuesta del apiService
 				if (result?.data) {
-			
 					return result.data // Solo los datos del producto
 				}
 	
@@ -188,19 +183,15 @@ export const useProductV2 = (params: UseProductV2ParamsProps = {}) => {
 			}
 
 			// ✅ Fallback a axios directo
-	
 			const response = await api.get(`${ENDPOINT_API.PRODUCT}/${id}`)
-	
 			
 			// ✅ La respuesta tiene estructura: { success, statusCode, message, data, meta }
 			// Devolver solo response.data.data (los datos reales del producto)
 			if (response.data?.data) {
-
 				return response.data.data // ✅ Solo los datos del producto
 			}
 			
 			// ✅ Fallback si la estructura es diferente
-
 			return response.data || response
 			
 		} catch (error) {

@@ -14,57 +14,6 @@ import { generateBackgroundColor } from '@/common/utils/generateColor-util'
 import { ProductStatusBadge } from '../atoms/ProductStatusBadge'
 import Image from 'next/image'
 
-// Datos de ejemplo basados en tu objeto
-const exampleProductData: I_Product = {
-	status: 'draft',
-	id: '68a3233f-472e-412c-91fa-75b566a386bb',
-	isVariant: false,
-	code: 'PROD-68A3233F-00008',
-	name: 'Camiseta Básica Algodón',
-	description: 'Camiseta básica de algodón 100%, perfecta para uso diario',
-	price: 29.123456,
-	sku: 'CAM-LRG-AZU-M',
-	barCode: '7860001234567',
-	stock: 0,
-	brand: {
-		id: '77c585ef-df5c-40f7-a8d2-b92e49d0e9a5',
-		name: 'Nike',
-		status: 'active',
-		createdAt: '2025-07-26T01:11:17.974Z',
-		deletedAt: null,
-		description: null,
-		updatedAt: '2025-07-26T01:46:02.704Z',
-	},
-	category: {
-		id: '46c14dfd-df0c-4260-be48-af55b5bb8972',
-		name: 'Ropa',
-		status: 'active',
-		createdAt: '2025-07-26T01:08:28.847Z',
-		deletedAt: null,
-		description: null,
-		photo: {
-			id: '03459676-f941-4017-a17b-680fe8eb2e0d',
-			path: 'http://localhost:4000/api/v1/files/ee8a130817358a98c0d84.png',
-		},
-		updatedAt: '2025-07-26T22:43:40.229Z',
-	},
-	supplier: {
-		id: 'd3e9ec9a-ef0d-4970-b3ab-3a59a1e27952',
-		ruc: '0190001628001',
-		legalName: 'AUSTRAL CIA LTDA',
-		commercialName: 'ROPA FULL',
-		createdAt: '2025-07-26T01:10:57.626Z',
-		deletedAt: null,
-		status: 'active',
-		updatedAt: '2025-07-26T01:10:57.626Z',
-	},
-	photo: null,
-	template: null,
-	createdAt: '2025-07-26T02:37:38.973Z',
-	deletedAt: null,
-	updatedAt: '2025-07-26T02:37:38.973Z',
-}
-
 interface Props {
 	recordsData: ReactTable<I_Product>
 	onEdit: (recordData: I_Product) => void
@@ -83,18 +32,6 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => {
 		}).format(price)
 	}
 
-	const getStockBadgeVariant = (stock: number) => {
-		if (stock === 0) return 'destructive'
-		if (stock < 10) return 'warning'
-		return 'success'
-	}
-
-	const getStockText = (stock: number) => {
-		if (stock === 0) return 'Sin stock'
-		if (stock < 10) return 'Stock bajo'
-		return `${stock} unidades`
-	}
-
 	return (
 		<div className='space-y-4'>
 			<motion.div
@@ -106,7 +43,6 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => {
 				<AnimatePresence mode='sync'>
 					{rows.map(row => {
 						const recordData = row.original
-						const backgroundColor = generateBackgroundColor(recordData.name)
 
 						return (
 							<motion.div

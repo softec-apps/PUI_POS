@@ -16,7 +16,7 @@ import { AuthGuard } from '@nestjs/passport'
 import { Roles } from '@/modules/roles/roles.decorator'
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger'
 import { RolesGuard } from '@/modules/roles/roles.guard'
-import { RoleEnum } from '@/common/constants/roles-const'
+import { RoleEnum, ROLES } from '@/common/constants/roles-const'
 import { Product } from '@/modules/product/domain/product'
 import { ApiResponse } from '@/utils/types/request-response.type'
 import { PATH_SOURCE } from '@/common/constants/pathSource.const'
@@ -30,7 +30,6 @@ import { EnhancedInfinityPaginationResponseDto } from '@/utils/dto/enhanced-infi
 
 @ApiTags(PATH_SOURCE.PRODUCT)
 @ApiBearerAuth()
-@Roles(RoleEnum.Admin)
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller({
   path: PATH_SOURCE.PRODUCT,
@@ -45,9 +44,10 @@ export class ProductController {
    * @returns The API standard response
    */
   @Post()
-  @SerializeOptions({ groups: ['admin'] })
-  @HttpCode(HttpStatus.CREATED)
   @ProductApiDocs.create
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createProductDto: CreateProductDto,
   ): Promise<ApiResponse<Product>> {
@@ -60,9 +60,10 @@ export class ProductController {
    * @returns The API standard response
    */
   @Get()
-  @SerializeOptions({ groups: ['admin'] })
-  @HttpCode(HttpStatus.OK)
   @ProductApiDocs.findAll
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
+  @HttpCode(HttpStatus.OK)
   async findAll(
     @Query() query: QueryProductDto,
   ): Promise<ApiResponse<EnhancedInfinityPaginationResponseDto<Product>>> {
@@ -76,9 +77,10 @@ export class ProductController {
    *
    */
   @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  @SerializeOptions({ groups: ['admin'] })
   @ProductApiDocs.findOne
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
+  @HttpCode(HttpStatus.OK)
   async findOne(
     @Param() param: ParamProductDto,
   ): Promise<ApiResponse<Product>> {
@@ -91,9 +93,10 @@ export class ProductController {
    * @returns The API standard responsea
    */
   @Put(':id')
-  @HttpCode(HttpStatus.OK)
-  @SerializeOptions({ groups: ['admin'] })
   @ProductApiDocs.update
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
   async update(
     @Param() param: ParamProductDto,
     @Body() updateProductDto: UpdateProductDto,
@@ -108,9 +111,10 @@ export class ProductController {
    * @warning This action is irreversible and will permanently remove the product
    */
   @Delete(':id/hard-delete')
-  @HttpCode(HttpStatus.OK)
-  @SerializeOptions({ groups: ['admin'] })
   @ProductApiDocs.hardDelete
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
   hardDelete(@Param() param: ParamProductDto): Promise<ApiResponse> {
     return this.productService.hardDelete(param.id)
   }

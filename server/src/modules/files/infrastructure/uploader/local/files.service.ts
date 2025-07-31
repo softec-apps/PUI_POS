@@ -4,7 +4,6 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-
 import { FileRepository } from '../../persistence/file.repository'
 import { AllConfigType } from '@/config/config.type'
 import { FileType } from '../../../domain/file'
@@ -26,12 +25,18 @@ export class FilesLocalService {
       })
     }
 
+    // 👇 CORREGIDO: Usar file.filename que contiene el nombre único generado por Multer
+    const fileName = file.filename // Este ya es el nombre único generado en el storage
+
+    const apiPrefix = this.configService.get('app.apiPrefix', { infer: true })
+    const finalPath = `/${apiPrefix}/v1/files/${fileName}`
+
+    const result = await this.fileRepository.create({
+      path: finalPath,
+    })
+
     return {
-      file: await this.fileRepository.create({
-        path: `/${this.configService.get('app.apiPrefix', {
-          infer: true,
-        })}/v1/${file.path}`,
-      }),
+      file: result,
     }
   }
 }

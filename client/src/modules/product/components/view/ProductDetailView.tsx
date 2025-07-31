@@ -35,7 +35,7 @@ export function ProductDetailView({ productId }: Props) {
 				setLoading(true)
 				setError(null)
 				const productData = await getProductById(productId)
-		
+				
 				setProduct(productData)
 			} catch (err) {
 				setError(err.response.data.error.message)

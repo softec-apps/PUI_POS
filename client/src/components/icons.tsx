@@ -96,7 +96,10 @@ import {
 	IconLoader,
 	IconLoader2,
 	IconLogin,
+	IconLogout,
+	IconLogout2,
 	IconMail,
+	IconMinus,
 	IconMoneybag,
 	IconMoon,
 	IconPencilMinus,
@@ -175,6 +178,8 @@ export const Icons = {
 	dataBase: IconDatabase,
 	server: IconServer,
 	login: IconLogin,
+	logout: IconLogout,
+	logout2: IconLogout2,
 	clearAll: IconClearAll,
 	chevronDown: IconChevronDown,
 	close: IconX,
@@ -280,6 +285,7 @@ export const Icons = {
 	bug: IconBug,
 
 	upload: IconUpload,
+	minus: IconMinus,
 
 	// CHARTS
 	chartArcs: IconChartArcs,

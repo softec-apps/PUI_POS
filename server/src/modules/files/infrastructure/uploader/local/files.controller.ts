@@ -3,12 +3,12 @@ import {
   Get,
   Param,
   Post,
-  Response,
-  UploadedFile,
+  Req,
+  Res,
   UseGuards,
-  UseInterceptors,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common'
-import { FileInterceptor } from '@nestjs/platform-express'
 import {
   ApiBearerAuth,
   ApiBody,
@@ -18,8 +18,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger'
 import { AuthGuard } from '@nestjs/passport'
+import { FastifyRequest, FastifyReply } from 'fastify'
+import { MultipartFile } from '@fastify/multipart'
 import { FilesLocalService } from './files.service'
 import { FileResponseDto } from './dto/file-response.dto'
+import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util'
+import * as fs from 'fs'
+import * as path from 'path'
 
 @ApiTags('Files')
 @Controller({
@@ -29,12 +34,9 @@ import { FileResponseDto } from './dto/file-response.dto'
 export class FilesLocalController {
   constructor(private readonly filesService: FilesLocalService) {}
 
-  @ApiCreatedResponse({
-    type: FileResponseDto,
-  })
+  @Post('upload')
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Post('upload')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -47,16 +49,68 @@ export class FilesLocalController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
-  ): Promise<FileResponseDto> {
-    return this.filesService.create(file)
+  @ApiCreatedResponse({ type: FileResponseDto })
+  async uploadFile(@Req() req: FastifyRequest): Promise<FileResponseDto> {
+    const parts = req.parts()
+    for await (const part of parts) {
+      // ✅ Verificamos que sea archivo
+      if (part.type === 'file') {
+        // 👇 VALIDAR TIPO DE ARCHIVO
+        if (!part.filename?.match(/\.(jpg|jpeg|png|gif)$/i)) {
+          console.log('ERROR: Invalid file type')
+          throw new HttpException(
+            {
+              status: HttpStatus.UNPROCESSABLE_ENTITY,
+              errors: { file: 'cantUploadFileType' },
+            },
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          )
+        }
+
+        // 👇 GENERAR NOMBRE ÚNICO
+        const fileExtension = part.filename.split('.').pop()?.toLowerCase()
+        const uniqueFilename = `${randomStringGenerator()}.${fileExtension}`
+
+        // 👇 CREAR DIRECTORIO SI NO EXISTE
+        const uploadDir = path.resolve('./files')
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true })
+        }
+
+        // 👇 OBTENER BUFFER Y GUARDAR ARCHIVO FÍSICAMENTE
+        const buffer = await part.toBuffer()
+        const filePath = path.join(uploadDir, uniqueFilename)
+
+        fs.writeFileSync(filePath, buffer)
+
+        // Verificar que se guardó
+        const fileExists = fs.existsSync(filePath)
+        const fileSize = fileExists ? fs.statSync(filePath).size : 0
+
+        // 👇 CREAR OBJETO CON EL NOMBRE ÚNICO (NO EL ORIGINAL)
+        const file: Express.Multer.File = {
+          fieldname: part.fieldname,
+          originalname: part.filename, // Mantener el original para referencia
+          encoding: part.encoding,
+          mimetype: part.mimetype,
+          size: buffer.length,
+          buffer,
+          stream: part.file,
+          destination: uploadDir,
+          filename: uniqueFilename, // 👈 AQUÍ ESTÁ LA CORRECCIÓN - USAR EL NOMBRE ÚNICO
+          path: filePath,
+        }
+
+        return this.filesService.create(file)
+      }
+    }
+
+    throw new HttpException('No file received', HttpStatus.BAD_REQUEST)
   }
 
   @Get(':path')
   @ApiExcludeEndpoint()
-  download(@Param('path') path, @Response() response) {
-    return response.sendFile(path, { root: './files' })
+  async download(@Param('path') path: string, @Res() res: FastifyReply) {
+    return res.sendFile(path)
   }
 }

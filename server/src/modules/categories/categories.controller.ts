@@ -30,7 +30,7 @@ import { EnhancedInfinityPaginationResponseDto } from '@/utils/dto/enhanced-infi
 
 @ApiTags(PATH_SOURCE.CATEGORY)
 @ApiBearerAuth()
-@Roles(RoleEnum.Admin, RoleEnum.Manager)
+@Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller({
   path: PATH_SOURCE.CATEGORY,
