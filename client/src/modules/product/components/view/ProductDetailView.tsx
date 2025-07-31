@@ -24,18 +24,18 @@ type Props = {
 }
 
 export function ProductDetailView({ productId }: Props) {
-	const { getAttributeById, isHardDeleting } = useProduct({ enabled: false })
+	const { getProductById } = useProduct()
 	const [product, setProduct] = useState<I_Product | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
-	const router = useRouter()
 
 	useEffect(() => {
 		const fetchProduct = async () => {
 			try {
 				setLoading(true)
 				setError(null)
-				const productData = await getAttributeById(productId)
+				const productData = await getProductById(productId)
+				console.log('Dsd', productData)
 				setProduct(productData)
 			} catch (err) {
 				setError(err.response.data.error.message)
@@ -46,7 +46,7 @@ export function ProductDetailView({ productId }: Props) {
 		}
 
 		if (productId) fetchProduct()
-	}, [productId, getAttributeById])
+	}, [productId, getProductById])
 
 	const InfoRow = ({
 		label,
