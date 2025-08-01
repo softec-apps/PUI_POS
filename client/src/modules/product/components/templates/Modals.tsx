@@ -10,7 +10,7 @@ interface Props {
 	recordHandlers: any
 }
 
-export function ModalsSupplier({ modalState, recordHandlers }: Props) {
+export function ModalsProduct({ modalState, recordHandlers }: Props) {
 	return (
 		<>
 			<RecordFormModal

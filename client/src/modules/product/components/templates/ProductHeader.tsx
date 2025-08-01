@@ -9,7 +9,7 @@ interface Props {
 	onCreateClick: () => void
 }
 
-export function SupplierHeader({ onCreateClick }: Props) {
+export function ProductHeader({ onCreateClick }: Props) {
 	return (
 		<motion.section
 			initial={{ opacity: 0, y: -12, filter: 'blur(0px)' }}
@@ -30,7 +30,7 @@ export function SupplierHeader({ onCreateClick }: Props) {
 					size='lg'
 					variant='default'
 					icon={<Icons.plus />}
-					text='Nuevo proveedor'
+					text='Nuevo producto'
 					onClick={onCreateClick}
 				/>
 			</div>

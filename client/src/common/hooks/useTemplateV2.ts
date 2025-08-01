@@ -11,21 +11,16 @@ interface UseTemplateParams {
 	sort?: Array<{ orderBy: I_Template; order: 'asc' | 'desc' }>
 }
 
-export const useTemplate = (paginationParams: UseTemplateParams = {}) => {
+export const useTemplateV2 = (paginationParams: UseTemplateParams = {}) => {
 	const api = useGenericApi<I_TemplateResponse, I_CreateTemplate, I_UpdateTemplate>(TEMPLATE_ENDPOINTS_CONFIG)
 
-	// ✅ Memoizar queryParams para evitar recreaciones innecesarias
 	const queryParams = useMemo(() => {
 		const params: Record<string, any> = {}
 
-		// Solo agregar parámetros si tienen valores válidos
 		if (paginationParams.page !== undefined) params.page = paginationParams.page
-
 		if (paginationParams.limit !== undefined) params.limit = paginationParams.limit
 
-		// ✅ Solo serializar filters si existen y no están vacíos
 		if (paginationParams.filters && Object.keys(paginationParams.filters).length > 0) {
-			// Filtrar valores vacíos o undefined
 			const cleanFilters = Object.entries(paginationParams.filters).reduce(
 				(acc, [key, value]) => {
 					if (value !== undefined && value !== null && value !== '') {
@@ -41,10 +36,7 @@ export const useTemplate = (paginationParams: UseTemplateParams = {}) => {
 			}
 		}
 
-		// ✅ Solo serializar sort si existe y no está vacío
 		if (paginationParams.sort && paginationParams.sort.length > 0) params.sort = JSON.stringify(paginationParams.sort)
-
-		// ✅ Solo agregar search si no está vacío
 		if (paginationParams.search && paginationParams.search.trim()) params.search = paginationParams.search.trim()
 
 		return params
@@ -56,33 +48,24 @@ export const useTemplate = (paginationParams: UseTemplateParams = {}) => {
 		paginationParams.search,
 	])
 
-	// ✅ Usar el query dinámico con los parámetros de paginación memoizados
 	const query = api.buildQuery(queryParams)
 
-	// ✅ Retornar objeto estable
 	return {
-		// Datos del query
-		templates: query.data,
+		template: query.data,
 		loading: query.isLoading,
 		error: query.error?.message,
 
-		// Funciones
-		refetchTemplates: query.refetch,
+		refetchTemplate: query.refetch,
 
-		// Funciones CRUD
 		createTemplate: api.create,
 		updateTemplate: api.update,
 		hardDeleteTemplate: api.hardDelete,
 
-		// Estados granulares de loading
 		isCreating: api.isCreating,
 		isUpdating: api.isUpdating,
 		isHardDeleting: api.isHardDeleting,
 
-		// Mutations para control avanzado
 		mutations: api.mutations,
-
-		// Funciones adicionales del API genérico
 		executeCustomEndpoint: api.executeCustomEndpoint,
 		apiService: api.apiService,
 	}

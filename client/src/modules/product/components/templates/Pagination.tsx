@@ -140,18 +140,18 @@ export const PaginationControls = ({
 						</SelectContent>
 					</Select>
 
-					<Typography variant='muted'>
+					<div>
 						{loading ? (
 							<>
 								<Skeleton className='h-8 w-60' />
 							</>
 						) : (
-							<>
+							<Typography variant='muted'>
 								Mostrando <span>{startItem}</span> a <span>{endItem}</span> de{' '}
 								<span>{metaDataPagination?.totalCount || 0}</span> elementos
-							</>
+							</Typography>
 						)}
-					</Typography>
+					</div>
 				</div>
 
 				{/* Right: Items per page selector */}

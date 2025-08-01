@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { Pagination } from '@/modules/atribute/types/pagination'
-import { INITIAL_PAGINATION } from '@/modules/atribute/constants/filters.constants'
+import { Pagination } from '@/common/types/pagination'
+import { DEFAULT_PAGINATION } from '@/common/constants/pagination-const'
 
 export function usePagination() {
-	const [pagination, setPagination] = useState<Pagination>(INITIAL_PAGINATION)
+	const [pagination, setPagination] = useState<Pagination>(DEFAULT_PAGINATION)
 	const [searchTerm, setSearchTerm] = useState<string>('')
 	const [currentSort, setCurrentSort] = useState<string>('')
 	const [currentStatus, setCurrentStatus] = useState<'active' | 'inactive' | ''>('')
@@ -95,7 +95,7 @@ export function usePagination() {
 		setSearchTerm('')
 		setCurrentSort('')
 		setCurrentStatus(undefined)
-		setPagination(INITIAL_PAGINATION)
+		setPagination(DEFAULT_PAGINATION)
 	}, [])
 
 	const getCurrentSortInfo = useCallback(() => {

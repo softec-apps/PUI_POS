@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
-import { useSupplier } from '@/common/hooks/useSupplier'
+import { useSupplier } from '@/common/hooks/useSupplierV2'
 
 import { useModalState } from '@/modules/supplier/hooks/useModalState'
 import { usePagination } from '@/modules/supplier/hooks/usePagination'
@@ -46,10 +46,10 @@ export function SupplierView() {
 			search: searchTerm,
 			page: pagination.page,
 			limit: pagination.limit,
-			sort: currentSort ? [currentSort] : undefined,
+			sort: pagination.sort,
 			filters: currentStatus ? { status: currentStatus } : undefined,
 		}),
-		[pagination.page, pagination.limit, searchTerm, currentStatus, currentSort]
+		[pagination.page, pagination.limit, searchTerm, currentStatus, pagination.sort]
 	)
 
 	const {
