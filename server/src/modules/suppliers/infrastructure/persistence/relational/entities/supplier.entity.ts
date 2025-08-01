@@ -10,8 +10,9 @@ import {
 import { SupplierStatus } from '@/modules/suppliers/status.enum'
 import { EntityRelationalHelper } from '@/utils/relational-entity-helper'
 import { BrandEntity } from '@/modules/brand/infrastructure/persistence/relational/entities/brand.entity'
+import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 
-@Entity({ name: 'supplier' })
+@Entity({ name: PATH_SOURCE.SUPPLIER })
 export class SupplierEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn('uuid')
   id: string

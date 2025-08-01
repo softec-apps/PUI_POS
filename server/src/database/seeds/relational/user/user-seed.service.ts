@@ -53,7 +53,7 @@ export class UserSeedService {
       {
         firstName: 'John',
         lastName: 'Cashier',
-        email: 'cashier@example.com',
+        email: 'cashier@gmail.com',
         role: {
           id: RoleEnum.Cashier,
           name: 'Cashier',
@@ -62,7 +62,7 @@ export class UserSeedService {
       {
         firstName: 'Sarah',
         lastName: 'Manager',
-        email: 'manager@example.com',
+        email: 'manager@gmail.com',
         role: {
           id: RoleEnum.Manager,
           name: 'Manager',
@@ -71,19 +71,10 @@ export class UserSeedService {
       {
         firstName: 'Mike',
         lastName: 'Inventory',
-        email: 'inventory@example.com',
+        email: 'inventory@gmail.com',
         role: {
           id: RoleEnum.Inventory,
           name: 'Inventory',
-        },
-      },
-      {
-        firstName: 'Emily',
-        lastName: 'Customer',
-        email: 'customer@example.com',
-        role: {
-          id: RoleEnum.Customer,
-          name: 'Customer',
         },
       },
     ]

@@ -15,6 +15,7 @@ import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
 import { FormFooter } from '@/modules/supplier/components/organisms/Modal/FormFooter'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet'
+import { useProduct } from '@/common/hooks/useProduct'
 
 const supplierSchema = z.object({
 	ruc: z
@@ -58,6 +59,22 @@ interface Props {
 }
 
 export function RecordFormModal({ isOpen, currentRecord, onClose, onSubmit }: Props) {
+	const { getProductById } = useProduct()
+
+	useEffect(() => {
+		const fetchProduct = async () => {
+			try {
+				const productData = await getProductById(currentRecord?.id)
+				console.log('fetch by Id', productData)
+			} catch (err) {
+				console.error('Error fetching product:', err)
+			} finally {
+			}
+		}
+
+		if (currentRecord?.id) fetchProduct()
+	}, [currentRecord?.id, getProductById])
+
 	const methods = useForm<supplierFormData>({
 		resolver: zodResolver(supplierSchema),
 		mode: 'onChange',

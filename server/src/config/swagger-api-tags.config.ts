@@ -78,4 +78,12 @@ export const API_TAGS_CONFIG = [
       url: 'https://docs.example.com/prodctuos/templates',
     },
   },
+  {
+    name: PATH_SOURCE.KARDEX,
+    description: 'kardex',
+    externalDocs: {
+      description: '',
+      url: '',
+    },
+  },
 ]

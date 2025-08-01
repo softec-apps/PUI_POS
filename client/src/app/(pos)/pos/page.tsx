@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import PageContainer from '@/components/layout/page-container'
-import { POSMatriz } from '@/modules/pos/martiz/components/view/PosMatriz'
+import { PosViewSelector } from '@/components/layout/organims/PosViewSelector'
 
 export const metadata: Metadata = {
 	title: 'POS - Sistema de Punto de Venta',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default async function PosPage() {
 	return (
 		<PageContainer scrollable={false}>
-			<POSMatriz />
+			<PosViewSelector />
 		</PageContainer>
 	)
 }
