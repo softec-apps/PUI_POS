@@ -44,7 +44,7 @@ export const ALL_NAV_ITEMS: NavConfig = [
 			{
 				title: 'Productos',
 				url: ROUTE_PATH.ADMIN.PRODUCT,
-				icon: 'boxModel2',
+				icon: 'box',
 				isActive: false,
 				permission: PERMISSIONS.PRODUCTS,
 			},

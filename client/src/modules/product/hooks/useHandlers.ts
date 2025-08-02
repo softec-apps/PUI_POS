@@ -1,36 +1,33 @@
 import { useCallback } from 'react'
-import { ModalState } from '@/modules/supplier/types/modalState'
-import { supplierFormData } from '@/modules/supplier/components/organisms/Modal/ModalForm'
-import { I_Supplier, I_CreateSupplier, I_UpdateSupplier } from '@/modules/supplier/types/supplier'
+import { ModalState } from '@/modules/product/types/modalState'
+import { ProductFormData } from '@/modules/product/types/product-form'
+import { I_UpdateProduct, I_CreateProduct, I_Product } from '@/modules/product/types/product'
 
 interface Props {
 	modalState: ModalState
-	createRecord: (data: I_CreateSupplier) => Promise<void>
-	updateRecord: (id: string, data: I_UpdateSupplier) => Promise<void>
+	createRecord: (data: I_CreateProduct) => Promise<void>
+	updateRecord: (id: string, data: I_UpdateProduct) => Promise<void>
 	hardDeleteRecord: (id: string) => Promise<void>
 }
 
-export function useSupplierHandlers({ modalState, createRecord, updateRecord, hardDeleteRecord }: Props) {
-	// Form handlers para el nuevo modal con react-hook-form
+export function useHandlers({ modalState, createRecord, updateRecord, hardDeleteRecord }: Props) {
 	const handleFormSubmit = useCallback(
-		async (data: supplierFormData) => {
+		async (data: ProductFormData) => {
 			try {
-				const newRecord = {
-					ruc: data.ruc,
-					legalName: data.legalName,
-					commercialName: data.commercialName,
+				const recordData: I_CreateProduct = {
+					...data,
+					photo: data.photo ? { id: data.photo } : null,
 				}
 
 				if (modalState.currentRecord?.id) {
-					await updateRecord(modalState.currentRecord.id, newRecord)
+					await updateRecord(modalState.currentRecord.id, recordData)
 				} else {
-					await createRecord(newRecord)
+					await createRecord(recordData)
 				}
-
 				modalState.closeDialog()
 			} catch (error) {
 				console.error('Save error:', error)
-				throw error // Re-throw para que el form maneje el error
+				throw error
 			}
 		},
 		[modalState, updateRecord, createRecord]
@@ -41,7 +38,7 @@ export function useSupplierHandlers({ modalState, createRecord, updateRecord, ha
 	}, [modalState])
 
 	// Modal handlers
-	const handleEdit = useCallback((record: I_Supplier) => modalState.openEditDialog(record), [modalState])
+	const handleEdit = useCallback((record: I_Product) => modalState.openEditDialog(record), [modalState])
 
 	const handleConfirmHardDelete = useCallback(async () => {
 		if (!modalState.recordToHardDelete) return

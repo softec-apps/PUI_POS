@@ -6,15 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/layout/atoms/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { I_Product } from '../../types/product'
+import { I_Product } from '@/modules/product/types/product'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
-import { ProductImage } from '../molecules/ProductImage'
+import { ProductImage } from '@/modules/product/components/molecules/ProductImage'
 import { Typography } from '@/components/ui/typography'
-import { ProductAnalytics } from '../organisms/Chart/ProductAnalytics'
+import { ProductAnalytics } from '@/modules/product/components/organisms/Chart/ProductAnalytics'
 import { formatDate } from '@/common/utils/dateFormater-util'
-import { ProductStatusBadge } from '../atoms/ProductStatusBadge'
+import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductStatusBadge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { FatalErrorState } from '@/components/layout/organims/ErrorStateCard'
 import { NotFoundState } from '@/components/layout/organims/NotFoundState'
@@ -35,7 +34,7 @@ export function ProductDetailView({ productId }: Props) {
 				setLoading(true)
 				setError(null)
 				const productData = await getProductById(productId)
-				console.log('Dsd', productData)
+
 				setProduct(productData)
 			} catch (err) {
 				setError(err.response.data.error.message)
@@ -155,12 +154,12 @@ export function ProductDetailView({ productId }: Props) {
 							</Card>
 
 							<Card className='border-border/50 bg-accent/20 w-full rounded-2xl border-none p-4 shadow-none'>
-								<Typography variant='h4'>{product.price.toFixed(2)} USD</Typography>
+								<Typography variant='h4'>{product.price?.toFixed(2)} USD</Typography>
 								<Typography variant='overline'>Precio base</Typography>
 							</Card>
 
 							<Card className='border-border/50 bg-accent/20 w-full rounded-2xl border-none p-4 shadow-none'>
-								<Typography variant='h4'>{(product.price * product.stock).toFixed(2)} USD</Typography>
+								<Typography variant='h4'>{(product.price * product.stock)?.toFixed(2)} USD</Typography>
 								<Typography variant='overline'>Caja total</Typography>
 							</Card>
 						</CardContent>

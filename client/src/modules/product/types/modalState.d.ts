@@ -1,4 +1,5 @@
 // INTERFAZ  OBTIENIDA DE RETURN DE "useModalState.ts"
+
 import { I_Product } from '@/modules/product/types/product'
 
 export interface ModalState {
@@ -6,7 +7,7 @@ export interface ModalState {
 	isDialogOpen: boolean
 	currentRecord: Partial<I_Product> | null
 	openCreateDialog: () => void
-	openEditDialog: (record: I_Product) => void
+	openEditDialog: (product: I_Product) => void
 	closeDialog: () => void
 
 	// Hard delete modal state
@@ -14,6 +15,6 @@ export interface ModalState {
 	recordToHardDelete: I_Product | null
 	isHardDeleting: boolean
 	setIsHardDeleting: (value: boolean) => void
-	openHardDeleteModal: (record: I_Product) => void
+	openHardDeleteModal: (product: I_Product) => void
 	closeHardDeleteModal: () => void
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import api from '@/shared/lib/axios'
+import api from '@/lib/axios'
 import { toast } from 'sonner'
 import { useCallback, useRef, useState } from 'react'
 import { FileUploadResponse_I } from '@/common/types/file'

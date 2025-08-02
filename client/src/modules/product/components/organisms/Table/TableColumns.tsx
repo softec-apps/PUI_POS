@@ -2,13 +2,12 @@
 
 import { Icons } from '@/components/icons'
 import { ColumnDef } from '@tanstack/react-table'
-import { Badge } from '@/components/layout/atoms/Badge'
 import { I_Product } from '@/modules/product/types/product'
+import { ProductStatusBadge } from '../../atoms/ProductStatusBadge'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { ProductImage } from '@/modules/product/components/molecules/ProductImage'
 import { TableActions } from '@/modules/product/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/product/components/organisms/Table/TableInfoDate'
-import { ProductImage } from '@/modules/product/components/molecules/ProductImage'
-import { ProductStatusBadge } from '../../atoms/ProductStatusBadge'
 
 interface Props {
 	onEdit: (recordData: I_Product) => void

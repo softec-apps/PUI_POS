@@ -5,11 +5,11 @@ import { Icons } from '@/components/icons'
 import { Typography } from '@/components/ui/typography'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 
-interface Props {
+interface ProductHeaderProps {
 	onCreateClick: () => void
 }
 
-export function SupplierHeader({ onCreateClick }: Props) {
+export function ProductHeader({ onCreateClick }: ProductHeaderProps) {
 	return (
 		<motion.section
 			initial={{ opacity: 0, y: -12, filter: 'blur(0px)' }}
@@ -26,13 +26,7 @@ export function SupplierHeader({ onCreateClick }: Props) {
 			</div>
 
 			<div className='flex gap-2'>
-				<ActionButton
-					size='lg'
-					variant='default'
-					icon={<Icons.plus />}
-					text='Nuevo proveedor'
-					onClick={onCreateClick}
-				/>
+				<ActionButton size='lg' variant='default' icon={<Icons.plus />} text='Nuevo producto' onClick={onCreateClick} />
 			</div>
 		</motion.section>
 	)

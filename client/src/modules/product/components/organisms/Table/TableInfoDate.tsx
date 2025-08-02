@@ -9,7 +9,7 @@ interface Props {
 
 export const TableInfoDate = ({ recordData }: Props) => (
 	<div className='text-primary/95 space-y-1 text-xs'>
-		<div>Creado: {formatDate(recordData?.createdAt, true)}</div>
-		<div>Editado: {formatDate(recordData?.updatedAt, true)}</div>
+		<div>Creado: {formatDate(recordData.createdAt)}</div>
+		<div>Editado: {formatDate(recordData.updatedAt)}</div>
 	</div>
 )

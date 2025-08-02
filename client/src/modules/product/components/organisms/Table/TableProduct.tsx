@@ -20,7 +20,7 @@ import { ViewType } from '@/modules/product/components/molecules/ViewSelector'
 import { LoadingStates } from '@/modules/product/components/organisms/Table/StateLoading'
 import { createTableColumns } from '@/modules/product/components/organisms/Table/TableColumns'
 
-interface Props {
+interface TableProductProps {
 	loading: boolean
 	recordsData: I_Product[]
 	viewType: ViewType
@@ -28,7 +28,7 @@ interface Props {
 	onHardDelete: (recordsData: I_Product) => void
 }
 
-export function TableProduct({ recordsData, loading, viewType, onEdit, onHardDelete }: Props) {
+export function TableProduct({ recordsData, loading, viewType, onEdit, onHardDelete }: TableProductProps) {
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState('')

@@ -1,51 +1,53 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { I_Supplier } from '@/modules/supplier/types/supplier'
+import { I_Product } from '@/modules/product/types/product'
 import { Table as ReactTable, flexRender } from '@tanstack/react-table'
-import { animations } from '@/modules/supplier/components/atoms/animations'
+import { animations } from '@/modules/product/components/atoms/animations'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-interface TableViewProps {
-	recordsData: ReactTable<I_Supplier>
+interface Props {
+	recordsData: ReactTable<I_Product>
 }
 
-export const TableView = ({ recordsData }: TableViewProps) => (
-	<motion.div initial='hidden' animate='visible' variants={animations.container}>
-		<Table>
-			<TableHeader>
-				{recordsData.getHeaderGroups().map(headerGroup => (
-					<TableRow key={headerGroup.id}>
-						{headerGroup.headers.map(header => (
-							<TableHead key={header.id} className='text-muted-foreground whitespace-nowrap'>
-								{flexRender(header.column.columnDef.header, header.getContext())}
-							</TableHead>
-						))}
-					</TableRow>
-				))}
-			</TableHeader>
-
-			<TableBody className='divide-y'>
-				<AnimatePresence mode='sync'>
-					{recordsData.getRowModel().rows.map(row => (
-						<motion.tr
-							key={row.id}
-							variants={animations.rowItem}
-							initial='hidden'
-							animate='visible'
-							exit='exit'
-							whileHover='hover'
-							layout='position'
-							className='group'>
-							{row.getVisibleCells().map(cell => (
-								<TableCell key={cell.id} className='text-primary p-2'>
-									{flexRender(cell.column.columnDef.cell, cell.getContext())}
-								</TableCell>
+export const TableView = ({ recordsData }: Props) => (
+	<div className='space-y-4'>
+		<motion.div initial='hidden' animate='visible' variants={animations.container}>
+			<Table>
+				<TableHeader>
+					{recordsData.getHeaderGroups().map(headerGroup => (
+						<TableRow key={headerGroup.id}>
+							{headerGroup.headers.map(header => (
+								<TableHead key={header.id} className='text-muted-foreground whitespace-nowrap'>
+									{flexRender(header.column.columnDef.header, header.getContext())}
+								</TableHead>
 							))}
-						</motion.tr>
+						</TableRow>
 					))}
-				</AnimatePresence>
-			</TableBody>
-		</Table>
-	</motion.div>
+				</TableHeader>
+
+				<TableBody className='divide-y'>
+					<AnimatePresence mode='sync'>
+						{recordsData.getRowModel().rows.map(row => (
+							<motion.tr
+								key={row.id}
+								variants={animations.rowItem}
+								initial='hidden'
+								animate='visible'
+								exit='exit'
+								whileHover='hover'
+								layout='position'
+								className='group'>
+								{row.getVisibleCells().map(cell => (
+									<TableCell key={cell.id} className='text-primary px-0'>
+										{flexRender(cell.column.columnDef.cell, cell.getContext())}
+									</TableCell>
+								))}
+							</motion.tr>
+						))}
+					</AnimatePresence>
+				</TableBody>
+			</Table>
+		</motion.div>
+	</div>
 )

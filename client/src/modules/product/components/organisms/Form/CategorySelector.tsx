@@ -5,17 +5,16 @@ import { Button } from '@/components/ui/button'
 import { I_Category } from '@/modules/category/types/category'
 import { AlertMessage } from '@/components/layout/atoms/Alert'
 import { Control, UseFormSetValue, UseFormWatch } from 'react-hook-form'
-import { TemplateFormData } from '@/modules/template/types/template-form'
+import { ProductFormData } from '@/modules/product/types/product-form'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { SelectedCategoryDisplay } from '@/modules/template/components/organisms/Form/SelectedCategoryDisplay'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 
 interface CategorySelectorProps {
-	control: Control<TemplateFormData>
-	setValue: UseFormSetValue<TemplateFormData>
-	watch: UseFormWatch<TemplateFormData>
+	control: Control<ProductFormData>
+	setValue: UseFormSetValue<ProductFormData>
+	watch: UseFormWatch<ProductFormData>
 	categories: I_Category[]
 	loadingCategories: boolean
 	categorySearch: string
@@ -35,7 +34,6 @@ export function CategorySelector({
 	setCategorySearch,
 	categoryOpen,
 	setCategoryOpen,
-	loadMoreCategories,
 }: CategorySelectorProps) {
 	const watchedCategoryId = watch('categoryId')
 
@@ -52,7 +50,7 @@ export function CategorySelector({
 		<Card className='border-none bg-transparent p-0 shadow-none'>
 			<CardHeader className='p-0'>
 				<CardTitle className='flex items-center gap-2 text-lg'>
-					<Icons.infoCircle className='h-4 w-4' />
+					<Icons.listDetails className='h-4 w-4' />
 					Categoría
 				</CardTitle>
 				<CardDescription>Organiza tu plantilla en una categoría específica</CardDescription>
@@ -115,15 +113,6 @@ export function CategorySelector({
 																{category.label}
 															</CommandItem>
 														))}
-
-														{/* 
-														{!categories?.data?.hasNextPage && (
-															<CommandItem onSelect={loadMoreCategories}>
-																<Icons.plus className='mr-2 h-4 w-4' />
-																Mostrar más categorías...
-															</CommandItem>
-														)}
-														*/}
 													</CommandGroup>
 												</CommandList>
 											</Command>
@@ -133,19 +122,6 @@ export function CategorySelector({
 								</FormItem>
 							)}
 						/>
-
-						{/* 
-							{watchedCategoryId && selectedCategory && (
-								<SelectedCategoryDisplay
-									category={{
-										id: selectedCategory.id,
-										name: selectedCategory.name,
-									}}
-									categoryOptions={categoryOptions}
-									onRemove={() => setValue('categoryId', '', { shouldValidate: true })}
-								/>
-							)}
-							*/}
 					</>
 				)}
 			</CardContent>
