@@ -44,9 +44,9 @@ export const ListView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 								<CardContent className='px-4'>
 									<div className='flex items-start space-x-4'>
 										<div className='bg-muted/20 relative h-32 w-40 flex-shrink-0 rounded-xl'>
-											{recordData?.category?.photo ? (
+											{recordData?.photo ? (
 												<Image
-													src={recordData?.category?.photo?.path}
+													src={recordData?.photo?.path}
 													alt={recordData?.name}
 													fill
 													unoptimized
