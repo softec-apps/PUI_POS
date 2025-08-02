@@ -1,5 +1,5 @@
 'use client'
-import Image from 'next/image'
+
 import { Icons } from '@/components/icons'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/layout/atoms/Badge'
@@ -13,7 +13,7 @@ import { TableActions } from '@/modules/product/components/organisms/Table/Table
 import { TableInfoDate } from '@/modules/product/components/organisms/Table/TableInfoDate'
 import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductStatusBadge'
 import { formatPrice } from '@/common/utils/formatPrice-util'
-import { ProductImage } from '../molecules/ProductImage'
+import { ProductImage } from '@/modules/product/components/molecules/ProductImage'
 
 interface Props {
 	recordsData: ReactTable<I_Product>
