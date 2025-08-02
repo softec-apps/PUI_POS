@@ -1,4 +1,5 @@
 'use client'
+
 import { Icons } from '@/components/icons'
 import { Control, UseFormSetValue, UseFormWatch } from 'react-hook-form'
 import { ProductFormData } from '@/modules/product/types/product-form'
@@ -6,15 +7,17 @@ import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileUploadSection } from '@/modules/product/components/organisms/FileUpload'
 import { useFileUpload } from '@/common/hooks/useFileUpload'
-import { ChangeEvent } from 'react'
+import { ChangeEvent, useEffect } from 'react'
 
 interface MediaSectionProps {
 	control: Control<ProductFormData>
 	setValue: UseFormSetValue<ProductFormData>
 	watch: UseFormWatch<ProductFormData>
+	productData?: any
+	currentRecord?: any
 }
 
-export function MediaSection({ control, setValue, watch }: MediaSectionProps) {
+export function MediaSection({ control, setValue, watch, productData, currentRecord }: MediaSectionProps) {
 	const { previewImage, isUploading, fileInputRef, uploadFile, clearPreview, triggerFileInput, setPreviewImage } =
 		useFileUpload({
 			showPreview: true,
@@ -23,6 +26,57 @@ export function MediaSection({ control, setValue, watch }: MediaSectionProps) {
 
 	// Observar el campo photo del formulario
 	const currentPhoto = watch('photo')
+	const removePhoto = watch('removePhoto')
+
+	// Obtener la imagen completa del productData si está disponible
+	const getImageForDisplay = () => {
+		// Si tenemos productData y tiene photo como objeto, usarlo
+		if (productData?.photo && typeof productData.photo === 'object') {
+			return productData.photo
+		}
+		// Si tenemos currentRecord y tiene photo como objeto, usarlo
+		if (currentRecord?.photo && typeof currentRecord.photo === 'object') {
+			return currentRecord.photo
+		}
+		// Si currentPhoto ya es un objeto con path, usarlo directamente
+		if (currentPhoto && typeof currentPhoto === 'object' && currentPhoto.path) {
+			return currentPhoto
+		}
+		// Si solo tenemos el ID, crear objeto con el ID y null para path
+		if (currentPhoto && typeof currentPhoto === 'string') {
+			return { id: currentPhoto, path: null }
+		}
+		return null
+	}
+
+	const imageForDisplay = getImageForDisplay()
+
+	// Sincronizar la imagen existente con el hook cuando el formulario se inicializa
+	useEffect(() => {
+		// Extraer el ID de la foto para el formulario
+		let photoId = ''
+		if (currentPhoto && typeof currentPhoto === 'object' && currentPhoto.id) {
+			photoId = currentPhoto.id
+		} else if (currentPhoto && typeof currentPhoto === 'string') {
+			photoId = currentPhoto
+		}
+
+		// Si el valor actual del formulario no coincide con el ID extraído, actualizarlo
+		if (photoId && photoId !== (typeof currentPhoto === 'string' ? currentPhoto : '')) {
+			setValue('photo', photoId, { shouldValidate: true })
+		}
+
+		// Manejar el preview de la imagen
+		if (photoId && !removePhoto && imageForDisplay?.path) {
+			if (!previewImage) {
+				setPreviewImage(imageForDisplay.path)
+			}
+		} else if (removePhoto || !photoId) {
+			if (previewImage) {
+				setPreviewImage(null)
+			}
+		}
+	}, [currentPhoto, removePhoto, setPreviewImage, imageForDisplay?.path, previewImage, setValue])
 
 	const handleFileChange = async (e: ChangeEvent<HTMLInputElement>): Promise<string | null> => {
 		const file = e.target.files?.[0]
@@ -60,12 +114,12 @@ export function MediaSection({ control, setValue, watch }: MediaSectionProps) {
 					<FileUploadSection
 						fileInputRef={fileInputRef}
 						previewImage={previewImage}
-						currentImage={currentPhoto}
+						currentImage={imageForDisplay}
 						isUploading={isUploading}
 						onFileChange={handleFileChange}
 						onTriggerFileInput={triggerFileInput}
 						onClearPreview={handleClearPreview}
-						shouldHideCurrentImage={false}
+						shouldHideCurrentImage={removePhoto || false}
 					/>
 				</div>
 

@@ -9,6 +9,7 @@ import {
 import { Product } from '@/modules/product/domain/product'
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -64,9 +65,7 @@ export class ProductService {
       if (createProductDto.brandId) {
         brand = await this.brandRepository.findById(createProductDto.brandId)
         if (!brand) {
-          throw new NotFoundException(
-            `Marca con ID ${createProductDto.brandId} no encontrada`,
-          )
+          throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.BRAND)
         }
       }
 
@@ -76,9 +75,7 @@ export class ProductService {
           createProductDto.categoryId,
         )
         if (!category) {
-          throw new NotFoundException(
-            `Categoría con ID ${createProductDto.categoryId} no encontrada`,
-          )
+          throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.CATEGORY)
         }
       }
 
@@ -88,9 +85,7 @@ export class ProductService {
           createProductDto.supplierId,
         )
         if (!supplier) {
-          throw new NotFoundException(
-            `Proveedor con ID ${createProductDto.supplierId} no encontrado`,
-          )
+          throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.SUPPLIER)
         }
       }
 
@@ -98,9 +93,7 @@ export class ProductService {
         createProductDto.templateId,
       )
       if (!template) {
-        throw new NotFoundException(
-          `Template con ID ${createProductDto.templateId} no encontrado`,
-        )
+        throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.TEMPLATE)
       }
 
       let photo: FileType | null | undefined = undefined
@@ -145,7 +138,7 @@ export class ProductService {
         // Validate that user exists
         const user = await this.userRepository.findById(userId)
         if (!user) {
-          throw new NotFoundException({ message: 'Usuario no encontrado' })
+          throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND)
         }
 
         // Calculate financial values for the initial stock
@@ -236,6 +229,7 @@ export class ProductService {
   async update(
     id: Product['id'],
     updateProductDto: UpdateProductDto,
+    userId: string,
   ): Promise<ApiResponse<Product>> {
     return this.dataSource.transaction(async (entityManager) => {
       // Verificar que el producto exista antes de actualizar
@@ -250,9 +244,8 @@ export class ProductService {
       const updateData: Partial<Product> = {}
 
       // Actualización de propiedades básicas
-      if (updateProductDto.name !== undefined) {
+      if (updateProductDto.name !== undefined)
         updateData.name = updateProductDto.name
-      }
 
       // Manejo de la descripción
       if (updateProductDto.description !== undefined) {
@@ -264,37 +257,66 @@ export class ProductService {
       }
 
       // Validación del status
-      if (updateProductDto.status !== undefined) {
-        if (!Object.values(ProductStatus).includes(updateProductDto.status)) {
-          throw new BadRequestException(
-            `Estado inválido. Debe ser uno de: ${Object.values(ProductStatus).join(', ')}`,
-          )
-        }
+      if (updateProductDto.status !== undefined)
         updateData.status = updateProductDto.status
-      }
 
       // Actualización de propiedades numéricas
-      if (updateProductDto.price !== undefined) {
+      if (updateProductDto.price !== undefined)
         updateData.price = updateProductDto.price
-      }
+
+      // *** STOCK MANAGEMENT WITH KARDEX INTEGRATION ***
+      let shouldCreateKardexEntry = false
+      let stockMovementData: {
+        stockBefore: number
+        stockAfter: number
+        quantity: number
+        movementType: KardexMovementType
+        reason: string
+      } | null = null
 
       if (updateProductDto.stock !== undefined) {
+        const stockBefore = existingProduct.stock ?? 0
+        const stockAfter = updateProductDto.stock
+        const quantity = Math.abs(stockAfter - stockBefore)
+
+        // Only create Kardex entry if stock actually changes and quantity > 0
+        if (stockBefore !== stockAfter && quantity > 0) {
+          shouldCreateKardexEntry = true
+
+          // Determine movement type based on stock change
+          const movementType =
+            stockAfter > stockBefore
+              ? KardexMovementType.ADJUSTMENT_IN // Stock increase
+              : KardexMovementType.ADJUSTMENT_OUT // Stock decrease (could also be ADJUSTMENT)
+
+          stockMovementData = {
+            stockBefore,
+            stockAfter,
+            quantity,
+            movementType,
+            reason: '',
+          }
+
+          // Validate sufficient stock for decreases
+          if (stockAfter < 0) {
+            throw new ConflictException({
+              message: MESSAGE_RESPONSE.CONFLIC.INSUFFICIENT_SCTOCK,
+            })
+          }
+        }
         updateData.stock = updateProductDto.stock
       }
 
       // Actualización de códigos identificadores
-      if (updateProductDto.sku !== undefined) {
+      if (updateProductDto.sku !== undefined)
         updateData.sku = updateProductDto.sku || null
-      }
 
-      if (updateProductDto.barCode !== undefined) {
+      if (updateProductDto.barCode !== undefined)
         updateData.barCode = updateProductDto.barCode || null
-      }
 
       // Actualización de isVariant si está presente
-      if (updateProductDto.isVariant !== undefined) {
+      if (updateProductDto.isVariant !== undefined)
         updateData.isVariant = updateProductDto.isVariant
-      }
 
       // Manejo de relaciones con validación
       if (updateProductDto.brandId !== undefined) {
@@ -303,9 +325,7 @@ export class ProductService {
             updateProductDto.brandId,
           )
           if (!brand) {
-            throw new NotFoundException(
-              `Marca con ID ${updateProductDto.brandId} no encontrada`,
-            )
+            throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.BRAND)
           }
           updateData.brand = brand
         } else {
@@ -319,16 +339,9 @@ export class ProductService {
             updateProductDto.templateId,
           )
           if (!template) {
-            throw new NotFoundException(
-              `Template con ID ${updateProductDto.templateId} no encontrado`,
-            )
+            throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.TEMPLATE)
           }
           updateData.template = template
-        } else {
-          // El template es obligatorio según tu DTO de creación
-          throw new BadRequestException(
-            'El template es obligatorio y no puede ser null',
-          )
         }
       }
 
@@ -338,9 +351,7 @@ export class ProductService {
             updateProductDto.categoryId,
           )
           if (!category) {
-            throw new NotFoundException(
-              `Categoría con ID ${updateProductDto.categoryId} no encontrada`,
-            )
+            throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.CATEGORY)
           }
           updateData.category = category
         } else {
@@ -354,9 +365,7 @@ export class ProductService {
             updateProductDto.supplierId,
           )
           if (!supplier) {
-            throw new NotFoundException(
-              `Proveedor con ID ${updateProductDto.supplierId} no encontrado`,
-            )
+            throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.SUPPLIER)
           }
           updateData.supplier = supplier
         } else {
@@ -381,22 +390,52 @@ export class ProductService {
         }
       }
 
-      // Verificar que hay algo que actualizar
-      if (Object.keys(updateData).length === 0) {
-        throw new BadRequestException('No hay datos para actualizar')
-      }
-
-      // Ejecutar la actualización
+      // Ejecutar la actualización del producto
       const updatedProduct = await this.productRepository.update(
         id,
         updateData,
         entityManager,
       )
 
+      // *** CREATE KARDEX ENTRY FOR STOCK CHANGES ***
+      if (shouldCreateKardexEntry && stockMovementData) {
+        // Validate that user exists
+        const user = await this.userRepository.findById(userId)
+        if (!user) throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.USER)
+
+        // Calculate financial values for the stock movement
+        const unitCost = updateProductDto.price || existingProduct.price || 0
+        const taxRate = 15
+        const subtotal = parseFloat(
+          (stockMovementData.quantity * unitCost).toFixed(6),
+        )
+
+        const taxAmount = parseFloat(((subtotal * taxRate) / 100).toFixed(6))
+        const total = parseFloat((subtotal + taxAmount).toFixed(6))
+
+        // Create Kardex entry for stock change
+        await this.kardexRepository.create(
+          {
+            product: updatedProduct,
+            user,
+            movementType: stockMovementData.movementType,
+            quantity: stockMovementData.quantity,
+            unitCost,
+            subtotal,
+            taxRate,
+            taxAmount,
+            total,
+            stockBefore: stockMovementData.stockBefore,
+            stockAfter: stockMovementData.stockAfter,
+            reason: stockMovementData.reason,
+          },
+          entityManager,
+        )
+      }
+
       return updatedResponse({
         resource: PATH_SOURCE.PRODUCT,
         message: MESSAGE_RESPONSE.UPDATED,
-        data: updatedProduct, // Opcional: incluir el producto actualizado
       })
     })
   }

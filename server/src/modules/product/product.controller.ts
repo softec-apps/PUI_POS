@@ -53,8 +53,6 @@ export class ProductController {
     @Body() createProductDto: CreateProductDto,
     @Request() req: any,
   ): Promise<ApiResponse<Product>> {
-    console.log(createProductDto)
-    console.log('User ID:', req.user.id)
     return await this.productService.create(createProductDto, req.user.id)
   }
 
@@ -104,8 +102,13 @@ export class ProductController {
   async update(
     @Param() param: ParamProductDto,
     @Body() updateProductDto: UpdateProductDto,
+    @Request() req: any,
   ): Promise<ApiResponse<Product>> {
-    return await this.productService.update(param.id, updateProductDto)
+    return await this.productService.update(
+      param.id,
+      updateProductDto,
+      req.user.id,
+    )
   }
 
   /**
