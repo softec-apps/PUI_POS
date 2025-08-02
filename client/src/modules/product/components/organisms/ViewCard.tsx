@@ -48,13 +48,13 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 											<TableActions recordData={recordData} onEdit={onEdit} onHardDelete={onHardDelete} />
 										</div>
 
-										{recordData?.category?.photo ? (
+										{recordData?.photo ? (
 											<Image
-												src={recordData.category?.photo?.path}
+												src={recordData.photo?.path}
 												alt={recordData.name}
 												fill
 												unoptimized
-												className='bg-muted rounded-t-xl object-cover'
+												className='bg-muted rounded-t-xl object-contain'
 											/>
 										) : (
 											<div className='bg-muted/50 flex h-full items-center justify-center'>
