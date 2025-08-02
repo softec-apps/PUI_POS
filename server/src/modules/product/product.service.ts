@@ -36,23 +36,28 @@ import { Brand } from '@/modules/brand/domain/brand'
 import { Supplier } from '@/modules/suppliers/domain/supplier'
 import { FileType } from '@/modules/files/domain/file'
 import { FilesService } from '@/modules/files/files.service'
+import { KardexMovementType } from '@/modules/kardex/movement-type.enum'
+import { UserRepository } from '@/modules/users/infrastructure/persistence/user.repository'
+import { KardexRepository } from '@/modules/kardex/infrastructure/persistence/kardex.repository'
 
 @Injectable()
 export class ProductService {
   constructor(
     private readonly dataSource: DataSource,
+    private readonly filesService: FilesService,
     private readonly fileRepository: FileRepository,
+    private readonly userRepository: UserRepository,
     private readonly brandRepository: BrandRepository,
+    private readonly kardexRepository: KardexRepository,
     private readonly productRepository: ProductRepository,
     private readonly supplierRepository: SupplierRepository,
     private readonly templateRepository: TemplateRepository,
     private readonly categoryRepository: CategoryRepository,
-
-    private readonly filesService: FilesService,
   ) {}
 
   async create(
     createProductDto: CreateProductDto,
+    userId: string,
   ): Promise<ApiResponse<Product>> {
     return this.dataSource.transaction(async (entityManager) => {
       let brand: Brand | null | undefined = undefined
@@ -89,12 +94,6 @@ export class ProductService {
         }
       }
 
-      if (!createProductDto.templateId) {
-        throw new BadRequestException(
-          'El template es obligatorio para crear un producto',
-        )
-      }
-
       const template = await this.templateRepository.findById(
         createProductDto.templateId,
       )
@@ -120,7 +119,7 @@ export class ProductService {
       }
 
       // Crear el producto con todas las propiedades requeridas
-      await this.productRepository.create(
+      const createdProduct = await this.productRepository.create(
         {
           isVariant: createProductDto.isVariant || false,
           name: createProductDto.name,
@@ -139,6 +138,42 @@ export class ProductService {
         },
         entityManager,
       )
+
+      // Create Kardex entry if initial stock is provided
+      const initialStock = createProductDto.stock || 0
+      if (initialStock > 0) {
+        // Validate that user exists
+        const user = await this.userRepository.findById(userId)
+        if (!user) {
+          throw new NotFoundException({ message: 'Usuario no encontrado' })
+        }
+
+        // Calculate financial values for the initial stock
+        const unitCost = createProductDto.price || 0
+        const taxRate = 15
+        const subtotal = parseFloat((initialStock * unitCost).toFixed(6))
+        const taxAmount = parseFloat(((subtotal * taxRate) / 100).toFixed(6))
+        const total = parseFloat((subtotal + taxAmount).toFixed(6))
+
+        // Create Kardex entry for initial stock
+        await this.kardexRepository.create(
+          {
+            product: createdProduct,
+            user,
+            movementType: KardexMovementType.PURCHASE,
+            quantity: initialStock,
+            unitCost,
+            subtotal,
+            taxRate,
+            taxAmount,
+            total,
+            stockBefore: 0,
+            stockAfter: initialStock,
+            reason: 'Stock inicial del producto',
+          },
+          entityManager,
+        )
+      }
 
       return createdResponse({
         resource: PATH_SOURCE.PRODUCT,

@@ -11,6 +11,7 @@ import {
   HttpStatus,
   Controller,
   SerializeOptions,
+  Request,
 } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { Roles } from '@/modules/roles/roles.decorator'
@@ -50,8 +51,11 @@ export class ProductController {
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createProductDto: CreateProductDto,
+    @Request() req: any,
   ): Promise<ApiResponse<Product>> {
-    return await this.productService.create(createProductDto)
+    console.log(createProductDto)
+    console.log('User ID:', req.user.id)
+    return await this.productService.create(createProductDto, req.user.id)
   }
 
   /**

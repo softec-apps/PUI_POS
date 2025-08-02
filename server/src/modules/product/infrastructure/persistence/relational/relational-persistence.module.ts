@@ -8,6 +8,8 @@ import { BrandEntity } from '@/modules/brand/infrastructure/persistence/relation
 import { FileEntity } from '@/modules/files/infrastructure/persistence/relational/entities/file.entity'
 import { TemplateEntity } from '@/modules/template/infrastructure/persistence/relational/entities/template.entity'
 import { ProductRelationalRepository } from '@/modules/product/infrastructure/persistence/relational/repositories/product.repository'
+import { KardexEntity } from '@/modules/kardex/infrastructure/persistence/relational/entities/kardex.entity'
+import { UserEntity } from '@/modules/users/infrastructure/persistence/relational/entities/user.entity'
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { ProductRelationalRepository } from '@/modules/product/infrastructure/pe
       SupplierEntity,
       CategoryEntity,
       BrandEntity,
+      KardexEntity,
+      UserEntity,
       FileEntity,
       TemplateEntity,
     ]),
