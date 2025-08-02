@@ -2,8 +2,8 @@
 
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
-import { ViewType } from '@/modules/atribute/components/molecules/ViewSelector'
-import { TableSkeleton } from '@/modules/atribute/components/organisms/Table/TableSkeleton'
+import { ViewType } from '@/modules/product/components/molecules/ViewSelector'
+import { TableSkeleton } from '@/modules/product/components/organisms/Table/TableSkeleton'
 
 interface LoadingStatesProps {
 	viewType: ViewType

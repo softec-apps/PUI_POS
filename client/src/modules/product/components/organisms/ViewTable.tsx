@@ -11,43 +11,41 @@ interface Props {
 }
 
 export const TableView = ({ recordsData }: Props) => (
-	<div className='space-y-4'>
-		<motion.div initial='hidden' animate='visible' variants={animations.container}>
-			<Table>
-				<TableHeader>
-					{recordsData.getHeaderGroups().map(headerGroup => (
-						<TableRow key={headerGroup.id}>
-							{headerGroup.headers.map(header => (
-								<TableHead key={header.id} className='text-muted-foreground whitespace-nowrap'>
-									{flexRender(header.column.columnDef.header, header.getContext())}
-								</TableHead>
-							))}
-						</TableRow>
-					))}
-				</TableHeader>
-
-				<TableBody className='divide-y'>
-					<AnimatePresence mode='sync'>
-						{recordsData.getRowModel().rows.map(row => (
-							<motion.tr
-								key={row.id}
-								variants={animations.rowItem}
-								initial='hidden'
-								animate='visible'
-								exit='exit'
-								whileHover='hover'
-								layout='position'
-								className='group'>
-								{row.getVisibleCells().map(cell => (
-									<TableCell key={cell.id} className='text-primary px-0'>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</TableCell>
-								))}
-							</motion.tr>
+	<motion.div initial='hidden' animate='visible' variants={animations.container}>
+		<Table>
+			<TableHeader>
+				{recordsData.getHeaderGroups().map(headerGroup => (
+					<TableRow key={headerGroup.id}>
+						{headerGroup.headers.map(header => (
+							<TableHead key={header.id} className='text-muted-foreground whitespace-nowrap'>
+								{flexRender(header.column.columnDef.header, header.getContext())}
+							</TableHead>
 						))}
-					</AnimatePresence>
-				</TableBody>
-			</Table>
-		</motion.div>
-	</div>
+					</TableRow>
+				))}
+			</TableHeader>
+
+			<TableBody className='divide-y'>
+				<AnimatePresence mode='sync'>
+					{recordsData.getRowModel().rows.map(row => (
+						<motion.tr
+							key={row.id}
+							variants={animations.rowItem}
+							initial='hidden'
+							animate='visible'
+							exit='exit'
+							whileHover='hover'
+							layout='position'
+							className='group'>
+							{row.getVisibleCells().map(cell => (
+								<TableCell key={cell.id} className='text-primary'>
+									{flexRender(cell.column.columnDef.cell, cell.getContext())}
+								</TableCell>
+							))}
+						</motion.tr>
+					))}
+				</AnimatePresence>
+			</TableBody>
+		</Table>
+	</motion.div>
 )

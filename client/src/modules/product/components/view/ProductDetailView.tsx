@@ -17,6 +17,7 @@ import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductSt
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { FatalErrorState } from '@/components/layout/organims/ErrorStateCard'
 import { NotFoundState } from '@/components/layout/organims/NotFoundState'
+import { formatPrice } from '@/common/utils/formatPrice-util'
 
 type Props = {
 	productId: string
@@ -112,15 +113,8 @@ export function ProductDetailView({ productId }: Props) {
 						</div>
 
 						<div className='flex-1'>
-							<div className='mb-2 line-clamp-1 flex items-center justify-between gap-6 break-words'>
+							<div className='mb-2 line-clamp-1 break-words'>
 								<Typography variant='h3'>{product.name}</Typography>
-
-								<div className='flex gap-2'>
-									<Button variant='outline' size='sm'>
-										<Icons.dots className='h-4 w-4' />
-										Más
-									</Button>
-								</div>
 							</div>
 
 							<div className='flex items-center justify-between'>
@@ -136,7 +130,14 @@ export function ProductDetailView({ productId }: Props) {
 									)}
 
 									<ProductStatusBadge status={product.status} />
+
+									{product?.deletedAt && <Badge variant='destructive' text='Producto removido' />}
 								</div>
+
+								<Button variant='outline' size='sm'>
+									<Icons.dots className='h-4 w-4' />
+									Más
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -154,12 +155,12 @@ export function ProductDetailView({ productId }: Props) {
 							</Card>
 
 							<Card className='border-border/50 bg-accent/20 w-full rounded-2xl border-none p-4 shadow-none'>
-								<Typography variant='h4'>{product.price?.toFixed(2)} USD</Typography>
+								<Typography variant='h4'>{formatPrice(product.price)} USD</Typography>
 								<Typography variant='overline'>Precio base</Typography>
 							</Card>
 
 							<Card className='border-border/50 bg-accent/20 w-full rounded-2xl border-none p-4 shadow-none'>
-								<Typography variant='h4'>{(product.price * product.stock)?.toFixed(2)} USD</Typography>
+								<Typography variant='h4'>{formatPrice(product.price * product.stock)} USD</Typography>
 								<Typography variant='overline'>Caja total</Typography>
 							</Card>
 						</CardContent>
