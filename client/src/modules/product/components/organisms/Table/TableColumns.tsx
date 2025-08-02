@@ -3,10 +3,10 @@
 import { Icons } from '@/components/icons'
 import { ColumnDef } from '@tanstack/react-table'
 import { I_Product } from '@/modules/product/types/product'
-import { ProductStatusBadge } from '../../atoms/ProductStatusBadge'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { ProductImage } from '@/modules/product/components/molecules/ProductImage'
 import { TableActions } from '@/modules/product/components/organisms/Table/TableActions'
+import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductStatusBadge'
 import { TableInfoDate } from '@/modules/product/components/organisms/Table/TableInfoDate'
 
 interface Props {
