@@ -13,6 +13,7 @@ import { TableActions } from '@/modules/product/components/organisms/Table/Table
 import { TableInfoDate } from '@/modules/product/components/organisms/Table/TableInfoDate'
 import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductStatusBadge'
 import { formatPrice } from '@/common/utils/formatPrice-util'
+import { ProductImage } from '../molecules/ProductImage'
 
 interface Props {
 	recordsData: ReactTable<I_Product>
@@ -40,20 +41,14 @@ export const ListView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 								<CardContent className='p-4'>
 									<div className='flex items-start space-x-4'>
 										{/* Imagen del producto */}
-										<div className='bg-muted/20 relative h-32 w-40 flex-shrink-0 rounded-xl'>
-											{recordData?.photo ? (
-												<Image
-													src={recordData?.photo?.path}
-													alt={recordData?.name}
-													fill
-													unoptimized
-													className='rounded-lg object-contain'
-												/>
-											) : (
-												<div className='bg-muted/50 flex h-full w-full items-center justify-center rounded-lg'>
-													<Icons.media className='text-muted-foreground h-8 w-8' />
-												</div>
-											)}
+										<div className='relative'>
+											<ProductImage
+												recordData={recordData}
+												imageWidth={280}
+												imageHeight={250}
+												enableHover={false}
+												enableClick={false}
+											/>
 										</div>
 
 										{/* Información del producto */}
