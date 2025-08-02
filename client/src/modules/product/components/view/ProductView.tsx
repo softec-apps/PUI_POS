@@ -36,6 +36,7 @@ export function ProductView() {
 		handlePrevPage,
 		handleLimitChange,
 		handleSearchChange,
+		handleStatusChange,
 		handleSort,
 		handleResetAll,
 		handlePageChange,
@@ -133,6 +134,7 @@ export function ProductView() {
 						currentSort={currentSort}
 						currentStatus={currentStatus}
 						isRefreshing={isRefreshing}
+						onStatusChange={handleStatusChange}
 						onSearchChange={handleSearchChange}
 						onSort={handleSort}
 						onRefresh={handleRefresh}

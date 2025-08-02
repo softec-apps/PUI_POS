@@ -1,17 +1,18 @@
 'use client'
-
 import Image from 'next/image'
 import { Icons } from '@/components/icons'
 import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/layout/atoms/Badge'
 import { Typography } from '@/components/ui/typography'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Badge } from '@/components/layout/atoms/Badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table as ReactTable } from '@tanstack/react-table'
 import { I_Product } from '@/modules/product/types/product'
 import { animations } from '@/modules/product/components/atoms/animations'
 import { TableActions } from '@/modules/product/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/product/components/organisms/Table/TableInfoDate'
+import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductStatusBadge'
+import { formatPrice } from '@/common/utils/formatPrice-util'
 
 interface Props {
 	recordsData: ReactTable<I_Product>
@@ -21,12 +22,7 @@ interface Props {
 
 export const ListView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 	<div className='space-y-4'>
-		<motion.div
-			initial='hidden'
-			animate='visible'
-			variants={animations.container}
-			className='grid grid-cols-2 gap-4 space-y-4'
-			layout>
+		<motion.div initial='hidden' animate='visible' variants={animations.container} className='space-y-4' layout>
 			<AnimatePresence mode='sync'>
 				{recordsData.getRowModel().rows.map(row => {
 					const recordData = row.original
@@ -40,9 +36,10 @@ export const ListView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 							whileHover='hover'
 							layout
 							className='group'>
-							<Card className='border-border/50 overflow-hidden border shadow-none transition-all duration-300'>
-								<CardContent className='px-4'>
+							<Card className='border-border/50 overflow-hidden border p-0 shadow-none transition-all duration-300'>
+								<CardContent className='p-4'>
 									<div className='flex items-start space-x-4'>
+										{/* Imagen del producto */}
 										<div className='bg-muted/20 relative h-32 w-40 flex-shrink-0 rounded-xl'>
 											{recordData?.photo ? (
 												<Image
@@ -59,42 +56,87 @@ export const ListView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 											)}
 										</div>
 
+										{/* Información del producto */}
 										<div className='min-w-0 flex-1'>
 											<div className='flex items-start justify-between gap-2'>
 												<div className='min-w-0 flex-1 space-y-3'>
-													<div className='mb-1 flex items-start justify-between gap-2'>
-														<Typography variant='h6' className='line-clamp-1 break-words'>
-															{recordData.name}
-														</Typography>
+													{/* Header: Título y acciones */}
+													<div className='flex items-start justify-between gap-2'>
+														<div className='min-w-0 flex-1'>
+															<Typography variant='h6' className='mb-2 line-clamp-1 break-words'>
+																{recordData.name}
+															</Typography>
+															<div className='flex items-center gap-2'>
+																<Typography variant='overline' className='line-clamp-1 break-words'>
+																	{recordData.code}
+																</Typography>
 
+																<Badge
+																	text={`${recordData.stock} unidad${recordData.stock > 1 ? 'es' : ''}`}
+																	variant='info'
+																/>
+
+																{recordData.isVariant && <Badge variant='default' text='Variante' />}
+															</div>
+														</div>
 														<div className='flex-shrink-0'>
 															<TableActions recordData={recordData} onEdit={onEdit} onHardDelete={onHardDelete} />
 														</div>
 													</div>
 
+													{/* Precio y Stock */}
 													<div className='flex items-center justify-between'>
-														<Typography
-															variant='span'
-															className='text-muted-foreground mb-2 line-clamp-1 text-sm break-words'>
-															Descripción: {recordData.description || 'Sin descripción'}
+														<Typography variant='h6' className='text-primary font-semibold'>
+															${formatPrice(recordData.price)} USD
 														</Typography>
+													</div>
 
-														<Typography
-															variant='span'
-															className='text-muted-foreground mb-2 line-clamp-1 text-sm break-words'>
-															Descripción: {recordData.category?.name || '---'}
+													{/* Información de clasificación */}
+													<div className='grid grid-cols-1 gap-2 md:grid-cols-3'>
+														<div className='flex items-center gap-2'>
+															<Icons.brandMedium className='text-muted-foreground h-3 w-3' />
+															<Typography variant='span' className='text-muted-foreground text-sm'>
+																Marca: {recordData?.brand?.name || 'N/A'}
+															</Typography>
+														</div>
+
+														<div className='flex items-center gap-2'>
+															<Icons.listDetails className='text-muted-foreground h-3 w-3' />
+															<Typography variant='span' className='text-muted-foreground text-sm'>
+																Categoría: {recordData.category?.name || 'N/A'}
+															</Typography>
+														</div>
+
+														<div className='flex items-center gap-2'>
+															<Icons.truck className='text-muted-foreground h-3 w-3' />
+															<Typography variant='span' className='text-muted-foreground line-clamp-1 text-sm'>
+																Proveedor: {recordData?.supplier?.legalName || 'N/A'}
+															</Typography>
+														</div>
+													</div>
+
+													{/* Descripción */}
+													<Typography variant='span' className='text-muted-foreground line-clamp-2 text-sm break-words'>
+														{recordData.description || 'Sin descripción'}
+													</Typography>
+
+													{/* Códigos adicionales */}
+													<div className='flex flex-wrap gap-4'>
+														<Typography variant='span' className='text-muted-foreground text-xs'>
+															SKU: {recordData.sku || 'N/A'}
+														</Typography>
+														<Typography variant='span' className='text-muted-foreground text-xs'>
+															Código de barras: {recordData.barCode || 'N/A'}
 														</Typography>
 													</div>
 
 													<Separator />
 
+													{/* Footer: Status y fecha */}
 													<div className='flex items-center justify-between gap-2'>
-														<Badge
-															decord={false}
-															variant='info'
-															text={`${recordData.atributes?.length} atrib` || '0'}
-														/>
+														<ProductStatusBadge status={recordData.status} />
 
+														{recordData.isVariant && <Badge variant='default' text='Producto variante' />}
 														<div className='text-muted-foreground text-right text-xs'>
 															<TableInfoDate recordData={recordData} />
 														</div>

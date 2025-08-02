@@ -123,11 +123,7 @@ export function ProductDetailView({ productId }: Props) {
 
 									<span className='mx-1'>•</span>
 
-									{product.isVariant ? (
-										<Badge variant='default' text='Producto variante' />
-									) : (
-										<Badge variant='info' text='Producto principal' />
-									)}
+									{product.isVariant && <Badge variant='default' text='Producto variante' />}
 
 									<ProductStatusBadge status={product.status} />
 
