@@ -1,30 +1,32 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
-import { useProduct } from '@/common/hooks/useProduct'
 
-import { useModalState } from '@/modules/product/hooks/useModalState'
-import { usePagination } from '@/modules/product/hooks/usePagination'
-import { useSupplierHandlers } from '@/modules/product/hooks/useHandlers'
+import { useProduct } from '@/common/hooks/useProduct'
+import { useHandlers } from '@/modules/product/hooks/useHandlers'
 import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
+
+import { ViewType } from '@/modules/product/components/molecules/ViewSelector'
 
 import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
 import { UtilBanner } from '@/components/UtilBanner'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { SupplierHeader } from '@/modules/product/components/templates/Header'
-import { ModalsSupplier } from '@/modules/product/components/templates/Modals'
-import { AttributeFilters } from '@/modules/product/components/templates/Filters'
+import { useModalState } from '@/modules/product/hooks/useModalState'
+import { usePagination } from '@/modules/product/hooks/usePagination'
+
+import { ProductModals } from '@/modules/product/components/templates/Modals'
+import { ProductHeader } from '@/modules/product/components/templates/Header'
+import { ProductFilters } from '@/modules/product/components/templates/Filters'
 import { PaginationControls } from '@/modules/product/components/templates/Pagination'
 import { TableProduct } from '@/modules/product/components/organisms/Table/TableProduct'
-import { ViewType } from '@/modules/product/components/molecules/ViewSelector'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
 
 export function ProductView() {
 	const [retryCount, setRetryCount] = useState(0)
 	const [viewType, setViewType] = useState<ViewType>('table')
 
-	// Hooks de paginación
+	// ✅ URL-synced pagination hooks
 	const {
 		pagination,
 		searchTerm,
@@ -35,7 +37,6 @@ export function ProductView() {
 		handleLimitChange,
 		handleSearchChange,
 		handleSort,
-		handleStatusChange,
 		handleResetAll,
 		handlePageChange,
 	} = usePagination()
@@ -43,33 +44,34 @@ export function ProductView() {
 	// ✅ Memoizar parámetros de paginación para evitar recreaciones
 	const paginationParams = useMemo(
 		() => ({
-			search: searchTerm,
 			page: pagination.page,
 			limit: pagination.limit,
-			sort: currentSort ? [currentSort] : undefined,
+			search: searchTerm,
 			filters: currentStatus ? { status: currentStatus } : undefined,
+			sort: currentSort ? [currentSort] : undefined,
 		}),
 		[pagination.page, pagination.limit, searchTerm, currentStatus, currentSort]
 	)
 
+	// ✅ Main product hook con parámetros memoizados
 	const {
 		recordsData,
 		loading,
-		error: errorProducts,
+		error: errorProduct,
 		createRecord,
 		updateRecord,
 		hardDeleteRecord,
 		refetchRecords,
 	} = useProduct(paginationParams)
 
-	// Hook de refresh data
+	// ✅ Data refresh hook
 	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchRecords)
 
-	// Hooks de formulario y modales
+	// ✅ Form and modal hooks
 	const modalState = useModalState()
 
-	// Handlers
-	const recordsHandlers = useSupplierHandlers({
+	// ✅ Handlers optimizados
+	const productHandlers = useHandlers({
 		modalState,
 		createRecord,
 		updateRecord,
@@ -82,7 +84,7 @@ export function ProductView() {
 	}, [handleNextPage, recordsData?.data?.pagination?.hasNextPage])
 
 	// ✅ Memoizar datos derivados
-	const dataPaginated = useMemo(
+	const productData = useMemo(
 		() => ({
 			items: recordsData?.data?.items || [],
 			pagination: recordsData?.data?.pagination,
@@ -97,13 +99,13 @@ export function ProductView() {
 		refetchRecords()
 	}, [refetchRecords])
 
-	if (errorProducts && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
+	if (errorProduct && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
 
-	if (errorProducts) return <FatalErrorState />
+	if (errorProduct) return <FatalErrorState />
 
 	return (
 		<div className='flex flex-1 flex-col space-y-6'>
-			{dataPaginated?.pagination?.totalRecords === 0 ? (
+			{productData?.pagination?.totalRecords === 0 ? (
 				<Card className='flex h-screen items-center justify-center border-none bg-transparent shadow-none'>
 					<UtilBanner
 						icon={<Icons.dataBase />}
@@ -123,33 +125,32 @@ export function ProductView() {
 			) : (
 				<>
 					{/* Header */}
-					<SupplierHeader onCreateClick={modalState.openCreateDialog} />
+					<ProductHeader onCreateClick={modalState.openCreateDialog} />
 
-					{/* Filtros y búsqueda */}
-					<AttributeFilters
+					{/* Filters and search */}
+					<ProductFilters
 						searchValue={searchTerm}
 						currentSort={currentSort}
 						currentStatus={currentStatus}
 						isRefreshing={isRefreshing}
 						onSearchChange={handleSearchChange}
 						onSort={handleSort}
-						onStatusChange={handleStatusChange}
 						onRefresh={handleRefresh}
 						onResetAll={handleResetAll}
 						viewType={viewType}
 						onViewChange={setViewType}
 					/>
 
-					{/* Tabla */}
+					{/* Table */}
 					<TableProduct
-						recordsData={dataPaginated.items}
+						recordsData={productData.items}
 						loading={loading}
-						onEdit={recordsHandlers.handleEdit}
+						onEdit={productHandlers.handleEdit}
 						onHardDelete={modalState.openHardDeleteModal}
 						viewType={viewType}
 					/>
 
-					{/* Controles de paginación */}
+					{/* Pagination controls */}
 					<PaginationControls
 						loading={loading}
 						pagination={pagination}
@@ -162,8 +163,8 @@ export function ProductView() {
 				</>
 			)}
 
-			{/* Modales */}
-			<ModalsSupplier modalState={modalState} recordHandlers={recordsHandlers} />
+			{/* Modals */}
+			<ProductModals modalState={modalState} productHandlers={productHandlers} />
 		</div>
 	)
 }

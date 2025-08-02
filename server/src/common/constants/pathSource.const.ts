@@ -5,7 +5,9 @@ export const PATH_SOURCE = {
   CATEGORY: 'category',
   ATRIBUTE: 'atribute',
   TEMPLATE: 'template',
+  TEMPLATE_ATRIBUTE: 'template_atribute',
   SUPPLIER: 'supplier',
   BRAND: 'brand',
   PRODUCT: 'product',
+  KARDEX: 'kardex',
 }

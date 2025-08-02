@@ -81,6 +81,7 @@ const createLogEntry = (info: any) => {
   return lines.join('\n')
 }
 
+// Logger configurado SOLO para archivo (sin consola)
 const fileLogger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
@@ -88,13 +89,17 @@ const fileLogger = winston.createLogger({
     winston.format.printf(createLogEntry),
   ),
   transports: [
+    // SOLO transporte de archivo - removido el transporte de consola
     new winston.transports.File({
       filename: 'logs/requests.log',
-      maxsize: 10 * 1024 * 1024,
+      maxsize: 10 * 1024 * 1024, // 10MB
       maxFiles: 5,
       tailable: true,
     }),
   ],
+  // Opción adicional para evitar logs por defecto en consola
+  silent: false, // Mantén en false para que funcione el archivo
+  exitOnError: false,
 })
 
 @Injectable()
@@ -109,7 +114,9 @@ export class LoggingInterceptor implements NestInterceptor {
 
     // Generar UUID único para la petición
     const requestId = uuidv4()
-    response.locals.requestId = requestId
+    if ('locals' in response) {
+      response.locals.requestId = requestId
+    }
 
     const startTime = Date.now()
 

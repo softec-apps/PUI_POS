@@ -62,8 +62,7 @@ export class CreateProductTable1753198655934 implements MigrationInterface {
           -- Usar el valor de sequence que ya fue asignado por el default
           -- Extraer los primeros 8 caracteres del UUID (sin guiones y en mayúsculas)
           -- y concatenar con el sequence actual (rellenado con ceros a 5 dígitos)
-          NEW.code := 'PROD-' || UPPER(SUBSTR(REPLACE(NEW.id::text, '-', ''), 1, 8)) || '-' || 
-                      LPAD(NEW.sequence::text, 5, '0');
+          NEW.code := 'PROD' || '-' || LPAD(NEW.sequence::text, 5, '0');
           RETURN NEW;
       END;
       $$ LANGUAGE plpgsql;

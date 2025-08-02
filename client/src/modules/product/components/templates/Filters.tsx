@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
 import {
 	DropdownMenu,
 	DropdownMenuItem,
@@ -9,45 +8,48 @@ import {
 	DropdownMenuTrigger,
 	DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
+import { Sparkles } from 'lucide-react'
 import { Icons } from '@/components/icons'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Zap } from 'lucide-react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { SORT_OPTIONS } from '@/modules/atribute/constants/filters.constants'
-import { ViewSelector, ViewType } from '@/modules/atribute/components/molecules/ViewSelector'
+import { SORT_OPTIONS } from '@/modules/product/constants/product.constants'
+import { ViewSelector, ViewType } from '@/modules/product/components/molecules/ViewSelector'
 
-interface Props {
+interface ProductFiltersProps {
 	searchValue: string
 	isRefreshing: boolean
 	currentSort?: string
-	currentStatus?: 'active' | 'inactive' | ''
+	currentStatus?: boolean
 	onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 	onSort: (sortKey: string) => void
-	onStatusChange: (status?: boolean) => void
 	onRefresh: () => void
 	onResetAll: () => void
 	viewType: ViewType
 	onViewChange: (type: ViewType) => void
 }
 
-export function AttributeFilters({
+export function ProductFilters({
 	searchValue,
 	isRefreshing,
 	currentSort,
 	currentStatus,
 	onSearchChange,
 	onSort,
-	onStatusChange,
 	onRefresh,
 	onResetAll,
 	viewType,
 	onViewChange,
-}: Props) {
+}: ProductFiltersProps) {
 	const [isMounted, setIsMounted] = useState(false)
 	const [isSearchFocused, setIsSearchFocused] = useState(false)
-	const activeFiltersCount = [searchValue.length > 0, currentStatus !== '', currentSort !== ''].filter(Boolean).length
+
+	// Count active filters: search, sort, status (even if false)
+	const activeFiltersCount = [searchValue.length > 0, currentStatus !== undefined, currentSort !== ''].filter(
+		Boolean
+	).length
 
 	useEffect(() => setIsMounted(true), [])
 
@@ -60,19 +62,6 @@ export function AttributeFilters({
 		if (!currentSort) return 'Ordenar'
 		return SORT_OPTIONS.find(option => option.key === currentSort)?.label || 'Ordenar'
 	}, [currentSort])
-
-	const statusOptions: { key: boolean | undefined; label: string; color: string }[] = [
-		{ key: undefined, label: 'Todos', color: 'bg-muted' },
-		{ key: true, label: 'Requerido', color: 'bg-sky-500' },
-		{ key: false, label: 'No requerido', color: 'bg-red-500' },
-	]
-
-	const getCurrentStatusLabel = () => {
-		if (!currentStatus) return 'Filtro'
-		return currentStatus === 'active' ? 'Activo' : 'Inactivo'
-	}
-
-	const handleStatusChange = useCallback((status?: boolean) => onStatusChange(status), [onStatusChange])
 
 	if (!isMounted) return null
 
@@ -123,7 +112,7 @@ export function AttributeFilters({
 						</div>
 					</motion.div>
 
-					{/* Filter Controls */}
+					{/* Controls */}
 					<motion.div
 						className='flex items-center gap-2'
 						initial={{ opacity: 0, x: 15 }}
@@ -141,7 +130,9 @@ export function AttributeFilters({
 								<DropdownMenuLabel className='text-muted-foreground flex items-center gap-2 text-xs tracking-wide uppercase'>
 									<Sparkles className='h-3 w-3' /> Ordenar por
 								</DropdownMenuLabel>
+
 								<DropdownMenuSeparator />
+
 								{SORT_OPTIONS.map((option, i) => (
 									<DropdownMenuItem
 										key={option.key}
@@ -156,58 +147,6 @@ export function AttributeFilters({
 												{option.label}
 											</span>
 											{currentSort === option.key && (
-												<motion.div
-													className='bg-primary h-2 w-2 rounded-full'
-													initial={{ scale: 0 }}
-													animate={{ scale: 1 }}
-													transition={{ type: 'spring', stiffness: 500 }}
-												/>
-											)}
-										</motion.div>
-									</DropdownMenuItem>
-								))}
-							</DropdownMenuContent>
-						</DropdownMenu>
-
-						{/* Filtro por estado */}
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<ActionButton icon={<Icons.filter />} text={getCurrentStatusLabel()} variant='outline' />
-							</DropdownMenuTrigger>
-
-							<DropdownMenuContent
-								align='end'
-								className='border-border/50 bg-card/90 w-auto rounded-xl shadow-xl backdrop-blur-xl'>
-								<DropdownMenuLabel className='text-muted-foreground flex items-center gap-2 text-xs tracking-wide uppercase'>
-									<Zap className='h-3 w-3' />
-									Estado
-								</DropdownMenuLabel>
-								<DropdownMenuSeparator />
-								{[
-									{ key: '', label: 'Todos', color: 'bg-accent-foreground/40' },
-									{ key: 'active', label: 'Activo', color: 'bg-green-500' },
-									{ key: 'inactive', label: 'Inactivo', color: 'bg-red-500' },
-								].map((status, index) => (
-									<DropdownMenuItem
-										key={status.key}
-										onClick={() => onStatusChange(status.key)}
-										className='hover:bg-accent/80 text-accent-foreground/75 cursor-pointer rounded-lg transition-all duration-200'>
-										<motion.div
-											className='flex w-full items-center justify-between'
-											initial={{ opacity: 0, x: -10 }}
-											animate={{ opacity: 1, x: 0 }}
-											transition={{ delay: index * 0.05 }}>
-											<div className='flex items-center gap-2'>
-												<motion.div
-													className={`h-2 w-2 rounded-full ${status.color}`}
-													whileHover={{ scale: 1.3 }}
-													transition={{ type: 'spring', stiffness: 400 }}
-												/>
-												<span className={currentStatus === status.key ? 'text-primary font-medium' : ''}>
-													{status.label}
-												</span>
-											</div>
-											{currentStatus === status.key && (
 												<motion.div
 													className='bg-primary h-2 w-2 rounded-full'
 													initial={{ scale: 0 }}
@@ -269,26 +208,6 @@ export function AttributeFilters({
 									</Badge>
 								)}
 
-								{currentStatus && (
-									<Badge
-										variant='secondary'
-										onClick={() => onStatusChange('')}
-										className={`pl- 2 gap-1.5 rounded-lg py-1 pr-1 ${
-											currentStatus === 'active' ? 'text-green-500' : 'text-red-500'
-										}`}>
-										<div
-											className={`h-2 w-2 rounded-full ${currentStatus === 'active' ? 'bg-green-500' : 'bg-red-500'}`}
-										/>
-
-										<span>{currentStatus === 'active' ? 'Activo' : 'Inactivo'}</span>
-										<button
-											onClick={() => onStatusChange('')}
-											className='hover:bg-muted-foreground text-muted-foreground hover:text-muted cursor-pointer rounded-full p-0.5 transition-all duration-500'>
-											<Icons.x className='h-3 w-3' />
-										</button>
-									</Badge>
-								)}
-
 								{currentSort && (
 									<Badge
 										variant='secondary'
@@ -306,9 +225,8 @@ export function AttributeFilters({
 
 							<ActionButton
 								icon={<Icons.clearAll />}
-								variant='ghost'
-								text='Limpiar filtros'
-								size='sm'
+								variant='destructive'
+								tooltip='Limpiar filtros'
 								onClick={onResetAll}
 							/>
 						</div>

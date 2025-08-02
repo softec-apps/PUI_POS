@@ -4,9 +4,12 @@ import {
 	I_CreateAttribute,
 	I_UpdateAttribute,
 	I_AttributesResponse,
+	I_AttributeId,
 } from '@/modules/atribute/types/attribute'
 import { useGenericApi } from '@/common/hooks/useGenericApi'
 import { ATTRIBUTE_ENDPOINTS_CONFIG } from '@/common/configs/api/attribute-endpoints.config'
+import { ENDPOINT_API } from '../constants/APIEndpoint-const'
+import { useCallback } from 'react'
 
 interface UseAttributesParams {
 	page?: number
@@ -52,15 +55,14 @@ export const useAttribute = (paginationParams: UseAttributesParams = {}) => {
 	const query = genericApi.buildQuery(queryParams)
 
 	// Método para obtener un atributo por ID
-	const getAttributeById = async (id: string) => {
+	const getAttributeById = useCallback(async (id: I_AttributeId) => {
 		try {
-			const response = await api.get(`/atribute/${id}`)
+			const response = await api.get(`${ENDPOINT_API.ATRIBUTE}/${id}`)
 			return response.data.data
 		} catch (error) {
-			console.error(`Error fetching attribute with ID ${id}:`, error)
 			throw error
 		}
-	}
+	}, []) // Sin dependencias porque api y ENDPOINT_API son estables
 
 	return {
 		// Datos del query

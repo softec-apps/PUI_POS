@@ -103,38 +103,32 @@ export function TemplateFormModal({ isOpen, currentTemplate, onClose, onSubmit }
 							<div className='space-y-12'>
 								<BasicInfoSection control={form.control} />
 
-								<Separator />
+								<CategorySelector
+									control={form.control}
+									setValue={form.setValue}
+									watch={form.watch}
+									categories={categories}
+									loadingCategories={loadingCategories}
+									categorySearch={categorySearch}
+									setCategorySearch={setCategorySearch}
+									categoryOpen={categoryOpen}
+									setCategoryOpen={setCategoryOpen}
+									loadMoreCategories={loadMoreCategories}
+								/>
 
-								<div className='space-y-12'>
-									<CategorySelector
-										control={form.control}
-										setValue={form.setValue}
-										watch={form.watch}
-										categories={categories}
-										loadingCategories={loadingCategories}
-										categorySearch={categorySearch}
-										setCategorySearch={setCategorySearch}
-										categoryOpen={categoryOpen}
-										setCategoryOpen={setCategoryOpen}
-										loadMoreCategories={loadMoreCategories}
-									/>
-
-									<Separator />
-
-									<AttributeSelector
-										control={form.control}
-										setValue={form.setValue}
-										watch={form.watch}
-										attributes={attributes}
-										loadingAttributes={loadingAttributes}
-										attributeSearch={attributeSearch}
-										setAttributeSearch={setAttributeSearch}
-										attributeOpen={attributeOpen}
-										setAttributeOpen={setAttributeOpen}
-										selectedAttributes={selectedAttributes}
-										handleAddAttribute={handleAddAttribute}
-									/>
-								</div>
+								<AttributeSelector
+									control={form.control}
+									setValue={form.setValue}
+									watch={form.watch}
+									attributes={attributes}
+									loadingAttributes={loadingAttributes}
+									attributeSearch={attributeSearch}
+									setAttributeSearch={setAttributeSearch}
+									attributeOpen={attributeOpen}
+									setAttributeOpen={setAttributeOpen}
+									selectedAttributes={selectedAttributes}
+									handleAddAttribute={handleAddAttribute}
+								/>
 							</div>
 						</form>
 					</Form>

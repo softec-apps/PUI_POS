@@ -16,6 +16,7 @@ const buttonVariants = cva(
 				secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
 				ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
 				link: 'text-primary underline-offset-4 hover:underline',
+				pos: 'bg-green-600 text-white hover:bg-green-700 focus-visible:ring-green-500/30 shadow-lg border-2 border-green-500 hover:border-green-600 font-bold active:bg-green-800 dark:bg-green-700 dark:hover:bg-green-600',
 			},
 			size: {
 				default: 'h-9 px-4 py-2 has-[>svg]:px-3',
@@ -23,6 +24,7 @@ const buttonVariants = cva(
 				lg: 'h-10 rounded-xl px-6 has-[>svg]:px-4',
 				xs: 'h-7 rounded-xl gap-1 px-2 has-[>svg]:px-1.5',
 				icon: 'size-8',
+				pos: 'h-16 rounded-xl px-8 has-[>svg]:px-6',
 			},
 		},
 		defaultVariants: {
@@ -43,7 +45,6 @@ function Button({
 		asChild?: boolean
 	}) {
 	const Comp = asChild ? Slot : 'button'
-
 	return <Comp data-slot='button' className={cn(buttonVariants({ variant, size, className }))} {...props} />
 }
 

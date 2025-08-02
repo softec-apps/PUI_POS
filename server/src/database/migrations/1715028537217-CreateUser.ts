@@ -6,6 +6,9 @@ export class CreateUser1715028537217 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query("SET timezone = 'UTC'")
 
+    // Habilitar extensión para UUID
+    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`)
+
     await queryRunner.query(
       `CREATE TABLE "role" ("id" integer NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_b36bcfe02fc8de3c57a8b2391c2" PRIMARY KEY ("id"))`,
     )
@@ -20,23 +23,25 @@ export class CreateUser1715028537217 implements MigrationInterface {
 
     await queryRunner.query(
       `CREATE TABLE "user" (
-      "id" SERIAL NOT NULL,
-      "email" character varying,
-      "password" character varying,
-      "provider" character varying NOT NULL DEFAULT 'email',
-      "socialId" character varying,
-      "firstName" character varying,
-      "lastName" character varying,
-      "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "deletedAt" TIMESTAMP WITH TIME ZONE,
-      "photoId" uuid,
-      "roleId" integer,
-      "statusId" integer,
-      CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"),
-      CONSTRAINT "REL_75e2be4ce11d447ef43be0e374" UNIQUE ("photoId"),
-      CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))`,
+        "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+        "email" character varying,
+        "password" character varying,
+        "provider" character varying NOT NULL DEFAULT 'email',
+        "socialId" character varying,
+        "firstName" character varying,
+        "lastName" character varying,
+        "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "deletedAt" TIMESTAMP WITH TIME ZONE,
+        "photoId" uuid,
+        "roleId" integer,
+        "statusId" integer,
+        CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"),
+        CONSTRAINT "REL_75e2be4ce11d447ef43be0e374" UNIQUE ("photoId"),
+        CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id")
+      )`,
     )
+
     await queryRunner.query(
       `CREATE INDEX "IDX_9bd2fe7a8e694dedc4ec2f666f" ON "user" ("socialId") `,
     )
@@ -48,12 +53,14 @@ export class CreateUser1715028537217 implements MigrationInterface {
     )
     await queryRunner.query(
       `CREATE TABLE "session" (
-      "id" SERIAL NOT NULL,
-      "hash" character varying NOT NULL,
-      "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "deletedAt" TIMESTAMP WITH TIME ZONE,
-      "userId" integer, CONSTRAINT "PK_f55da76ac1c3ac420f444d2ff11" PRIMARY KEY ("id"))`,
+        "id" SERIAL NOT NULL,
+        "hash" character varying NOT NULL,
+        "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "deletedAt" TIMESTAMP WITH TIME ZONE,
+        "userId" uuid,
+        CONSTRAINT "PK_f55da76ac1c3ac420f444d2ff11" PRIMARY KEY ("id")
+      )`,
     )
     await queryRunner.query(
       `CREATE INDEX "IDX_3d2f174ef04fb312fdebd0ddc5" ON "session" ("userId") `,

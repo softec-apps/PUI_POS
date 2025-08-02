@@ -5,11 +5,11 @@ import Image from 'next/image'
 import { Icons } from '@/components/icons'
 import { Separator } from '@/components/ui/separator'
 import { useState, useEffect, useCallback } from 'react'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { I_Product } from '@/modules/product/types/product'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { formatDate } from '@/common/utils/dateFormater-util'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatDate } from '@/common/utils/dateFormater-util'
 
 interface Props {
 	recordData: I_Product

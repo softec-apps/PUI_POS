@@ -1,11 +1,11 @@
 'use client'
 
-import { I_Supplier } from '@/modules/supplier/types/supplier'
+import { I_Product } from '@/modules/product/types/product'
 import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
 
 interface Props {
 	isOpen: boolean
-	currentRecord: I_Supplier | null
+	currentRecord: I_Product | null
 	isAction: boolean
 	onClose: () => void
 	onConfirm: () => Promise<void>
@@ -16,16 +16,18 @@ export function HardDeleteModal({ isOpen, currentRecord, isAction, onClose, onCo
 		<ConfirmationModal
 			isOpen={isOpen}
 			variant='destructive'
-			title='Eliminar atributo'
+			title='Eliminar producto'
 			description='Esta acción es irreversible.'
 			message={
 				<>
-					¿Confirma que desea eliminar permanentemente el proveedor{' '}
-					<span className='text-foreground font-semibold'>{currentRecord?.legalName}</span>? Este proveedor está en uso
-					y será removido de todos los productos asociados.
+					¿Confirma que desea eliminar permanentemente el producto{' '}
+					<span className='text-foreground font-semibold'>
+						{currentRecord?.code} ({currentRecord?.name})
+					</span>
+					?
 				</>
 			}
-			alertMessage='Esta acción eliminará el proveedor del sistema de forma permanente.'
+			alertMessage='Esta acción eliminará el producto del sistema de forma permanente, lo que afectará todas las relaciones asociadas.'
 			isProcessing={isAction}
 			onClose={onClose}
 			onConfirm={onConfirm}

@@ -6,18 +6,14 @@ import { Table as ReactTable, flexRender } from '@tanstack/react-table'
 import { animations } from '@/modules/category/components/atoms/animations'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-interface TableViewProps {
+interface Props {
 	table: ReactTable<I_Category>
 }
 
-export const TableView = ({ table }: TableViewProps) => (
+export const TableView = ({ table }: Props) => (
 	<div className='space-y-4'>
-		<motion.div
-			initial='hidden'
-			animate='visible'
-			variants={animations.container}
-			className='border-border/50 rounded-xl border'>
-			<Table className='bg-card w-full rounded-xl'>
+		<motion.div initial='hidden' animate='visible' variants={animations.container}>
+			<Table>
 				<TableHeader>
 					{table.getHeaderGroups().map(headerGroup => (
 						<TableRow key={headerGroup.id}>
@@ -43,7 +39,7 @@ export const TableView = ({ table }: TableViewProps) => (
 								layout='position'
 								className='group'>
 								{row.getVisibleCells().map(cell => (
-									<TableCell key={cell.id} className='text-primary p-2'>
+									<TableCell key={cell.id} className='text-primary px-0'>
 										{flexRender(cell.column.columnDef.cell, cell.getContext())}
 									</TableCell>
 								))}

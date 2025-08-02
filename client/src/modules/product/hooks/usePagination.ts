@@ -1,14 +1,23 @@
+import { Pagination } from '@/common/types/pagination'
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { Pagination } from '@/modules/atribute/types/pagination'
-import { INITIAL_PAGINATION } from '@/modules/atribute/constants/filters.constants'
+import { DEFAULT_PAGINATION } from '@/common/constants/pagination-const'
 
 export function usePagination() {
-	const [pagination, setPagination] = useState<Pagination>(INITIAL_PAGINATION)
+	const [pagination, setPagination] = useState<Pagination>(DEFAULT_PAGINATION)
 	const [searchTerm, setSearchTerm] = useState<string>('')
-	const [currentSort, setCurrentSort] = useState<string>('')
-	const [currentStatus, setCurrentStatus] = useState<boolean | undefined>(undefined)
-
 	const debounceTimer = useRef<NodeJS.Timeout | null>(null)
+	const [currentSort, setCurrentSort] = useState<string>('')
+	const [currentStatus, setCurrentStatus] = useState<
+		'draft' | 'active' | 'inactive' | 'discontinued' | 'out_of_stock' | ''
+	>('')
+
+	// 🆕 Nueva función para cambio directo de página
+	const handlePageChange = useCallback((page: number) => {
+		setPagination(prev => ({
+			...prev,
+			page: page,
+		}))
+	}, [])
 
 	const handleNextPage = useCallback((hasNextPage: boolean) => {
 		if (hasNextPage) setPagination(prev => ({ ...prev, page: prev.page + 1 }))
@@ -75,28 +84,23 @@ export function usePagination() {
 		}))
 	}, [])
 
-	const handleStatusChange = useCallback((required?: boolean) => {
-		setCurrentStatus(required)
-		setPagination(prev => ({
-			...prev,
-			filters: required === undefined ? {} : { required: required ? true : false },
-			page: 1,
-		}))
-	}, [])
-
-	// 🆕 Nueva función para cambio directo de página
-	const handlePageChange = useCallback((page: number) => {
-		setPagination(prev => ({
-			...prev,
-			page: page,
-		}))
-	}, [])
+	const handleStatusChange = useCallback(
+		(status: 'draft' | 'active' | 'inactive' | 'discontinued' | 'out_of_stock' | '') => {
+			setCurrentStatus(status)
+			setPagination(prev => ({
+				...prev,
+				filters: status ? { status } : {},
+				page: 1,
+			}))
+		},
+		[]
+	)
 
 	const handleResetAll = useCallback(() => {
 		setSearchTerm('')
 		setCurrentSort('')
-		setCurrentStatus(undefined)
-		setPagination(INITIAL_PAGINATION)
+		setCurrentStatus('')
+		setPagination(DEFAULT_PAGINATION)
 	}, [])
 
 	const getCurrentSortInfo = useCallback(() => {
@@ -114,11 +118,11 @@ export function usePagination() {
 		handleNextPage,
 		handlePrevPage,
 		handleLimitChange,
+		handleStatusChange,
 		handleSearchChange,
 		handleSort,
-		handleStatusChange,
+		handlePageChange,
 		handleResetAll,
 		getCurrentSortInfo,
-		handlePageChange,
 	}
 }

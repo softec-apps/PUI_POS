@@ -1,11 +1,11 @@
-import { ProductEntity } from '../entities/product.entity'
-import { ProductVariationEntity } from '../entities/product-variant.entity'
-import { ProductAttributeValueEntity } from '../entities/product-attribute-value.entity'
+import { ProductEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product.entity'
+import { ProductVariationEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product-variant.entity'
+import { ProductAttributeValueEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product-attribute-value.entity'
 import {
   Product,
   ProductVariation,
   ProductAttributeValue,
-} from '../../../../domain/product'
+} from '@/modules/product/domain/product'
 import { FileMapper } from '@/modules/files/infrastructure/persistence/relational/mappers/file.mapper'
 import { BrandMapper } from '@/modules/brand/infrastructure/persistence/relational/mappers/brand.mapper'
 import { CategoryMapper } from '@/modules/categories/infrastructure/persistence/relational/mappers/category.mapper'

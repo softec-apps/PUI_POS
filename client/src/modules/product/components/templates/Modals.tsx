@@ -1,23 +1,22 @@
 'use client'
 
-import { ModalState } from '@/modules/supplier/types/modalState'
-import { HardDeleteModal } from '@/modules/supplier/components/organisms/Modal/ModalHardDelete'
-import { RecordFormModal } from '@/modules/supplier/components/organisms/Modal/ModalForm'
+import { ModalState } from '@/modules/product/types/modalState'
+import { HardDeleteModal } from '@/modules/product/components/organisms/Modal/ModalHardDelete'
+import { ProductFormModal } from '@/modules/product/components/organisms/Modal/ModalProductForm'
 
-interface Props {
+interface ProductModalsProps {
 	modalState: ModalState
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	recordHandlers: any
+	productHandlers: any
 }
 
-export function ModalsSupplier({ modalState, recordHandlers }: Props) {
+export function ProductModals({ modalState, productHandlers }: ProductModalsProps) {
 	return (
 		<>
-			<RecordFormModal
+			<ProductFormModal
 				isOpen={modalState.isDialogOpen}
 				currentRecord={modalState.currentRecord}
-				onClose={recordHandlers.handleDialogClose}
-				onSubmit={recordHandlers.handleFormSubmit}
+				onClose={productHandlers.handleDialogClose}
+				onSubmit={productHandlers.handleFormSubmit}
 			/>
 
 			<HardDeleteModal
@@ -25,7 +24,7 @@ export function ModalsSupplier({ modalState, recordHandlers }: Props) {
 				currentRecord={modalState.recordToHardDelete}
 				isAction={modalState.isHardDeleting}
 				onClose={modalState.closeHardDeleteModal}
-				onConfirm={recordHandlers.handleConfirmHardDelete}
+				onConfirm={productHandlers.handleConfirmHardDelete}
 			/>
 		</>
 	)

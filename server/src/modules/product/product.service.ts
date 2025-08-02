@@ -55,21 +55,6 @@ export class ProductService {
     createProductDto: CreateProductDto,
   ): Promise<ApiResponse<Product>> {
     return this.dataSource.transaction(async (entityManager) => {
-      if (!createProductDto.templateId) {
-        throw new BadRequestException(
-          'El template es obligatorio para crear un producto',
-        )
-      }
-
-      const template = await this.templateRepository.findById(
-        createProductDto.templateId,
-      )
-      if (!template) {
-        throw new NotFoundException(
-          `Template con ID ${createProductDto.templateId} no encontrado`,
-        )
-      }
-
       let brand: Brand | null | undefined = undefined
       if (createProductDto.brandId) {
         brand = await this.brandRepository.findById(createProductDto.brandId)
@@ -102,6 +87,21 @@ export class ProductService {
             `Proveedor con ID ${createProductDto.supplierId} no encontrado`,
           )
         }
+      }
+
+      if (!createProductDto.templateId) {
+        throw new BadRequestException(
+          'El template es obligatorio para crear un producto',
+        )
+      }
+
+      const template = await this.templateRepository.findById(
+        createProductDto.templateId,
+      )
+      if (!template) {
+        throw new NotFoundException(
+          `Template con ID ${createProductDto.templateId} no encontrado`,
+        )
       }
 
       let photo: FileType | null | undefined = undefined

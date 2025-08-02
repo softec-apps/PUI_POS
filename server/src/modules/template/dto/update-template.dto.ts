@@ -8,10 +8,9 @@ import {
   IsNotEmpty,
   ArrayNotEmpty,
 } from 'class-validator'
+import { Transform } from 'class-transformer'
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger'
 import { CreateTemplateDto } from '@/modules/template/dto/create-template.dto'
-import { ParamCategoryDto } from '@/modules/categories/dto/param-category.dto'
-import { Transform } from 'class-transformer'
 
 export class UpdateTemplateDto extends PartialType(CreateTemplateDto) {
   @ApiProperty({

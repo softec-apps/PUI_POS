@@ -1,16 +1,16 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { I_Supplier } from '@/modules/supplier/types/supplier'
+import { I_Product } from '@/modules/product/types/product'
 
 export const useModalState = () => {
 	// Dialog state
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
-	const [currentRecord, setCurrentRecord] = useState<Partial<I_Supplier> | null>(null)
+	const [currentRecord, setCurrentRecord] = useState<Partial<I_Product> | null>(null)
 
 	// Hard delete modal state
 	const [isHardDeleteModalOpen, setIsHardDeleteModalOpen] = useState(false)
-	const [recordToHardDelete, setRecordToHardDelete] = useState<I_Supplier | null>(null)
+	const [recordToHardDelete, setRecordToHardDelete] = useState<I_Product | null>(null)
 	const [isHardDeleting, setIsHardDeleting] = useState(false)
 
 	// Dialog handlers
@@ -19,8 +19,8 @@ export const useModalState = () => {
 		setIsDialogOpen(true)
 	}, [])
 
-	const openEditDialog = useCallback((attribute: I_Supplier) => {
-		setCurrentRecord(attribute)
+	const openEditDialog = useCallback((product: I_Product) => {
+		setCurrentRecord(product)
 		setIsDialogOpen(true)
 	}, [])
 
@@ -31,8 +31,8 @@ export const useModalState = () => {
 
 	// Hard delete modal handlers
 	const openHardDeleteModal = useCallback(
-		(attribute: I_Supplier) => {
-			setRecordToHardDelete(attribute)
+		(product: I_Product) => {
+			setRecordToHardDelete(product)
 			setIsHardDeleteModalOpen(true)
 		},
 		[setRecordToHardDelete]

@@ -191,7 +191,6 @@ export class TemplateProductService {
     updateTemplateDto: UpdateTemplateDto,
     entityManager: EntityManager,
   ): Promise<Template | null> {
-    console.log(updateTemplateDto)
     let name: string | null | undefined = undefined
     if (updateTemplateDto.name !== undefined) {
       if (updateTemplateDto.name) {

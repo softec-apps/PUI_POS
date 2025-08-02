@@ -115,12 +115,15 @@ export function CategorySelector({
 																{category.label}
 															</CommandItem>
 														))}
-														{categories?.data?.hasNextPage && (
+
+														{/* 
+														{!categories?.data?.hasNextPage && (
 															<CommandItem onSelect={loadMoreCategories}>
 																<Icons.plus className='mr-2 h-4 w-4' />
-																Cargar más categorías...
+																Mostrar más categorías...
 															</CommandItem>
 														)}
+														*/}
 													</CommandGroup>
 												</CommandList>
 											</Command>
@@ -131,16 +134,18 @@ export function CategorySelector({
 							)}
 						/>
 
-						{watchedCategoryId && selectedCategory && (
-							<SelectedCategoryDisplay
-								category={{
-									id: selectedCategory.id,
-									name: selectedCategory.name,
-								}}
-								categoryOptions={categoryOptions}
-								onRemove={() => setValue('categoryId', '', { shouldValidate: true })}
-							/>
-						)}
+						{/* 
+							{watchedCategoryId && selectedCategory && (
+								<SelectedCategoryDisplay
+									category={{
+										id: selectedCategory.id,
+										name: selectedCategory.name,
+									}}
+									categoryOptions={categoryOptions}
+									onRemove={() => setValue('categoryId', '', { shouldValidate: true })}
+								/>
+							)}
+							*/}
 					</>
 				)}
 			</CardContent>

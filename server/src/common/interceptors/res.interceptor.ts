@@ -30,7 +30,7 @@ export class UnifiedResException implements ExceptionFilter {
           method: 'delete',
         },
       }
-      return response.status(200).json(successResponse)
+      return response.status(200).send(successResponse)
     }
 
     // Manejo específico de errores de validación (BadRequestException)
@@ -49,7 +49,7 @@ export class UnifiedResException implements ExceptionFilter {
           method: request.method,
         },
       }
-      return response.status(HttpStatus.BAD_REQUEST).json(errorResponse)
+      return response.status(HttpStatus.BAD_REQUEST).send(errorResponse)
     }
 
     // Manejo de errores de TypeORM
@@ -72,7 +72,7 @@ export class UnifiedResException implements ExceptionFilter {
           method: request.method,
         },
       }
-      return response.status(status).json(errorResponse)
+      return response.status(status).send(errorResponse)
     }
 
     // Manejo de otras excepciones HTTP
@@ -90,7 +90,7 @@ export class UnifiedResException implements ExceptionFilter {
           method: request.method,
         },
       }
-      return response.status(status).json(errorResponse)
+      return response.status(status).send(errorResponse)
     }
 
     // Error inesperado/no manejado
@@ -106,7 +106,7 @@ export class UnifiedResException implements ExceptionFilter {
         method: request.method,
       },
     }
-    return response.status(500).json(errorResponse)
+    return response.status(500).send(errorResponse)
   }
 
   private formatValidationErrors(errors: any): Record<string, string> {

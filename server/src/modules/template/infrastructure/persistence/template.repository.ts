@@ -1,4 +1,4 @@
-import { EntityManager, NumericType } from 'typeorm'
+import { EntityManager } from 'typeorm'
 
 import {
   SortTemplateDto,
