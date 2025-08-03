@@ -32,4 +32,11 @@ export const KardexApiDocs = {
       'Retrieves a list of kardex with pagination and filtering options.',
     responseDto: FindAllKardexResponseDto,
   }),
+
+  findAllLasted: crudDocs.findAll({
+    summary: 'List kardex lasted product',
+    description:
+      'Retrieves a list of kardex with pagination and filtering options.',
+    responseDto: FindAllKardexResponseDto,
+  }),
 }

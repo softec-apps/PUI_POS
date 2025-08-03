@@ -133,6 +133,37 @@ export class KardexService {
     })
   }
 
+  async findLatestByProductWithPagination(
+    query: QueryKardexDto,
+  ): Promise<ApiResponse<EnhancedInfinityPaginationResponseDto<Kardex>>> {
+    const page = query?.page ?? 1
+    let limit = query?.limit ?? 10
+    if (limit > 50) limit = 50
+
+    // Obtener datos del repositorio (sin formato)
+    const { data, totalCount, totalRecords } =
+      await this.kardexRepository.findLatestByProductWithPagination({
+        filterOptions: query?.filters,
+        sortOptions: query?.sort,
+        paginationOptions: { page, limit },
+        searchOptions: query?.search,
+      })
+
+    // Formatear respuesta paginada con la utilidad
+    const paginatedData = infinityPaginationWithMetadata(
+      data,
+      { page, limit },
+      totalCount,
+      totalRecords,
+    )
+
+    return listResponse({
+      data: paginatedData,
+      resource: PATH_SOURCE.KARDEX,
+      message: MESSAGE_RESPONSE.LISTED,
+    })
+  }
+
   async findById(id: Kardex['id']): Promise<ApiResponse<Kardex>> {
     const result = await this.kardexRepository.findById(id)
 

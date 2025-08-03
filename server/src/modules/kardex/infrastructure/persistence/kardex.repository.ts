@@ -20,6 +20,18 @@ export abstract class KardexRepository {
     searchOptions?: string | null
   }): Promise<{ data: Kardex[]; totalCount: number; totalRecords: number }>
 
+  abstract findLatestByProductWithPagination({
+    filterOptions,
+    sortOptions,
+    paginationOptions,
+    searchOptions,
+  }: {
+    filterOptions?: FilterKardexDto | null
+    sortOptions?: SortKardexDto[] | null
+    paginationOptions: IPaginationOptions
+    searchOptions?: string | null
+  }): Promise<{ data: Kardex[]; totalCount: number; totalRecords: number }>
+
   abstract findById(id: Kardex['id']): Promise<NullableType<Kardex>>
 
   abstract findByIds(ids: Kardex['id'][]): Promise<Kardex[]>

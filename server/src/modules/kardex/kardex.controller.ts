@@ -53,6 +53,22 @@ export class KardexController {
   }
 
   /**
+   * GetAll lasted record by product kardex with pagination
+   * @param query - Query parameters (filtering, sort, search and pagination)
+   * @returns The API standard response
+   */
+  @Get('/lasted')
+  @KardexApiDocs.findAllLasted
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
+  async findAllLatestByProduct(
+    @Query() query: QueryKardexDto,
+  ): Promise<ApiResponse<EnhancedInfinityPaginationResponseDto<Kardex>>> {
+    return await this.kardexService.findLatestByProductWithPagination(query)
+  }
+
+  /**
    * Get all kardex with pagination
    * @param param - Parameter containing the kardex ID
    * @returns The API standard response
