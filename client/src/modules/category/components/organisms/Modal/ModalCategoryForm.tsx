@@ -209,7 +209,7 @@ export function CategoryFormModal({
 									<Icons.media className='h-4 w-4' />
 									Imagen
 								</CardTitle>
-								<CardDescription>Escoge la imagen de la categoría</CardDescription>
+								<CardDescription>Sube una imagen representativa de la categoría</CardDescription>
 							</CardHeader>
 
 							<div className='grid gap-2'>

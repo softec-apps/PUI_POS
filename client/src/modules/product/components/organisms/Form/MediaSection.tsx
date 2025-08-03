@@ -103,8 +103,8 @@ export function MediaSection({ control, setValue, watch, productData, currentRec
 		<Card className='border-none bg-transparent p-0 shadow-none'>
 			<CardHeader className='p-0'>
 				<CardTitle className='flex items-center gap-2 text-lg'>
-					<Icons.infoCircle className='h-4 w-4' />
-					Imagen del producto
+					<Icons.media className='h-4 w-4' />
+					Imagen
 				</CardTitle>
 				<CardDescription>Sube una imagen representativa del producto</CardDescription>
 			</CardHeader>
