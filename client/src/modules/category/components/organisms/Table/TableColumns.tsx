@@ -37,7 +37,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: TableColumnsProps):
 		),
 		cell: ({ row }) => (
 			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				<ImageControl categoryData={row.original} />
+				<ImageControl recordData={row.original} enableHover={false} enableClick={false} />
 			</div>
 		),
 	},
