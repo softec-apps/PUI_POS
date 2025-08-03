@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { ChangeEvent } from 'react'
 import { Icons } from '@/components/icons'
@@ -10,6 +9,7 @@ import { bytesToMB } from '@/common/utils/fileSizeTransform-util'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { MAX_FILE_SIZE, ALLOWED_IMAGE_TYPES } from '@/common/constants/file-const'
+import { ProductImage } from '@/modules/product/components/molecules/ProductImage'
 
 interface ImageObject {
 	path: string
@@ -84,16 +84,15 @@ export const FileUploadSection = ({
 				</Card>
 			) : (
 				<div className='group relative'>
-					<div className='overflow-hidden rounded-lg border'>
-						<Image
-							src={displayImage}
-							alt='Vista previa'
-							unoptimized
-							height={100}
-							width={100}
-							className='h-auto w-full object-cover object-center'
-						/>
-					</div>
+					<ProductImage
+						imageUrl={displayImage}
+						alt='Vista previa'
+						imageHeight={300}
+						imageWidth={550}
+						enableHover={false}
+						enableClick={false}
+						className='h-auto w-full object-cover object-center'
+					/>
 
 					<div className='absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100'>
 						<ActionButton

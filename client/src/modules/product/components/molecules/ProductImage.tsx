@@ -12,7 +12,9 @@ import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface Props {
-	recordData: I_Product
+	recordData?: I_Product
+	// Nueva prop para URL directa
+	imageUrl?: string
 	// Configuración de detalles
 	showDetails?: boolean
 	enableHover?: boolean
@@ -24,10 +26,14 @@ interface Props {
 	// Configuración de calidad y optimización
 	quality?: number
 	unoptimized?: boolean
+	// Props adicionales para cuando se usa URL directa
+	altText?: string
+	imageName?: string
 }
 
 export const ProductImage = ({
 	recordData,
+	imageUrl,
 	// Props de detalles (por defecto habilitados)
 	showDetails = true,
 	enableHover = true,
@@ -39,11 +45,20 @@ export const ProductImage = ({
 	// Props de calidad
 	quality = 10,
 	unoptimized = true,
+	// Props adicionales
+	altText = 'Imagen',
+	imageName = 'imagen',
 }: Props) => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [imageLoaded, setImageLoaded] = useState(false)
 	const [imageError, setImageError] = useState(false)
 	const [isDownloading, setIsDownloading] = useState(false)
+
+	// Determinar la fuente de la imagen y datos
+	const imageSource = recordData?.photo?.path || imageUrl
+	const displayName = recordData?.name || imageName
+	const displayDate = recordData?.createdAt
+	const displayAlt = recordData ? `Imagen de ${recordData.name}` : altText
 
 	// Función mejorada para cerrar modal
 	const closeModal = useCallback(() => {
@@ -87,11 +102,11 @@ export const ProductImage = ({
 
 	// Función de descarga mejorada con manejo de errores
 	const handleDownload = async () => {
-		if (!recordData?.photo?.path || isDownloading) return
+		if (!imageSource || isDownloading) return
 
 		setIsDownloading(true)
 		try {
-			const response = await fetch(recordData.photo.path)
+			const response = await fetch(imageSource)
 
 			if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
 
@@ -100,8 +115,8 @@ export const ProductImage = ({
 			const link = document.createElement('a')
 
 			// Obtener extensión del archivo o usar jpg por defecto
-			const fileExtension = recordData.photo.path.split('.').pop()?.toLowerCase()
-			const fileName = `${recordData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${fileExtension}`
+			const fileExtension = imageSource.split('.').pop()?.toLowerCase() || 'jpg'
+			const fileName = `${displayName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${fileExtension}`
 
 			link.href = url
 			link.download = fileName
@@ -123,14 +138,14 @@ export const ProductImage = ({
 
 	// Función de compartir mejorada
 	const handleShare = async () => {
-		if (!recordData?.photo?.path) return
+		if (!imageSource) return
 
 		try {
 			if (navigator.share && navigator.canShare) {
 				const shareData = {
-					title: recordData.name,
-					text: `Mira esta imagen: ${recordData.name}`,
-					url: recordData.photo.path,
+					title: displayName,
+					text: `Mira esta imagen: ${displayName}`,
+					url: imageSource,
 				}
 
 				if (navigator.canShare(shareData)) {
@@ -140,7 +155,7 @@ export const ProductImage = ({
 			}
 
 			// Fallback: copiar al portapapeles
-			await navigator.clipboard.writeText(recordData.photo.path)
+			await navigator.clipboard.writeText(imageSource)
 			toast.success('El enlace de la imagen se ha copiado al portapapeles.')
 		} catch (error) {
 			console.error('Error al compartir:', error)
@@ -178,7 +193,8 @@ export const ProductImage = ({
 		return 'cursor-default'
 	}
 
-	if (recordData?.photo?.path) {
+	// Verificar si hay imagen disponible
+	if (imageSource) {
 		return (
 			<>
 				{/* Miniatura clickeable */}
@@ -198,8 +214,8 @@ export const ProductImage = ({
 									height: imageHeight,
 								}}>
 								<Image
-									src={recordData.photo.path}
-									alt={`Imagen de ${recordData.name}`}
+									src={imageSource}
+									alt={displayAlt}
 									className={`bg-muted/20 object-contain transition-transform duration-500 ${
 										enableHover ? 'group-hover:scale-110' : ''
 									}`}
@@ -214,11 +230,11 @@ export const ProductImage = ({
 							{enableHover && showDetails && (
 								<div className='absolute right-0 bottom-0 left-0 translate-y-full bg-gradient-to-t from-black/90 via-black/70 to-transparent p-2 transition-transform duration-300 group-hover:translate-y-0'>
 									<div className='space-y-0.5'>
-										<p className='truncate text-xs leading-tight font-medium text-white'>{recordData.name}</p>
-										{recordData.createdAt && (
+										<p className='truncate text-xs leading-tight font-medium text-white'>{displayName}</p>
+										{displayDate && (
 											<div className='flex items-center space-x-1'>
 												<Icons.calendar className='h-3 w-3 text-white/60' />
-												<p className='text-xs text-white/80'>{formatDate(recordData.createdAt, true)}</p>
+												<p className='text-xs text-white/80'>{formatDate(displayDate, true)}</p>
 											</div>
 										)}
 									</div>
@@ -245,8 +261,8 @@ export const ProductImage = ({
 										</div>
 									) : (
 										<Image
-											src={recordData.photo.path}
-											alt={`Imagen de ${recordData.name}`}
+											src={imageSource}
+											alt={displayAlt}
 											fill
 											className={`object-contain transition-all duration-700 ${
 												imageLoaded ? 'opacity-100' : 'opacity-0'
@@ -300,6 +316,11 @@ export const ProductImage = ({
 													<h4 className='text-foreground text-base font-semibold'>Información</h4>
 													<div className='space-y-3'>
 														<div className='flex items-center justify-between'>
+															<span className='text-muted-foreground text-sm'>Nombre:</span>
+															<span className='ml-2 truncate text-sm font-medium'>{displayName}</span>
+														</div>
+
+														<div className='flex items-center justify-between'>
 															<span className='text-muted-foreground text-sm'>Dimensiones:</span>
 															<span className='text-sm font-medium'>
 																{imageWidth}x{imageHeight}px
@@ -309,7 +330,7 @@ export const ProductImage = ({
 														<div className='flex items-center justify-between'>
 															<span className='text-muted-foreground text-sm'>Formato:</span>
 															<span className='text-sm font-medium'>
-																{recordData.photo.path.split('.').pop()?.toUpperCase()}
+																{imageSource.split('.').pop()?.toUpperCase() || 'UNKNOWN'}
 															</span>
 														</div>
 
@@ -318,9 +339,16 @@ export const ProductImage = ({
 															<span className='text-sm font-medium'>{quality}%</span>
 														</div>
 
+														{displayDate && (
+															<div className='flex items-center justify-between'>
+																<span className='text-muted-foreground text-sm'>Creado:</span>
+																<span className='text-sm font-medium'>{formatDate(displayDate, true)}</span>
+															</div>
+														)}
+
 														<div className='flex items-center justify-between'>
-															<span className='text-muted-foreground text-sm'>Creado:</span>
-															<span className='text-sm font-medium'>{formatDate(recordData.createdAt, true)}</span>
+															<span className='text-muted-foreground text-sm'>Fuente:</span>
+															<span className='text-sm font-medium'>{recordData ? 'Producto' : 'URL directa'}</span>
 														</div>
 													</div>
 												</div>
@@ -370,6 +398,7 @@ export const ProductImage = ({
 			<CardContent className='h-full p-0'>
 				<div className='text-muted-foreground absolute inset-0 flex flex-col items-center justify-center space-y-1'>
 					<Icons.media className='h-6 w-6' />
+					<p className='text-xs'>Sin imagen</p>
 				</div>
 			</CardContent>
 		</Card>
