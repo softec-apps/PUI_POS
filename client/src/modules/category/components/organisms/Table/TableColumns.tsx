@@ -5,7 +5,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/layout/atoms/Badge'
 import { I_Category } from '@/modules/category/types/category'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { CategoryImage } from '@/modules/category/components/molecules/CategoryImage'
+import { ImageControl } from '@/components/layout/organims/ImageControl'
 import { TableActions } from '@/modules/category/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/category/components/organisms/Table/TableInfoDate'
 
@@ -37,7 +37,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: TableColumnsProps):
 		),
 		cell: ({ row }) => (
 			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				<CategoryImage categoryData={row.original} />
+				<ImageControl categoryData={row.original} />
 			</div>
 		),
 	},

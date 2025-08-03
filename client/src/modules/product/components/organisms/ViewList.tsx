@@ -13,7 +13,7 @@ import { TableActions } from '@/modules/product/components/organisms/Table/Table
 import { TableInfoDate } from '@/modules/product/components/organisms/Table/TableInfoDate'
 import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductStatusBadge'
 import { formatPrice } from '@/common/utils/formatPrice-util'
-import { ProductImage } from '@/modules/product/components/molecules/ProductImage'
+import { ImageControl } from '@/components/layout/organims/ImageControl'
 
 interface Props {
 	recordsData: ReactTable<I_Product>
@@ -42,7 +42,7 @@ export const ListView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 									<div className='flex items-start space-x-4'>
 										{/* Imagen del producto */}
 										<div className='relative'>
-											<ProductImage
+											<ImageControl
 												recordData={recordData}
 												imageWidth={280}
 												imageHeight={250}

@@ -8,8 +8,8 @@ import { Typography } from '@/components/ui/typography'
 import { bytesToMB } from '@/common/utils/fileSizeTransform-util'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { ImageControl } from '@/components/layout/organims/ImageControl'
 import { MAX_FILE_SIZE, ALLOWED_IMAGE_TYPES } from '@/common/constants/file-const'
-import { ProductImage } from '@/modules/product/components/molecules/ProductImage'
 
 interface ImageObject {
 	path: string
@@ -84,7 +84,7 @@ export const FileUploadSection = ({
 				</Card>
 			) : (
 				<div className='group relative'>
-					<ProductImage
+					<ImageControl
 						imageUrl={displayImage}
 						alt='Vista previa'
 						imageHeight={300}

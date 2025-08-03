@@ -4,7 +4,7 @@ import { Icons } from '@/components/icons'
 import { ColumnDef } from '@tanstack/react-table'
 import { I_Product } from '@/modules/product/types/product'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { ProductImage } from '@/modules/product/components/molecules/ProductImage'
+import { ImageControl } from '@/components/layout/organims/ImageControl'
 import { TableActions } from '@/modules/product/components/organisms/Table/TableActions'
 import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductStatusBadge'
 import { TableInfoDate } from '@/modules/product/components/organisms/Table/TableInfoDate'
@@ -38,7 +38,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 		),
 		cell: ({ row }) => (
 			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				<ProductImage recordData={row.original} enableHover={false} enableClick={false} />
+				<ImageControl recordData={row.original} enableHover={false} enableClick={false} />
 			</div>
 		),
 	},

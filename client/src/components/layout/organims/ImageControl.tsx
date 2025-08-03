@@ -11,7 +11,7 @@ import { formatDate } from '@/common/utils/dateFormater-util'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
-interface Props {
+interface ImageControlProps {
 	recordData?: I_Product
 	// Nueva prop para URL directa
 	imageUrl?: string
@@ -31,7 +31,7 @@ interface Props {
 	imageName?: string
 }
 
-export const ProductImage = ({
+export const ImageControl = ({
 	recordData,
 	imageUrl,
 	// Props de detalles (por defecto habilitados)
@@ -48,7 +48,7 @@ export const ProductImage = ({
 	// Props adicionales
 	altText = 'Imagen',
 	imageName = 'imagen',
-}: Props) => {
+}: ImageControlProps) => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [imageLoaded, setImageLoaded] = useState(false)
 	const [imageError, setImageError] = useState(false)
