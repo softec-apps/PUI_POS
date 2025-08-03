@@ -11,6 +11,7 @@ import { FindOptionsWhere, Repository, In, EntityManager, ILike } from 'typeorm'
 import { KardexRepository } from '@/modules/kardex/infrastructure/persistence/kardex.repository'
 import { KardexMapper } from '@/modules/kardex/infrastructure/persistence/relational/mappers/kardex.mapper'
 import { KardexEntity } from '@/modules/kardex/infrastructure/persistence/relational/entities/kardex.entity'
+import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 
 @Injectable()
 export class kardexRelationalRepository implements KardexRepository {
@@ -97,6 +98,7 @@ export class kardexRelationalRepository implements KardexRepository {
         where: whereClause,
         order: orderClause,
         withDeleted: true,
+        relations: [PATH_SOURCE.USER, PATH_SOURCE.PRODUCT],
       }),
       // 2. Total CON filtros (para paginación)
       this.KardexRepository.count({
@@ -173,6 +175,7 @@ export class kardexRelationalRepository implements KardexRepository {
         createdAt: 'DESC',
       },
       withDeleted: true,
+      relations: [PATH_SOURCE.USER, PATH_SOURCE.PRODUCT],
     })
 
     // PASO 3: Procesar en memoria para obtener solo el último registro por producto
@@ -241,6 +244,7 @@ export class kardexRelationalRepository implements KardexRepository {
     const entity = await this.KardexRepository.findOne({
       where: { id: String(id) },
       withDeleted: true,
+      relations: [PATH_SOURCE.USER, PATH_SOURCE.PRODUCT],
     })
 
     return entity ? KardexMapper.toDomain(entity) : null
