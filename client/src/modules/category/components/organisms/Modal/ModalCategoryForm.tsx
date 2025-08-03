@@ -9,11 +9,11 @@ import { Icons } from '@/components/icons'
 import { I_Category } from '@/modules/category/types/category'
 import { AlertMessage } from '@/components/layout/atoms/Alert'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { FileUploadSection } from '@/components/layout/organims/FileUpload'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
-import { FormFooter } from '@/modules/category/components/organisms/Modal/FormFooter'
-import { FileUploadSection } from '@/modules/category/components/organisms/Modal/FileUpload'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { FormFooter } from '@/modules/category/components/organisms/Modal/FormFooter'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet'
 
 // Schema de validación
 const categorySchema = z.object({

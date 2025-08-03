@@ -5,7 +5,7 @@ import { Control, UseFormSetValue, UseFormWatch } from 'react-hook-form'
 import { ProductFormData } from '@/modules/product/types/product-form'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileUploadSection } from '@/modules/product/components/organisms/FileUpload'
+import { FileUploadSection } from '@/components/layout/organims/FileUpload'
 import { useFileUpload } from '@/common/hooks/useFileUpload'
 import { ChangeEvent, useEffect } from 'react'
 
