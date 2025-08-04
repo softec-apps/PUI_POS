@@ -17,7 +17,7 @@ import path from 'path'
 import * as fs from 'fs'
 
 async function bootstrap() {
-  const adapter = new FastifyAdapter({ logger: false })
+  const adapter = new FastifyAdapter()
 
   // 👇 Registro de multipart
   await adapter.register(multipart)
@@ -36,7 +36,6 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     adapter,
-    { logger: false },
   )
 
   configureGlobalAppSettings(app)
