@@ -46,8 +46,6 @@ type UniversalFormFieldProps<T extends FieldValues> = {
 	showIconsInSelect?: boolean
 	commandEmptyMessage?: string
 	groupByCategory?: boolean
-	// Nueva prop para habilitar validación estricta de números
-	strictNumberValidation?: boolean
 }
 
 export function UniversalFormField<T extends FieldValues>({
@@ -70,7 +68,6 @@ export function UniversalFormField<T extends FieldValues>({
 	showIconsInSelect = false,
 	commandEmptyMessage = 'No se encontraron resultados.',
 	groupByCategory = false,
-	strictNumberValidation = false,
 }: UniversalFormFieldProps<T>) {
 	const [commandOpen, setCommandOpen] = React.useState(false)
 
@@ -421,21 +418,6 @@ export function UniversalFormField<T extends FieldValues>({
 											disabled={disabled}
 											onChange={e => {
 												const rawValue = e.target.value
-
-												// Para campos numéricos con validación estricta
-												if (strictNumberValidation && type === 'number') {
-													// Permitir solo números, punto decimal y negativo (si es necesario)
-													const isValidNumber = /^-?\d*\.?\d*$/.test(rawValue) || rawValue === ''
-
-													if (!isValidNumber) {
-														// No actualizar el valor si no es un número válido
-														return
-													}
-
-													field.onChange(rawValue === '' ? undefined : rawValue)
-													onChange?.(rawValue === '' ? undefined : rawValue)
-													return
-												}
 
 												// Comportamiento original para otros casos
 												let value: any = rawValue

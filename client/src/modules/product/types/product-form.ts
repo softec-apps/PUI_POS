@@ -33,7 +33,7 @@ export const ProductSchema = z.object({
 			}
 			return val
 		},
-		z.number({ required_error: 'Campo requerido' }).int('Debe ser un entero').min(0, 'Debe ser un número positivo')
+		z.number({ required_error: 'Campo requerido' }).int('Debe ser un entero').min(1, 'Debe ser un número positivo')
 	),
 	sku: z.string().max(20, 'Máximo 20 caracteres').optional(),
 	barCode: z.string().max(50, 'Máximo 50 caracteres').optional(),

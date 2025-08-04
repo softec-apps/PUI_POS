@@ -31,8 +31,6 @@ export function EconomicSection({ control }: EconomicSectionProps) {
 					label='Precio'
 					placeholder='Ej: 6.123456'
 					description='Precio base del producto'
-					strictNumberValidation={true}
-					step='0.000001'
 				/>
 
 				<UniversalFormField
@@ -43,8 +41,6 @@ export function EconomicSection({ control }: EconomicSectionProps) {
 					label='Stock'
 					placeholder='Ej: 666'
 					description='Stock inicial del producto'
-					strictNumberValidation={true}
-					step='1'
 				/>
 
 				<UniversalFormField

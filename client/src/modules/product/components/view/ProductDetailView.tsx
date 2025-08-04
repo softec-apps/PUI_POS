@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { useEffect, useState } from 'react'
 import { I_Product } from '@/modules/product/types/product'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
-import { ProductImage } from '@/modules/product/components/molecules/ProductImage'
+import { ImageControl } from '@/components/layout/organims/ImageControl'
 import { Typography } from '@/components/ui/typography'
 import { ProductAnalytics } from '@/modules/product/components/organisms/Chart/ProductAnalytics'
 import { formatDate } from '@/common/utils/dateFormater-util'
@@ -102,7 +102,7 @@ export function ProductDetailView({ productId }: Props) {
 				<CardContent className='p-0'>
 					<div className='flex items-center gap-4'>
 						<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-							<ProductImage
+							<ImageControl
 								recordData={product}
 								enableHover={false}
 								enableClick={false}
