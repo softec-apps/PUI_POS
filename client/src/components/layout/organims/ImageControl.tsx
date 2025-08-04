@@ -29,6 +29,7 @@ interface ImageControlProps {
 	// Props adicionales para cuando se usa URL directa
 	altText?: string
 	imageName?: string
+	showTextEmpty?: boolean
 }
 
 export const ImageControl = ({
@@ -48,6 +49,7 @@ export const ImageControl = ({
 	// Props adicionales
 	altText = 'Imagen',
 	imageName = 'imagen',
+	showTextEmpty = false,
 }: ImageControlProps) => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [imageLoaded, setImageLoaded] = useState(false)
@@ -398,7 +400,7 @@ export const ImageControl = ({
 			<CardContent className='h-full p-0'>
 				<div className='text-muted-foreground absolute inset-0 flex flex-col items-center justify-center space-y-1'>
 					<Icons.media className='h-6 w-6' />
-					<p className='text-xs'>Sin imagen</p>
+					{showTextEmpty && <p className='text-xs'>Sin imagen</p>}
 				</div>
 			</CardContent>
 		</Card>
