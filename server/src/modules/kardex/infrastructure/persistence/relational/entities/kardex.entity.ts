@@ -18,7 +18,8 @@ import { ProductEntity } from '@/modules/product/infrastructure/persistence/rela
 import { UserEntity } from '@/modules/users/infrastructure/persistence/relational/entities/user.entity'
 
 @Entity({ name: PATH_SOURCE.KARDEX })
-@Index(['productId', 'createdAt']) // Para historial por producto
+@Index(['productId', 'movementType']) // Para filtros por categoría
+@Index(['userId', 'movementType']) // Para filtros por marca
 @Index(['movementType']) // Para filtros por tipo
 @Check(`"quantity" > 0`) // Validación de cantidad positiva
 @Check(`"unitCost" >= 0`) // Validación de costo unitario
@@ -31,12 +32,6 @@ import { UserEntity } from '@/modules/users/infrastructure/persistence/relationa
 export class KardexEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn('uuid')
   id: string
-
-  @Column({ type: 'uuid' })
-  productId: string
-
-  @Column({ type: 'uuid' })
-  userId: string
 
   @Column({
     type: 'enum',
@@ -126,17 +121,22 @@ export class KardexEntity extends EntityRelationalHelper {
   })
   reason?: string | null
 
-  @ManyToOne(() => UserEntity, { onDelete: 'RESTRICT', eager: false })
+  @ManyToOne(() => UserEntity, { onDelete: 'SET NULL', eager: false })
   @JoinColumn({ name: 'userId' })
   user: UserEntity
 
-  @ManyToOne(() => ProductEntity, { onDelete: 'RESTRICT', eager: false })
+  @Column({ type: 'uuid', nullable: true })
+  @Index()
+  userId?: string | null
+
+  @ManyToOne(() => ProductEntity, { onDelete: 'SET NULL', eager: false })
   @JoinColumn({ name: 'productId' })
   product: ProductEntity
 
+  @Column({ type: 'uuid', nullable: true })
+  @Index()
+  productId?: string | null
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date
-
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt: Date
 }

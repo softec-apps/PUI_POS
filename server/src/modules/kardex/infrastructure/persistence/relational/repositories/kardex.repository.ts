@@ -47,9 +47,7 @@ export class kardexRelationalRepository implements KardexRepository {
     totalCount: number // Total con filtros (para paginación)
     totalRecords: number // Total sin filtros (estadísticas generales)
   }> {
-    let whereClause:
-      | FindOptionsWhere<KardexEntity>
-      | FindOptionsWhere<KardexEntity>[] = {}
+    let baseFilters: FindOptionsWhere<KardexEntity> = {}
 
     // Aplicar filtros
     if (filterOptions) {
@@ -57,64 +55,99 @@ export class kardexRelationalRepository implements KardexRepository {
         ([_, value]) => value !== undefined && value !== null,
       )
       if (filteredEntries.length > 0) {
-        whereClause = filteredEntries.reduce((acc, [key, value]) => {
+        baseFilters = filteredEntries.reduce((acc, [key, value]) => {
           acc[key as keyof KardexEntity] = value as any
           return acc
         }, {} as FindOptionsWhere<KardexEntity>)
       }
     }
 
-    // Aplicar búsqueda
+    // 2. Construir búsqueda textual (OR)
     if (searchOptions?.trim()) {
       const searchTerm = `%${searchOptions.trim().toLowerCase()}%`
-      if (Array.isArray(whereClause) || Object.keys(whereClause).length > 0) {
-        whereClause = [
-          {
-            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
-            reason: ILike(searchTerm),
-          },
-        ]
-      } else {
-        whereClause = [{ reason: ILike(searchTerm) }]
+      // Array OR con campos a buscar
+      const searchConditions = [{ reason: ILike(searchTerm) }]
+
+      // Combinar baseFilters (AND) con búsqueda textual (OR)
+      // En TypeORM, se pasa un array para OR
+      const whereClause: FindOptionsWhere<KardexEntity>[] =
+        searchConditions.map((condition) => ({
+          ...baseFilters,
+          ...condition,
+        }))
+
+      // Preparar order
+      const orderClause = sortOptions?.length
+        ? sortOptions.reduce(
+            (acc, sort) => {
+              acc[sort.orderBy] = sort.order
+              return acc
+            },
+            {} as Record<string, any>,
+          )
+        : { createdAt: 'DESC' }
+
+      // Ejecutar consulta con whereClause (array = OR entre cada objeto)
+      const [entities, totalCount, totalRecords] = await Promise.all([
+        this.KardexRepository.find({
+          skip: (paginationOptions.page - 1) * paginationOptions.limit,
+          take: paginationOptions.limit,
+          where: whereClause,
+          order: orderClause,
+          withDeleted: true,
+          relations: [PATH_SOURCE.PRODUCT, PATH_SOURCE.USER],
+        }),
+        this.KardexRepository.count({
+          where: whereClause,
+          withDeleted: true,
+        }),
+        this.KardexRepository.count({
+          withDeleted: true,
+        }),
+      ])
+
+      return {
+        data: entities.map(KardexMapper.toDomain),
+        totalCount,
+        totalRecords,
       }
-    }
+    } else {
+      // Sin búsqueda textual: solo filtros exactos
+      const whereClause = baseFilters
 
-    const orderClause = sortOptions?.length
-      ? sortOptions.reduce(
-          (acc, sort) => {
-            acc[sort.orderBy] = sort.order
-            return acc
-          },
-          {} as Record<string, any>,
-        )
-      : { createdAt: 'DESC' }
+      const orderClause = sortOptions?.length
+        ? sortOptions.reduce(
+            (acc, sort) => {
+              acc[sort.orderBy] = sort.order
+              return acc
+            },
+            {} as Record<string, any>,
+          )
+        : { createdAt: 'DESC' }
 
-    // Consultas en paralelo para mejor rendimiento
-    const [entities, totalCount, totalRecords] = await Promise.all([
-      // 1. Datos paginados (con filtros)
-      this.KardexRepository.find({
-        skip: (paginationOptions.page - 1) * paginationOptions.limit,
-        take: paginationOptions.limit,
-        where: whereClause,
-        order: orderClause,
-        withDeleted: true,
-        relations: [PATH_SOURCE.USER, PATH_SOURCE.PRODUCT],
-      }),
-      // 2. Total CON filtros (para paginación)
-      this.KardexRepository.count({
-        where: whereClause,
-        withDeleted: true,
-      }),
-      // 3. Total SIN filtros (estadísticas brutas)
-      this.KardexRepository.count({
-        withDeleted: true,
-      }),
-    ])
+      const [entities, totalCount, totalRecords] = await Promise.all([
+        this.KardexRepository.find({
+          skip: (paginationOptions.page - 1) * paginationOptions.limit,
+          take: paginationOptions.limit,
+          where: whereClause,
+          order: orderClause,
+          withDeleted: true,
+          relations: [PATH_SOURCE.PRODUCT, PATH_SOURCE.USER],
+        }),
+        this.KardexRepository.count({
+          where: whereClause,
+          withDeleted: true,
+        }),
+        this.KardexRepository.count({
+          withDeleted: true,
+        }),
+      ])
 
-    return {
-      data: entities.map(KardexMapper.toDomain),
-      totalCount, // Total filtrado
-      totalRecords, // Total absoluto
+      return {
+        data: entities.map(KardexMapper.toDomain),
+        totalCount,
+        totalRecords,
+      }
     }
   }
 
@@ -133,43 +166,8 @@ export class kardexRelationalRepository implements KardexRepository {
     totalCount: number // Total con filtros (para paginación)
     totalRecords: number // Total sin filtros (estadísticas generales)
   }> {
-    // PASO 1: Obtener todos los registros y procesarlos en memoria para obtener el último por producto
-    let whereClause:
-      | FindOptionsWhere<KardexEntity>
-      | FindOptionsWhere<KardexEntity>[] = {}
-
-    // Aplicar filtros (MISMA lógica que el método original)
-    if (filterOptions) {
-      const filteredEntries = Object.entries(filterOptions).filter(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        ([_, value]) => value !== undefined && value !== null,
-      )
-      if (filteredEntries.length > 0) {
-        whereClause = filteredEntries.reduce((acc, [key, value]) => {
-          acc[key as keyof KardexEntity] = value as any
-          return acc
-        }, {} as FindOptionsWhere<KardexEntity>)
-      }
-    }
-
-    // Aplicar búsqueda (MISMA lógica que el método original)
-    if (searchOptions?.trim()) {
-      const searchTerm = `%${searchOptions.trim().toLowerCase()}%`
-      if (Array.isArray(whereClause) || Object.keys(whereClause).length > 0) {
-        whereClause = [
-          {
-            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
-            reason: ILike(searchTerm),
-          },
-        ]
-      } else {
-        whereClause = [{ reason: ILike(searchTerm) }]
-      }
-    }
-
-    // PASO 2: Obtener todos los registros filtrados ordenados por producto y fecha
-    const allFilteredEntities = await this.KardexRepository.find({
-      where: whereClause,
+    // PASO 1: Obtener TODOS los registros sin filtros, solo ordenados
+    const allEntities = await this.KardexRepository.find({
       order: {
         productId: 'ASC',
         createdAt: 'DESC',
@@ -178,18 +176,45 @@ export class kardexRelationalRepository implements KardexRepository {
       relations: [PATH_SOURCE.USER, PATH_SOURCE.PRODUCT],
     })
 
-    // PASO 3: Procesar en memoria para obtener solo el último registro por producto
+    // PASO 2: Procesar en memoria para obtener solo el último registro por producto
     const latestByProduct = new Map<string, KardexEntity>()
 
-    allFilteredEntities.forEach((entity) => {
-      if (!latestByProduct.has(entity.productId)) {
-        latestByProduct.set(entity.productId, entity)
-      }
+    allEntities.forEach((entity) => {
+      if (!latestByProduct.has(entity.product.id))
+        latestByProduct.set(entity.product.id, entity)
     })
 
-    const latestEntities = Array.from(latestByProduct.values())
+    let latestEntities = Array.from(latestByProduct.values())
 
-    // PASO 4: Aplicar ordenamiento (MISMA lógica que el método original)
+    // PASO 3: Aplicar filtros DESPUÉS de obtener los últimos registros
+    if (filterOptions) {
+      const filteredEntries = Object.entries(filterOptions).filter(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        ([_, value]) => value !== undefined && value !== null,
+      )
+
+      if (filteredEntries.length > 0) {
+        latestEntities = latestEntities.filter((entity) => {
+          return filteredEntries.every(([key, value]) => {
+            const entityValue = entity[key as keyof KardexEntity]
+            return entityValue === value
+          })
+        })
+      }
+    }
+
+    // PASO 4: Aplicar búsqueda DESPUÉS de filtros
+    if (searchOptions?.trim()) {
+      const searchTerm = searchOptions.trim().toLowerCase()
+      latestEntities = latestEntities.filter((entity) =>
+        entity.reason?.toLowerCase().includes(searchTerm),
+      )
+    }
+
+    // PASO 5: Aplicar ordenamiento (CORREGIDO)
+    // Construir orderClause igual que en findManyWithPagination
+
+    console.log('DSD', sortOptions)
     const orderClause = sortOptions?.length
       ? sortOptions.reduce(
           (acc, sort) => {
@@ -203,13 +228,30 @@ export class kardexRelationalRepository implements KardexRepository {
     // Ordenar los resultados según el orderClause
     latestEntities.sort((a, b) => {
       for (const [field, direction] of Object.entries(orderClause)) {
-        const aValue = a[field as keyof KardexEntity]
-        const bValue = b[field as keyof KardexEntity]
+        let aValue: any
+        let bValue: any
+
+        // Si es un campo de relación (ej: product.name), acceder correctamente
+        if (field.includes('.')) {
+          const [relation, relationField] = field.split('.')
+          aValue = (a as any)[relation]?.[relationField]
+          bValue = (b as any)[relation]?.[relationField]
+        } else {
+          // Campo directo de la entidad
+          aValue = a[field as keyof KardexEntity]
+          bValue = b[field as keyof KardexEntity]
+        }
 
         // Manejar valores null/undefined
         if (aValue == null && bValue == null) continue
-        if (aValue == null) return direction === 'ASC' ? -1 : 1
-        if (bValue == null) return direction === 'ASC' ? 1 : -1
+        if (aValue == null) return direction === 'ASC' ? 1 : -1
+        if (bValue == null) return direction === 'ASC' ? -1 : 1
+
+        // Convertir a string para comparación consistente si es necesario
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          aValue = aValue.toLowerCase()
+          bValue = bValue.toLowerCase()
+        }
 
         if (aValue < bValue) return direction === 'ASC' ? -1 : 1
         if (aValue > bValue) return direction === 'ASC' ? 1 : -1
@@ -217,15 +259,15 @@ export class kardexRelationalRepository implements KardexRepository {
       return 0
     })
 
-    // PASO 5: Aplicar paginación manual
+    // PASO 6: Aplicar paginación manual
     const startIndex = (paginationOptions.page - 1) * paginationOptions.limit
     const endIndex = startIndex + paginationOptions.limit
     const paginatedEntities = latestEntities.slice(startIndex, endIndex)
 
-    // PASO 6: Calcular totales (MISMA estructura que el método original)
-    const totalCount = latestEntities.length // Total con filtros (productos únicos filtrados)
+    // PASO 7: Calcular totales
+    const totalCount = latestEntities.length // Total con filtros aplicados
 
-    // Total sin filtros: contar productos únicos en toda la tabla
+    // Total sin filtros: productos únicos en toda la tabla
     const allEntitiesForCount = await this.KardexRepository.find({
       select: ['productId'],
       withDeleted: true,
@@ -235,7 +277,7 @@ export class kardexRelationalRepository implements KardexRepository {
 
     return {
       data: paginatedEntities.map(KardexMapper.toDomain),
-      totalCount, // Total filtrado (productos únicos)
+      totalCount, // Total filtrado
       totalRecords, // Total absoluto (productos únicos)
     }
   }

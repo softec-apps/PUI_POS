@@ -33,7 +33,6 @@ export class KardexMapper {
     domainEntity.user = raw.user ? UserMapper.toDomain(raw.user) : null
 
     domainEntity.createdAt = raw.createdAt
-    domainEntity.updatedAt = raw.updatedAt
 
     return domainEntity
   }
@@ -68,7 +67,6 @@ export class KardexMapper {
       persistenceEntity.user = UserMapper.toPersistence(domainEntity.user)
 
     persistenceEntity.createdAt = domainEntity.createdAt
-    persistenceEntity.updatedAt = domainEntity.updatedAt
 
     return persistenceEntity
   }

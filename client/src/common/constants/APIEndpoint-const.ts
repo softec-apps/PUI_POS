@@ -8,4 +8,5 @@ export const ENDPOINT_API = {
 	SUPPLIER: 'supplier',
 	BRAND: 'brand',
 	PRODUCT: 'product',
+	KARDEX: 'kardex',
 }

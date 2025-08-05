@@ -17,8 +17,11 @@ export const useGenericApi = <T, CreateT, UpdateT>(config: ApiConfig) => {
 	const baseQueryKey = useMemo(() => config.queryKey || [config.baseEndpoint], [config.queryKey, config.baseEndpoint])
 
 	const buildQueryKey = useCallback(
-		(params?: PaginationParams) => {
-			if (!params || Object.keys(params).length === 0) return baseQueryKey
+		(params?: PaginationParams, endpointKey?: string) => {
+			// Incluir endpointKey si se proporciona (para queries personalizadas)
+			const baseKey = endpointKey ? [...baseQueryKey, endpointKey] : baseQueryKey
+
+			if (!params || Object.keys(params).length === 0) return baseKey
 
 			// ✅ Crear un hash estable de los parámetros
 			const sortedParams = Object.keys(params)
@@ -36,7 +39,7 @@ export const useGenericApi = <T, CreateT, UpdateT>(config: ApiConfig) => {
 				)
 
 			const paramString = JSON.stringify(sortedParams)
-			return paramString ? [...baseQueryKey, paramString] : baseQueryKey
+			return paramString ? [...baseKey, paramString] : baseKey
 		},
 		[baseQueryKey]
 	)
@@ -62,19 +65,18 @@ export const useGenericApi = <T, CreateT, UpdateT>(config: ApiConfig) => {
 					})
 				},
 				retry: 2,
-				refetchOnWindowFocus: true, // <-- Refresca al cambiar de pestaña
-				refetchOnReconnect: true, // <-- Si vuelves de offline a online
-				refetchOnMount: true, // <-- Siempre que el comp. se monta
+				refetchOnWindowFocus: true,
+				refetchOnReconnect: true,
+				refetchOnMount: true,
 				staleTime: config.staleTime ?? 5 * 60 * 1000,
 				enabled: config.enabled ?? true,
-				refetchInterval: false, // Cambia a un número si quieres polling
+				refetchInterval: false,
 			})
 		},
 		[apiService, buildQueryKey, config.endpoints?.list, config.enabled, config.staleTime]
 	)
 
 	// ✅ Crear mutations dinámicamente sin usar useCallback aquí
-	// En el método createGenericMutation dentro de useGenericApi
 	const createGenericMutation = (endpointKey: string, successMessageKey?: string) => {
 		const endpoint = config.endpoints?.[endpointKey]
 		if (!endpoint) throw new Error(`Endpoint '${endpointKey}' no configurado`)
@@ -128,13 +130,70 @@ export const useGenericApi = <T, CreateT, UpdateT>(config: ApiConfig) => {
 	// ✅ Crear mutations dinámicamente basado en los endpoints configurados
 	const mutations = Object.keys(config.endpoints || {}).reduce(
 		(acc, endpointKey) => {
-			if (endpointKey === 'list') return acc // Skip list endpoint
+			const endpoint = config.endpoints?.[endpointKey]
+			if (!endpoint) return acc
+
+			// Saltar endpoints tipo GET sin params → serán tratados como queries, no mutations
+			if (endpoint.method === 'GET' && (!endpoint.params || endpoint.params.length === 0)) return acc
+
+			// Saltar también 'list' porque ya tiene su query propia
+			if (endpointKey === 'list') return acc
+
 			const mutation = createGenericMutation(endpointKey, endpointKey)
 			acc[endpointKey] = mutation
 			return acc
 		},
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		{} as Record<string, any>
+	)
+
+	// ✅ Versión corregida de useCustomQueryEndpoint
+	const useCustomQueryEndpoint = useCallback(
+		(endpointKey: string, rawQueryParams: Record<string, any> = {}) => {
+			const endpoint = config.endpoints?.[endpointKey]
+			if (!endpoint || endpoint.method !== 'GET')
+				throw new Error(`Endpoint '${endpointKey}' no configurado o no es tipo GET`)
+
+			// Clonar y normalizar los parámetros
+			const queryParams = { ...rawQueryParams }
+
+			// Serializar filters si existe y es un objeto
+			if (queryParams.filters && typeof queryParams.filters === 'object') {
+				queryParams.filters = JSON.stringify(queryParams.filters)
+			}
+
+			// Serializar sort si existe y es un array
+			if (queryParams.sort && Array.isArray(queryParams.sort)) {
+				queryParams.sort = JSON.stringify(
+					queryParams.sort.map(item => {
+						if (typeof item === 'string') {
+							const [field, order] = item.split(':')
+							return { orderBy: field, order: order || 'asc' }
+						}
+						return item
+					})
+				)
+			}
+
+			const queryKey = buildQueryKey(queryParams, endpointKey)
+
+			return useQuery({
+				queryKey,
+				queryFn: async () => {
+					return await apiService.executeRequest<T>(endpoint, {
+						// Pasar los parámetros ya serializados
+						queryParams,
+					})
+				},
+				retry: 2,
+				refetchOnWindowFocus: true,
+				refetchOnReconnect: true,
+				refetchOnMount: true,
+				staleTime: config.staleTime ?? 5 * 60 * 1000,
+				enabled: config.enabled ?? true,
+				refetchInterval: false,
+			})
+		},
+		[apiService, buildQueryKey, config.endpoints, config.enabled, config.staleTime]
 	)
 
 	// ✅ Funciones de conveniencia optimizadas
@@ -191,6 +250,9 @@ export const useGenericApi = <T, CreateT, UpdateT>(config: ApiConfig) => {
 
 		// Raw mutations dinámicas
 		mutations,
+
+		// Query personalizada para GET sin parámetros
+		useCustomQueryEndpoint,
 
 		// API service for advanced usage
 		apiService,

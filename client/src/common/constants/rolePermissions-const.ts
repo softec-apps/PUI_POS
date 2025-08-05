@@ -18,7 +18,7 @@ export const PERMISSIONS = {
 	PRODUCTS: 'products',
 	SUPPLIERS: 'suppliers',
 	BRANDS: 'brands',
-	KARDEX: 'kardex', // Solo admin
+	KARDEX: 'kardex',
 
 	// Permisos de estructura
 	ATTRIBUTES: 'attributes',

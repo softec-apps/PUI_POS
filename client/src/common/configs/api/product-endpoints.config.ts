@@ -4,7 +4,7 @@ import { ENDPOINT_API } from '@/common/constants/APIEndpoint-const'
 export const PRODUCT_ENDPOINTS_CONFIG: ApiConfig = {
 	queryKey: [ENDPOINT_API.PRODUCT],
 	baseEndpoint: `/${ENDPOINT_API.PRODUCT}`,
-	extraInvalidateKeys: [[ENDPOINT_API.TEMPLATE]],
+	extraInvalidateKeys: [[ENDPOINT_API.KARDEX]],
 	successMessages: {
 		create: 'Producto creado exitosamente',
 		update: 'Producto actualizado exitosamente',

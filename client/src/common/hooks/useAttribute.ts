@@ -1,4 +1,5 @@
 import api from '@/lib/axios'
+import { useCallback } from 'react'
 import {
 	I_Attribute,
 	I_CreateAttribute,
@@ -7,9 +8,8 @@ import {
 	I_AttributeId,
 } from '@/modules/atribute/types/attribute'
 import { useGenericApi } from '@/common/hooks/useGenericApi'
+import { ENDPOINT_API } from '@/common/constants/APIEndpoint-const'
 import { ATTRIBUTE_ENDPOINTS_CONFIG } from '@/common/configs/api/attribute-endpoints.config'
-import { ENDPOINT_API } from '../constants/APIEndpoint-const'
-import { useCallback } from 'react'
 
 interface UseAttributesParams {
 	page?: number

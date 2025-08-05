@@ -43,7 +43,7 @@ export class CreateProductTable1753198655934 implements MigrationInterface {
         "categoryId" uuid,
         "brandId" uuid,
         "supplierId" uuid,
-        "templateId" uuid NOT NULL,
+        "templateId" uuid,
         "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "deletedAt" TIMESTAMP WITH TIME ZONE,
@@ -174,10 +174,6 @@ export class CreateProductTable1753198655934 implements MigrationInterface {
         ALTER TABLE "product" ADD CONSTRAINT "FK_product_templateId"
         FOREIGN KEY ("templateId") REFERENCES "template"("id") ON DELETE RESTRICT
       `)
-    } else {
-      console.warn(
-        '⚠️  La tabla "template" no existe. El foreign key FK_product_templateId no fue creado.',
-      )
     }
   }
 

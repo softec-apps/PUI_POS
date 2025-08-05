@@ -2,9 +2,9 @@ import { MigrationInterface, QueryRunner } from 'typeorm'
 
 export class CreateKardexTable1754059850889 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query("SET timezone = 'UTC'")
+    await queryRunner.query(`SET timezone = 'UTC'`)
 
-    // Crear enum para el tipo de movimiento
+    // Crear enum para tipo de movimiento
     await queryRunner.query(`
       CREATE TYPE "kardex_movement_type_enum" AS ENUM (
         'purchase',
@@ -26,50 +26,42 @@ export class CreateKardexTable1754059850889 implements MigrationInterface {
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
         "productId" uuid NOT NULL,
         "movementType" "kardex_movement_type_enum" NOT NULL,
-        "quantity" integer NOT NULL,
-        "unitCost" decimal(13,6) NOT NULL DEFAULT 0,
-        "subtotal" decimal(13,6) NOT NULL DEFAULT 0,
-        "taxRate" decimal(5,2) NOT NULL DEFAULT 0,
-        "taxAmount" decimal(13,6) NOT NULL DEFAULT 0,
-        "total" decimal(13,6) NOT NULL DEFAULT 0,
-        "stockBefore" integer NOT NULL DEFAULT 0,
-        "stockAfter" integer NOT NULL DEFAULT 0,
+        "quantity" integer NOT NULL CHECK ("quantity" > 0),
+        "unitCost" decimal(13,6) NOT NULL DEFAULT 0 CHECK ("unitCost" >= 0),
+        "subtotal" decimal(13,6) NOT NULL DEFAULT 0 CHECK ("subtotal" >= 0),
+        "taxRate" decimal(5,2) NOT NULL DEFAULT 0 CHECK ("taxRate" >= 0 AND "taxRate" <= 100),
+        "taxAmount" decimal(13,6) NOT NULL DEFAULT 0 CHECK ("taxAmount" >= 0),
+        "total" decimal(13,6) NOT NULL DEFAULT 0 CHECK ("total" >= 0),
+        "stockBefore" integer NOT NULL DEFAULT 0 CHECK ("stockBefore" >= 0),
+        "stockAfter" integer NOT NULL DEFAULT 0 CHECK ("stockAfter" >= 0),
         "reason" character varying(255),
         "userId" uuid NOT NULL,
         "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT "PK_kardex_id" PRIMARY KEY ("id"),
-        CONSTRAINT "CHK_kardex_quantity" CHECK ("quantity" > 0),
-        CONSTRAINT "CHK_kardex_unit_cost" CHECK ("unitCost" >= 0),
-        CONSTRAINT "CHK_kardex_subtotal" CHECK ("subtotal" >= 0),
-        CONSTRAINT "CHK_kardex_tax_rate" CHECK ("taxRate" >= 0 AND "taxRate" <= 100),
-        CONSTRAINT "CHK_kardex_tax_amount" CHECK ("taxAmount" >= 0),
-        CONSTRAINT "CHK_kardex_total" CHECK ("total" >= 0),
-        CONSTRAINT "CHK_kardex_stock_before" CHECK ("stockBefore" >= 0),
-        CONSTRAINT "CHK_kardex_stock_after" CHECK ("stockAfter" >= 0)
+        CONSTRAINT "PK_kardex_id" PRIMARY KEY ("id")
       )
     `)
 
-    // Función para calcular totales con impuestos
+    // Función para calcular totales
     await queryRunner.query(`
-    CREATE OR REPLACE FUNCTION calculate_kardex_totals()
-    RETURNS TRIGGER AS $$
-    BEGIN
+      CREATE OR REPLACE FUNCTION calculate_kardex_totals()
+      RETURNS TRIGGER AS $$
+      BEGIN
         -- Calcular subtotal (cantidad * costo unitario)
         NEW.subtotal := NEW.quantity * NEW."unitCost";
-        
-        -- Calcular monto del impuesto (subtotal * (tasa de impuecsto / 100))
+
+        -- Calcular monto del impuesto (subtotal * (tasa de impuesto / 100))
         NEW."taxAmount" := NEW.subtotal * (NEW."taxRate" / 100.0);
-        
+
         -- Calcular total (subtotal + impuesto)
         NEW.total := NEW.subtotal + NEW."taxAmount";
-        
+
         RETURN NEW;
-    END;
-    $$ LANGUAGE plpgsql;
+      END;
+      $$ LANGUAGE plpgsql;
     `)
 
-    // Trigger para calcular totales automáticamente
+    // Trigger para cálculo automático
     await queryRunner.query(`
       CREATE TRIGGER "trigger_calculate_kardex_totals"
       BEFORE INSERT OR UPDATE ON "kardex"
@@ -77,47 +69,42 @@ export class CreateKardexTable1754059850889 implements MigrationInterface {
       EXECUTE FUNCTION calculate_kardex_totals();
     `)
 
-    // Crear índices
+    // Índices
     await queryRunner.query(`
       CREATE INDEX "IDX_kardex_productId_createdAt" ON "kardex" ("productId", "createdAt")
     `)
-
     await queryRunner.query(`
       CREATE INDEX "IDX_kardex_movementType" ON "kardex" ("movementType")
     `)
-
     await queryRunner.query(`
-      CREATE INDEX "IDX_kardex_productId" ON "kardex" ("productId")
+      CREATE INDEX "IDX_kardex_productId_movementType" ON "kardex" ("productId", "movementType")
+    `)
+    await queryRunner.query(`
+      CREATE INDEX "IDX_kardex_userId_movementType" ON "kardex" ("userId", "movementType")
     `)
 
-    await queryRunner.query(`
-      CREATE INDEX "IDX_kardex_userId" ON "kardex" ("userId")
-    `)
-
-    // Verificar que las tablas referenciadas existen antes de crear foreign keys
-    const productTableExists = await queryRunner.hasTable('product')
-    const userTableExists = await queryRunner.hasTable('user')
-
-    // Agregar foreign keys solo si las tablas existen
-    if (productTableExists) {
+    // FK si existen las tablas
+    if (await queryRunner.hasTable('product')) {
       await queryRunner.query(`
-        ALTER TABLE "kardex" ADD CONSTRAINT "FK_kardex_productId"
+        ALTER TABLE "kardex"
+        ADD CONSTRAINT "FK_kardex_productId"
         FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE RESTRICT
       `)
     } else {
       console.warn(
-        '⚠️  La tabla "product" no existe. El foreign key FK_kardex_productId no fue creado.',
+        '⚠️ La tabla "product" no existe. FK_kardex_productId no fue creada.',
       )
     }
 
-    if (userTableExists) {
+    if (await queryRunner.hasTable('user')) {
       await queryRunner.query(`
-        ALTER TABLE "kardex" ADD CONSTRAINT "FK_kardex_userId"
+        ALTER TABLE "kardex"
+        ADD CONSTRAINT "FK_kardex_userId"
         FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT
       `)
     } else {
       console.warn(
-        '⚠️  La tabla "user" no existe. El foreign key FK_kardex_userId no fue creado.',
+        '⚠️ La tabla "user" no existe. FK_kardex_userId no fue creada.',
       )
     }
   }
@@ -129,39 +116,35 @@ export class CreateKardexTable1754059850889 implements MigrationInterface {
     )
     await queryRunner.query(`DROP FUNCTION IF EXISTS calculate_kardex_totals()`)
 
-    // Eliminar foreign keys
+    // Foreign keys
     const constraints = ['FK_kardex_userId', 'FK_kardex_productId']
-
     for (const constraint of constraints) {
       try {
         await queryRunner.query(
           `ALTER TABLE "kardex" DROP CONSTRAINT "${constraint}"`,
         )
       } catch (error) {
-        console.log(error)
-        console.log(`Constraint ${constraint} no existe o ya fue eliminado`)
+        console.warn(`⚠️ Constraint ${constraint} no encontrada o ya eliminada`)
       }
     }
 
-    // Eliminar índices
+    // Índices
     const indexes = [
       'IDX_kardex_productId_createdAt',
       'IDX_kardex_movementType',
-      'IDX_kardex_productId',
-      'IDX_kardex_userId',
+      'IDX_kardex_productId_movementType',
+      'IDX_kardex_userId_movementType',
     ]
-
     for (const index of indexes) {
       try {
-        await queryRunner.query(`DROP INDEX "public"."${index}"`)
+        await queryRunner.query(`DROP INDEX IF EXISTS "public"."${index}"`)
       } catch (error) {
-        console.log(error)
-        console.log(`Index ${index} no existe o ya fue eliminado`)
+        console.warn(`⚠️ Index ${index} no encontrado o ya eliminado`)
       }
     }
 
     // Eliminar tabla y enum
-    await queryRunner.query(`DROP TABLE "kardex"`)
-    await queryRunner.query(`DROP TYPE "kardex_movement_type_enum"`)
+    await queryRunner.query(`DROP TABLE IF EXISTS "kardex"`)
+    await queryRunner.query(`DROP TYPE IF EXISTS "kardex_movement_type_enum"`)
   }
 }

@@ -48,6 +48,13 @@ export const ALL_NAV_ITEMS: NavConfig = [
 				isActive: false,
 				permission: PERMISSIONS.PRODUCTS,
 			},
+			{
+				title: 'Kardex',
+				url: ROUTE_PATH.ADMIN.KARDEX,
+				icon: 'clipboardData',
+				isActive: false,
+				permission: PERMISSIONS.KARDEX,
+			},
 		],
 	},
 	{
