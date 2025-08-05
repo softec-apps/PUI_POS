@@ -201,6 +201,7 @@ export const Icons = {
 	billing: IconCreditCard,
 	ellipsis: IconDotsVertical,
 	add: IconPlus,
+	deviceLaptop: IconDeviceLaptop,
 	warning: IconAlertTriangle,
 	user: IconUser,
 	iconArrowLeft: IconArrowLeft,

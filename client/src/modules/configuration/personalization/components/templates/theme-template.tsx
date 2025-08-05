@@ -40,9 +40,9 @@ export function ThemeSelector() {
 
 	return (
 		<div className='flex w-full flex-col gap-8'>
-			<div className='pb-8'>
-				<Typography variant='h1'>Personalización</Typography>
-			</div>
+			<Typography variant='h3' className='font-bold'>
+				Personalización
+			</Typography>
 
 			<CardDensityMode isScaled={isScaled} onScaledChange={handleScaledToggle} />
 
