@@ -3,7 +3,7 @@
 import { Icons } from '@/components/icons'
 import { SheetFooter } from '@/components/ui/sheet'
 import { FieldErrors, FormState } from 'react-hook-form'
-import { I_BrandId } from '@/modules/brand/types/brand'
+import { I_BrandId } from '@/common/types/modules/brand'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 
 interface FormFooterProps {

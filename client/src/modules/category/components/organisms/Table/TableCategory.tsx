@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 import { animations } from '@/modules/category/components/atoms/animations'
 
-import { I_Category } from '@/modules/category/types/category'
+import { I_Category } from '@/common/types/modules/category'
 import { EmptyState } from '@/components/layout/organims/EmptyState'
 import { CardView } from '@/modules/category/components/organisms/ViewCard'
 import { ListView } from '@/modules/category/components/organisms/ViewList'

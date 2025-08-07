@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { ModalState } from '@/modules/brand/types/modalState'
 import { BrandFormData } from '@/modules/brand/components/organisms/Modal/ModalBrandForm'
-import { I_Brand, I_CreateBrand, I_UpdateBrand } from '@/modules/brand/types/brand'
+import { I_Brand, I_CreateBrand, I_UpdateBrand } from '@/common/types/modules/brand'
 
 interface UsebrandHandlersProps {
 	modalState: ModalState
@@ -26,7 +26,7 @@ export function useBrandHandlers({
 			try {
 				const brandData: any = {
 					name: data.name.trim(),
-					description: data.description?.trim() || "",
+					description: data.description?.trim() || '',
 				}
 
 				// CAMBIO: Ahora currentRecord tiene el tipo correcto
@@ -34,7 +34,7 @@ export function useBrandHandlers({
 					// Para actualizar, incluir el status actual
 					const updateData: I_UpdateBrand = {
 						...brandData,
-						status: modalState.currentRecord.status
+						status: modalState.currentRecord.status,
 					}
 					await updateBrand(modalState.currentRecord.id, updateData)
 				} else {
@@ -72,7 +72,7 @@ export function useBrandHandlers({
 				const updateData: I_UpdateBrand = {
 					name: brand.name,
 					description: brand.description,
-					status: newStatus
+					status: newStatus,
 				}
 				await updateBrand(brand.id, updateData)
 			} catch (error) {
@@ -86,9 +86,7 @@ export function useBrandHandlers({
 		async (brandIds: string[], newStatus: 'active' | 'inactive') => {
 			try {
 				// Nota: Este enfoque puede necesitar optimización en el backend
-				const updatePromises = brandIds.map(id => 
-					updateBrand(id, { status: newStatus } as I_UpdateBrand)
-				)
+				const updatePromises = brandIds.map(id => updateBrand(id, { status: newStatus } as I_UpdateBrand))
 				await Promise.all(updatePromises)
 			} catch (error) {
 				console.error('Bulk status update error:', error)

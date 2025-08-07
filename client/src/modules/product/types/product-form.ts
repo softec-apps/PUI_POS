@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { I_Product } from '@/modules/product/types/product'
+import { I_Product } from '@/common/types/modules/product'
 import { STATUS_ALLOW } from '@/modules/product/constants/product.constants'
 
 export const ProductSchema = z.object({

@@ -3,7 +3,7 @@
 import { Icons } from '@/components/icons'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { I_Attribute } from '@/modules/atribute/types/attribute'
+import { I_Attribute } from '@/common/types/modules/attribute'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { AttributeTypeAllow, typeLabelsTraslateToEs } from '@/modules/atribute/enums/attribute-types-allow.enum'
 import { Badge } from '@/components/layout/atoms/Badge'

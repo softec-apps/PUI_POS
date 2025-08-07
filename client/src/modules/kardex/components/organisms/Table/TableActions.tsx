@@ -3,7 +3,7 @@
 import { useCallback } from 'react'
 import { Icons } from '@/components/icons'
 import { useRouter } from 'next/navigation'
-import { I_Kardex } from '@/modules/kardex/types/kardex'
+import { I_Kardex } from '@/common/types/modules/kardex'
 import { ROUTE_PATH } from '@/common/constants/routes-const'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'

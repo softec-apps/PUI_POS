@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useGenericApi } from '@/common/hooks/useGenericApi'
 import { TEMPLATE_ENDPOINTS_CONFIG } from '@/common/configs/api/template-endpoints.config'
-import { I_TemplateResponse, I_CreateTemplate, I_UpdateTemplate, I_Template } from '@/modules/template/types/template'
+import { I_TemplateResponse, I_CreateTemplate, I_UpdateTemplate, I_Template } from '@/common/types/modules/template'
 
 interface UseTemplateParams {
 	page?: number

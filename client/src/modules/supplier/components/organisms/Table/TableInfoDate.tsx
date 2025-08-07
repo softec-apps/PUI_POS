@@ -1,7 +1,7 @@
 'use client'
 
 import { formatDate } from '@/common/utils/dateFormater-util'
-import { I_Supplier } from '@/modules/supplier/types/supplier'
+import { I_Supplier } from '@/common/types/modules/supplier'
 
 interface Props {
 	recordData: I_Supplier

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { I_Template } from '@/modules/template/types/template'
+import { I_Template } from '@/common/types/modules/template'
 import { Table as ReactTable, flexRender } from '@tanstack/react-table'
 import { animations } from '@/modules/kardex/components/atoms/animations'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'

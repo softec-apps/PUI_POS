@@ -88,18 +88,6 @@ export const ALL_NAV_ITEMS: NavConfig = [
 				permission: PERMISSIONS.ADMINISTRATION,
 				items: [
 					{
-						title: 'Local',
-						url: ROUTE_PATH.ADMIN.CONFIGURATION.LOCAL,
-						icon: 'store',
-						permission: PERMISSIONS.ADMINISTRATION,
-					},
-					{
-						title: 'Facturación',
-						url: ROUTE_PATH.ADMIN.CONFIGURATION.BILLING,
-						icon: 'receipt',
-						permission: PERMISSIONS.ADMINISTRATION,
-					},
-					{
 						title: 'Preferencias',
 						url: ROUTE_PATH.ADMIN.CONFIGURATION.PREFERENCE,
 						icon: 'server',

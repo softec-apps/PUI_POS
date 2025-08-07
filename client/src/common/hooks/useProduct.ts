@@ -9,7 +9,7 @@ import {
 	I_UpdateProduct,
 	I_ProductResponse,
 	I_IdProduct,
-} from '@/modules/product/types/product'
+} from '@/common/types/modules/product'
 
 interface UseProductParamsProps {
 	page?: number

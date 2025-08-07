@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { I_Attribute } from '@/modules/atribute/types/attribute'
+import { I_Attribute } from '@/common/types/modules/attribute'
 import { Table as ReactTable, flexRender } from '@tanstack/react-table'
 import { animations } from '@/modules/category/components/atoms/animations'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'

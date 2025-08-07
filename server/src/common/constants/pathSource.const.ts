@@ -10,4 +10,5 @@ export const PATH_SOURCE = {
   BRAND: 'brand',
   PRODUCT: 'product',
   KARDEX: 'kardex',
+  ESTABLISHMENT: 'establishment',
 }

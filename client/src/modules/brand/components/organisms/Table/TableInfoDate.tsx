@@ -1,7 +1,7 @@
 'use client'
 
 import { formatDate } from '@/common/utils/dateFormater-util'
-import { I_Brand} from '@/modules/brand/types/brand'
+import { I_Brand } from '@/common/types/modules/brand'
 
 interface Props {
 	brandData: I_Brand

@@ -1,5 +1,5 @@
 // INTERFAZ  OBTIENIDA DE RETURN DE "useModalState.ts"a
-import { I_Attribute } from '@/modules/atribute/types/attribute'
+import { I_Attribute } from '@/common/types/modules/attribute'
 
 export interface ModalState {
 	// Dialog state

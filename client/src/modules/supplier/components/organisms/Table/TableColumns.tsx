@@ -3,7 +3,7 @@
 import { Icons } from '@/components/icons'
 import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/layout/atoms/Badge'
-import { I_Supplier } from '@/modules/supplier/types/supplier'
+import { I_Supplier } from '@/common/types/modules/supplier'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { TableActions } from '@/modules/supplier/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/supplier/components/organisms/Table/TableInfoDate'

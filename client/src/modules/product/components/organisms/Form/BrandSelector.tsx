@@ -2,7 +2,7 @@
 
 import { Icons } from '@/components/icons'
 import { Button } from '@/components/ui/button'
-import { I_Brand } from '@/modules/brand/types/brand'
+import { I_Brand } from '@/common/types/modules/brand'
 import { AlertMessage } from '@/components/layout/atoms/Alert'
 import { Control, UseFormSetValue, UseFormWatch } from 'react-hook-form'
 import { ProductFormData } from '@/modules/product/types/product-form'

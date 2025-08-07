@@ -44,7 +44,7 @@ import {
 } from '@tabler/icons-react'
 
 import { Icons } from '@/components/icons'
-import { I_Brand } from '@/modules/brand/types/brand'
+import { I_Brand } from '@/common/types/modules/brand'
 import { AlertMessage } from '@/components/layout/atoms/Alert'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'

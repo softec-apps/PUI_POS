@@ -1,6 +1,6 @@
 import { useGenericApi } from '@/common/hooks/useGenericApi'
 import { SUPPLIER_ENDPOINTS_CONFIG } from '@/common/configs/api/supplier-endpoints.config'
-import { I_CreateSupplier, I_Supplier, I_UpdateSupplier, I_SupplierResponse } from '@/modules/supplier/types/supplier'
+import { I_CreateSupplier, I_Supplier, I_UpdateSupplier, I_SupplierResponse } from '@/common/types/modules/supplier'
 
 interface Props {
 	page?: number

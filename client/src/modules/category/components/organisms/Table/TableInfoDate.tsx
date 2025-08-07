@@ -1,7 +1,7 @@
 'use client'
 
 import { formatDate } from '@/common/utils/dateFormater-util'
-import { I_Category } from '@/modules/category/types/category'
+import { I_Category } from '@/common/types/modules/category'
 
 interface Props {
 	categoryData: I_Category

@@ -1,6 +1,6 @@
 import { useGenericApi } from '@/common/hooks/useGenericApi'
 import { BRAND_ENDPOINTS_CONFIG } from '@/common/configs/api/brand-endpoints.config'
-import { I_CreateBrand, I_Brand, I_UpdateBrand, I_BrandsResponse } from '@/modules/brand/types/brand'
+import { I_CreateBrand, I_Brand, I_UpdateBrand, I_BrandsResponse } from '@/common/types/modules/brand'
 
 interface UseBrandParams {
 	page?: number

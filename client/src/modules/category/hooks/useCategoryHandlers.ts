@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { ModalState } from '@/modules/category/types/modalState'
 import { CategoryFormData } from '@/modules/category/components/organisms/Modal/ModalCategoryForm'
-import { I_Category, I_CreateCategory, I_UpdateCategory } from '@/modules/category/types/category'
+import { I_Category, I_CreateCategory, I_UpdateCategory } from '@/common/types/modules/category'
 
 interface UseCategoryHandlersProps {
 	modalState: ModalState

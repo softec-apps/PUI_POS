@@ -1,7 +1,7 @@
 'use client'
 
 import { Icons } from '@/components/icons'
-import { I_Attribute } from '@/modules/atribute/types/attribute'
+import { I_Attribute } from '@/common/types/modules/attribute'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 

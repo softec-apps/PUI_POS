@@ -3,7 +3,7 @@
 import { Icons } from '@/components/icons'
 import { SheetFooter } from '@/components/ui/sheet'
 import { FieldErrors, FormState } from 'react-hook-form'
-import { I_AttributeId } from '@/modules/atribute/types/attribute'
+import { I_AttributeId } from '@/common/types/modules/attribute'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 
 interface Props {

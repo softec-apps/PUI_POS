@@ -1,7 +1,7 @@
 'use client'
 
 import { formatDate } from '@/common/utils/dateFormater-util'
-import { I_Template } from '@/modules/template/types/template'
+import { I_Template } from '@/common/types/modules/template'
 
 interface Props {
 	recordData: I_Template

@@ -1,6 +1,6 @@
 // INTERFAZ  OBTIENIDA DE RETURN DE "useModalState.ts"
 
-import { I_Template } from '@/modules/template/types/template'
+import { I_Template } from '@/common/types/modules/template'
 
 export interface ModalState {
 	// Dialog state

@@ -8,7 +8,7 @@ import { Icons } from '@/components/icons'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Typography } from '@/components/ui/typography'
 import { Card, CardContent } from '@/components/ui/card'
-import { I_Product } from '@/modules/product/types/product'
+import { I_Product } from '@/common/types/modules/product'
 import { ProductDetailDialog } from './ProductDetailDialog'
 
 const itemVariants = {

@@ -1,7 +1,7 @@
 'use client'
 
 import { Badge } from '@/components/layout/atoms/Badge'
-import { I_Product } from '@/modules/product/types/product'
+import { I_Product } from '@/common/types/modules/product'
 
 export const ProductStatusBadge = ({ status }: { status: I_Product['status'] }) => {
 	const statusMap = {

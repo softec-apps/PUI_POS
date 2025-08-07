@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { I_Supplier } from '@/modules/supplier/types/supplier'
+import { I_Supplier } from '@/common/types/modules/supplier'
 
 export const useModalState = () => {
 	// Dialog state

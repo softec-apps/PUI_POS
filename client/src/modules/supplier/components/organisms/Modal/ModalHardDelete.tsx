@@ -1,6 +1,6 @@
 'use client'
 
-import { I_Supplier } from '@/modules/supplier/types/supplier'
+import { I_Supplier } from '@/common/types/modules/supplier'
 import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
 
 interface Props {

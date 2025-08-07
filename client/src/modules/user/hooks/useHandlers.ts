@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { ModalState } from '@/modules/template/types/modalState'
 import { TemplateFormData } from '@/modules/template/types/template-form'
-import { I_UpdateTemplate, I_CreateTemplate, I_Template } from '@/modules/template/types/template'
+import { I_UpdateTemplate, I_CreateTemplate, I_Template } from '@/common/types/modules/template'
 
 interface Props {
 	modalState: ModalState

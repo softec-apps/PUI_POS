@@ -1,6 +1,6 @@
 import { useGenericApi } from '@/common/hooks/useGenericApi'
 import { CATEGORY_ENDPOINTS_CONFIG } from '@/common/configs/api/category-endpoints.config'
-import { I_CreateCategory, I_Category, I_UpdateCategory, I_CategoriesResponse } from '@/modules/category/types/category'
+import { I_CreateCategory, I_Category, I_UpdateCategory, I_CategoriesResponse } from '@/common/types/modules/category'
 
 interface UseCategoryParams {
 	page?: number

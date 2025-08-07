@@ -1,6 +1,6 @@
 'use client'
 
-import { Category_I } from '@/modules/atribute/types/attribute'
+import { Category_I } from '@/common/types/modules/attribute'
 import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
 
 interface RestoreConfirmationModalProps {

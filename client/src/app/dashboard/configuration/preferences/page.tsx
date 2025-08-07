@@ -1,10 +1,14 @@
+import { ALLOW_ROLES } from '@/common/constants/roles-const'
 import PageContainer from '@/components/layout/page-container'
-import { PreferencesView } from '@/modules/configuration/preferences/components/view/PreferencesView'
+import { RoleGuard } from '@/components/layout/RoleGuard'
+import { PreferencesView } from '@/modules/preferences/components/view/PreferencesView'
 
 export default async function UserPage() {
 	return (
-		<PageContainer>
-			<PreferencesView />
-		</PageContainer>
+		<RoleGuard requiredRole={[ALLOW_ROLES.ADMIN, ALLOW_ROLES.MANAGER]}>
+			<PageContainer>
+				<PreferencesView />
+			</PageContainer>
+		</RoleGuard>
 	)
 }

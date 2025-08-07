@@ -2,7 +2,7 @@
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Icons } from '@/components/icons'
-import { I_Brand } from '@/modules/brand/types/brand'
+import { I_Brand } from '@/common/types/modules/brand'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 
 interface Props {
@@ -25,9 +25,7 @@ export const TableActions = ({ brandData, onEdit, onHardDelete, onViewDetails }:
 		</DropdownMenuTrigger>
 
 		<DropdownMenuContent align='end' className='border-border/50 rounded-2xl border'>
-			<DropdownMenuItem
-				onClick={() => onEdit(brandData)}
-				className='flex cursor-pointer items-center gap-2 rounded-xl'>
+			<DropdownMenuItem onClick={() => onEdit(brandData)} className='flex cursor-pointer items-center gap-2 rounded-xl'>
 				<Icons.pencilMinus />
 				<span>Editar</span>
 			</DropdownMenuItem>

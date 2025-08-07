@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { I_Category } from '@/modules/category/types/category'
+import { I_Category } from '@/common/types/modules/category'
 
 const itemVariants = {
 	hidden: { opacity: 0, y: 20 },

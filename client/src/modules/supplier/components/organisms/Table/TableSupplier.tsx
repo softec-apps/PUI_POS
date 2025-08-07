@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-table'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { I_Supplier } from '@/modules/supplier/types/supplier'
+import { I_Supplier } from '@/common/types/modules/supplier'
 import { animations } from '@/modules/supplier/components/atoms/animations'
 
 import { EmptyState } from '@/components/layout/organims/EmptyState'

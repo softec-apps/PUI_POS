@@ -2,7 +2,7 @@
 
 import { Icons } from '@/components/icons'
 import { Button } from '@/components/ui/button'
-import { I_Category } from '@/modules/category/types/category'
+import { I_Category } from '@/common/types/modules/category'
 import { AlertMessage } from '@/components/layout/atoms/Alert'
 import { Control, UseFormSetValue, UseFormWatch } from 'react-hook-form'
 import { TemplateFormData } from '@/modules/template/types/template-form'

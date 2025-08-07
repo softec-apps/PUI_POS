@@ -1,7 +1,7 @@
 'use client'
 
 import { formatDate } from '@/common/utils/dateFormater-util'
-import { I_Attribute } from '@/modules/atribute/types/attribute'
+import { I_Attribute } from '@/common/types/modules/attribute'
 
 interface Props {
 	atributeData: I_Attribute

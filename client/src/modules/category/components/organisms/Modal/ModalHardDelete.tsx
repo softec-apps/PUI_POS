@@ -1,6 +1,6 @@
 'use client'
 
-import { I_Category } from '@/modules/category/types/category'
+import { I_Category } from '@/common/types/modules/category'
 import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
 
 interface Props {

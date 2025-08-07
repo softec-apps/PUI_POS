@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Table as ReactTable } from '@tanstack/react-table'
 
-import { I_Template } from '@/modules/template/types/template'
+import { I_Template } from '@/common/types/modules/template'
 
 import { Icons } from '@/components/icons'
 import { Typography } from '@/components/ui/typography'

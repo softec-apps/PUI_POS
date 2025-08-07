@@ -1,5 +1,5 @@
 // INTERFAZ  OBTIENIDA DE RETURN DE "useModalState.ts"
-import { I_Supplier } from '@/modules/supplier/types/supplier'
+import { I_Supplier } from '@/common/types/modules/supplier'
 
 export interface ModalState {
 	// Dialog state

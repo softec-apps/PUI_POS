@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { ModalState } from '@/modules/product/types/modalState'
 import { ProductFormData } from '@/modules/product/types/product-form'
-import { I_UpdateProduct, I_CreateProduct, I_Product } from '@/modules/product/types/product'
+import { I_UpdateProduct, I_CreateProduct, I_Product } from '@/common/types/modules/product'
 
 interface Props {
 	modalState: ModalState

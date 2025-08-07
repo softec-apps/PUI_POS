@@ -168,48 +168,6 @@ export function KardexFilters({
 			{/* Main Filters Container */}
 			<div className='flex flex-col justify-between gap-4 md:flex-row md:items-center'>
 				<div className='flex items-center gap-4'>
-					{/* Search Input */}
-					<motion.div
-						className='relative'
-						initial={{ opacity: 0, x: -15 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ delay: 0 }}>
-						<div
-							className={`relative rounded-xl transition-all duration-300 ${
-								isSearchFocused ? 'ring-primary/20 shadow-lg ring-2' : ''
-							}`}>
-							<div className='text-muted-foreground pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-4'>
-								<Icons.search size={18} />
-							</div>
-
-							<Input
-								placeholder='Buscar registros...'
-								className='text-accent-foreground/80 bg-accent/20 border-border/50 w-full rounded-xl pr-12 pl-12 shadow-none transition-all duration-300'
-								onChange={onSearchChange}
-								value={searchValue}
-								onFocus={() => setIsSearchFocused(true)}
-								onBlur={() => setIsSearchFocused(false)}
-								aria-label='Buscar registros'
-							/>
-
-							<AnimatePresence>
-								{searchValue && (
-									<motion.button
-										initial={{ opacity: 0, scale: 0.8 }}
-										animate={{ opacity: 1, scale: 1 }}
-										exit={{ opacity: 0, scale: 0.8 }}
-										onClick={clearSearch}
-										className='text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center pr-2 transition-colors'
-										aria-label='Limpiar búsqueda'>
-										<div className='bg-accent hover:bg-accent-foreground/20 cursor-pointer rounded-full p-1 transition-colors duration-300'>
-											<Icons.x className='h-4 w-4' />
-										</div>
-									</motion.button>
-								)}
-							</AnimatePresence>
-						</div>
-					</motion.div>
-
 					{/* Controls */}
 					<motion.div
 						className='flex items-center gap-2'
@@ -328,8 +286,6 @@ export function KardexFilters({
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</motion.div>
-
-					<ViewSelector currentView={viewType} onViewChange={onViewChange} />
 				</div>
 
 				<motion.div

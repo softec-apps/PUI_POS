@@ -2,7 +2,7 @@
 
 import { Icons } from '@/components/icons'
 import { ColumnDef } from '@tanstack/react-table'
-import { I_Template } from '@/modules/template/types/template'
+import { I_Template } from '@/common/types/modules/template'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { TableActions } from '@/modules/template/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/template/components/organisms/Table/TableInfoDate'

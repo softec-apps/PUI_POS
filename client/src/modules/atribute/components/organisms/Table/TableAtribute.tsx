@@ -10,7 +10,7 @@ import {
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-import { I_Attribute } from '@/modules/atribute/types/attribute'
+import { I_Attribute } from '@/common/types/modules/attribute'
 import { EmptyState } from '@/components/layout/organims/EmptyState'
 import { CardView } from '@/modules/atribute/components/organisms/ViewCard'
 import { ListView } from '@/modules/atribute/components/organisms/ViewList'

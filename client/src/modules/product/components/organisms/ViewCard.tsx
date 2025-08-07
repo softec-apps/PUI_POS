@@ -2,7 +2,7 @@
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Table as ReactTable } from '@tanstack/react-table'
-import { I_Product } from '@/modules/product/types/product'
+import { I_Product } from '@/common/types/modules/product'
 import { Icons } from '@/components/icons'
 import { Typography } from '@/components/ui/typography'
 import { animations } from '@/modules/product/components/atoms/animations'

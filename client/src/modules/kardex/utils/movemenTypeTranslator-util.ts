@@ -1,4 +1,4 @@
-import { I_Kardex } from '@/modules/kardex/types/kardex'
+import { I_Kardex } from '@/common/types/modules/kardex'
 
 const movementTypeTranslations: Record<I_Kardex['movementType'], string> = {
 	purchase: 'Compra',

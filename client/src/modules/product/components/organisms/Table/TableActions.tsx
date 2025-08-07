@@ -2,7 +2,7 @@
 
 import { Icons } from '@/components/icons'
 import { useRouter } from 'next/navigation'
-import { I_Product } from '@/modules/product/types/product'
+import { I_Product } from '@/common/types/modules/product'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ROUTE_PATH } from '@/common/constants/routes-const'

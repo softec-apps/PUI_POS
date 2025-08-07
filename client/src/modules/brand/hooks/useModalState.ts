@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { I_Brand } from '@/modules/brand/types/brand'
+import { I_Brand } from '@/common/types/modules/brand'
 
 export const useModalState = () => {
 	// Dialog state - CAMBIO: usar I_Brand | null en lugar de Partial<I_Brand>
@@ -30,7 +30,6 @@ export const useModalState = () => {
 	}, [])
 
 	const openEditDialog = useCallback((brand: I_Brand) => {
-
 		setCurrentRecord(brand)
 		setIsDialogOpen(true)
 	}, [])

@@ -5,6 +5,8 @@ import * as React from 'react'
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
+import { useEstablishment } from '@/common/hooks/useEstablishment'
+import { ImageControl } from './layout/organims/ImageControl'
 
 interface Tenant {
 	id: string
@@ -26,10 +28,11 @@ export function OrgSwitcher({
 
 	const handleTenantSwitch = (tenant: Tenant) => {
 		setSelectedTenant(tenant)
-		if (onTenantSwitch) {
-			onTenantSwitch(tenant.id)
-		}
+		if (onTenantSwitch) onTenantSwitch(tenant.id)
 	}
+
+	const { recordsData, loading, error } = useEstablishment()
+	const dataRecord = recordsData?.data.items[0]
 
 	if (!selectedTenant) return null
 
@@ -41,16 +44,23 @@ export function OrgSwitcher({
 						<SidebarMenuButton
 							size='lg'
 							className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'>
-							<div className='bg-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg'>
-								<GalleryVerticalEnd className='size-4' />
+							<div className='flex aspect-square size-8 items-center justify-center'>
+								<ImageControl
+									recordData={dataRecord}
+									enableHover={false}
+									enableClick={false}
+									imageHeight={35}
+									imageWidth={35}
+								/>
 							</div>
 							<div className='flex flex-col gap-0.5 leading-none'>
-								<span className='font-semibold'>Next Starter</span>
+								<span className='font-semibold'>{dataRecord?.tradeName}</span>
 								<span className=''>{selectedTenant.name}</span>
 							</div>
 							<ChevronsUpDown className='ml-auto' />
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
+
 					<DropdownMenuContent className='w-[--radix-dropdown-menu-trigger-width]' align='start'>
 						{tenants.map(tenant => (
 							<DropdownMenuItem key={tenant.id} onSelect={() => handleTenantSwitch(tenant)}>

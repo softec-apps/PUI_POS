@@ -1,6 +1,6 @@
 'use client'
 
-import { I_Template } from '@/modules/template/types/template'
+import { I_Template } from '@/common/types/modules/template'
 import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
 
 interface Props {

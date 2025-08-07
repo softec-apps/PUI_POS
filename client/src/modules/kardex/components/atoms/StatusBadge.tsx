@@ -1,7 +1,7 @@
 'use client'
 
 import { Badge } from '@/components/layout/atoms/Badge'
-import { I_Kardex } from '@/modules/kardex/types/kardex'
+import { I_Kardex } from '@/common/types/modules/kardex'
 
 interface MovementTypeBadgeProps {
 	movementType: I_Kardex['movementType']

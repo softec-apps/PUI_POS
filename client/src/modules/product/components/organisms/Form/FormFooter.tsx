@@ -2,7 +2,7 @@
 
 import { Icons } from '@/components/icons'
 import { SheetFooter } from '@/components/ui/sheet'
-import { I_IdProduct } from '@/modules/product/types/product'
+import { I_IdProduct } from '@/common/types/modules/product'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 
 interface FormFooterProps {

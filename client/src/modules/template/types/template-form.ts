@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { I_Template } from '@/modules/template/types/template'
+import { I_Template } from '@/common/types/modules/template'
 
 export const templateSchema = z.object({
 	name: z

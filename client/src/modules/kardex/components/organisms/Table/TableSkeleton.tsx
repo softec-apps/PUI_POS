@@ -3,7 +3,18 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-const HEADERS = ['Nombre', 'Descripción', 'Categoría', 'Atributos', 'Información', '']
+const HEADERS = [
+	'Tipo movimiento',
+	'Cnt.',
+	'Costo unt.',
+	'Subtotal',
+	'Tasa imp.',
+	'Total',
+	'Stock',
+	'Responsable',
+	'Información',
+	'',
+]
 
 interface Props {
 	rows?: number
@@ -28,7 +39,7 @@ export const TableSkeleton = ({ rows = 7 }: Props) => {
 						{HEADERS.map((_, cellIndex) => (
 							<TableCell key={cellIndex}>
 								<Skeleton
-									className={`${cellIndex === HEADERS.length - 1 ? 'h-6 w-auto rounded' : cellIndex === 4 ? 'h-6 w-auto' : 'h-6 w-auto'}`}
+									className={`${cellIndex === HEADERS.length - 1 ? 'h-6 w-auto rounded' : cellIndex === 6 ? 'h-6 w-auto' : 'h-6 w-auto'}`}
 								/>
 							</TableCell>
 						))}

@@ -1,6 +1,6 @@
 'use client'
 
-import { Brand_I } from '@/modules/atribute/types/attribute'
+import { Brand_I } from '@/common/types/modules/attribute'
 import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
 
 interface Props {

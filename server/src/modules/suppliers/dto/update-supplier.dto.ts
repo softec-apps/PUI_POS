@@ -4,22 +4,24 @@ import {
   IsString,
   MaxLength,
   Length,
-  Matches,
+  IsNotEmpty,
 } from 'class-validator'
 import { ApiPropertyOptional } from '@nestjs/swagger'
 import { SupplierStatus } from '@/modules/suppliers/status.enum'
+import { IsEcuadorianRUC } from '@/common/validators/ecuadorian.validator'
 
 export class UpdateSupplierDto {
   @ApiPropertyOptional({
-    type: String,
+    type: 'string',
     example: '1790012345001',
     description: 'RUC del proveedor',
     maxLength: 13,
   })
-  @IsOptional()
-  @Length(13, 13, { message: 'El RUC debe tener exactamente 13 dígitos' })
-  @Matches(/^[0-9]+$/, { message: 'El RUC solo debe contener números' })
-  ruc?: string
+  @IsNotEmpty({ message: 'El RUC es obligatorio' })
+  @IsString({ message: 'El RUC debe ser texto' })
+  @Length(13, 13, { message: 'El RUC debe tener exactamente 13 caracteres' })
+  @IsEcuadorianRUC({ message: 'El RUC no es válido' })
+  ruc: string
 
   @ApiPropertyOptional({
     type: 'string',

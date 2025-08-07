@@ -29,6 +29,7 @@ import { CategoriesModule } from '@/modules/categories/categories.module'
 import { BrandModule } from '@/modules/brand/brand.module'
 import { ProductModule } from '@/modules/product/product.module'
 import { SupplierModule } from '@/modules/suppliers/supplier.module'
+import { EstablishmentModule } from '@/modules/establishment/establishment.module'
 import { AuthGoogleModule } from '@/modules/auth-google/auth-google.module'
 import { TemplateProductModule } from '@/modules/template/templates.module'
 
@@ -107,6 +108,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     ProductModule,
     AttributesModule,
     BrandModule,
+    EstablishmentModule,
     KardexModule,
     TemplateProductModule,
   ],

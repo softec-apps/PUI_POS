@@ -8,7 +8,6 @@ import {
 } from '@/common/helpers/responseSuccess.helper'
 import { Product } from '@/modules/product/domain/product'
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,

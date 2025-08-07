@@ -25,6 +25,8 @@ interface FileUploadSectionProps {
 	onTriggerFileInput: () => void
 	onClearPreview: () => void
 	shouldHideCurrentImage?: boolean
+	imageHeight?: number
+	imageWidth?: number
 }
 
 export const FileUploadSection = ({
@@ -36,8 +38,9 @@ export const FileUploadSection = ({
 	onTriggerFileInput,
 	currentImage,
 	shouldHideCurrentImage = false,
+	imageHeight = 250,
+	imageWidth = 550,
 }: FileUploadSectionProps) => {
-	// Función para normalizar la imagen (maneja tanto string como objeto)
 	const getImageUrl = (image: string | ImageObject | null): string | null => {
 		if (!image) return null
 		if (typeof image === 'string') return image
@@ -50,73 +53,81 @@ export const FileUploadSection = ({
 	const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => await onFileChange(e)
 
 	return (
-		<>
+		<div className='space-y-4'>
 			<input type='file' ref={fileInputRef} onChange={handleFileChange} accept='image/*' className='hidden' />
 
 			{!displayImage ? (
 				<Card
 					onClick={onTriggerFileInput}
 					className={cn(
-						'cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-all',
-						'hover:bg-muted/20',
+						'border-muted-foreground/30 cursor-pointer rounded-xl border-2 border-dashed p-7 text-center transition-all',
+						'hover:bg-muted/10',
 						isUploading ? 'pointer-events-none opacity-70' : ''
 					)}>
 					{isUploading ? (
-						<SpinnerLoader text='Subiendo imagen...' />
+						<div className='m-1 p-16'>
+							<SpinnerLoader text='Subiendo imagen...' />
+						</div>
 					) : (
-						<div className='flex flex-col items-center justify-center'>
-							<div className='flex flex-col items-center space-y-2'>
-								<Icons.upload className='text-muted-foreground' />
-								<Typography variant='p'>Arrastra una imagen o haz clic</Typography>
+						<div className='flex flex-col items-center gap-4 p-5'>
+							<div className='bg-muted/50 rounded-full p-4'>
+								<Icons.upload className='text-muted-foreground h-6 w-6' />
 							</div>
 
-							<div className='space-y-1'>
-								<Typography variant='span' className='text-sm'>
-									Formatos aceptados: {ALLOWED_IMAGE_TYPES.map(type => type.replace('image/', '')).join(', ')}
-								</Typography>
+							<div>
+								<Typography variant='p'>Buscar archivo</Typography>
 
-								<Typography variant='small' className='text-muted-foreground text-xs'>
-									Tamaño máximo: {bytesToMB(MAX_FILE_SIZE.SMALL)} MB
-								</Typography>
+								<div className='space-y-2'>
+									<Typography variant='small'>
+										Formatos: {ALLOWED_IMAGE_TYPES.map(type => type.replace('image/', '')).join(', ')}
+									</Typography>
+
+									<Typography variant='small'>Máx. {bytesToMB(MAX_FILE_SIZE.SMALL)} MB</Typography>
+								</div>
 							</div>
 						</div>
 					)}
 				</Card>
 			) : (
-				<div className='group relative'>
+				<div className='flex w-full flex-col items-center justify-center space-y-4'>
 					<ImageControl
 						imageUrl={displayImage}
 						alt='Vista previa'
-						imageHeight={300}
-						imageWidth={550}
+						imageHeight={imageHeight}
+						imageWidth={imageWidth}
 						enableHover={false}
 						enableClick={false}
 						className='h-auto w-full object-cover object-center'
 					/>
 
-					<div className='absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100'>
+					<div className='flex justify-end gap-2'>
 						<ActionButton
 							onClick={onClearPreview}
 							disabled={isUploading}
-							size='icon'
-							variant='destructive'
-							tooltip='Remover imagen'
-							icon={<Icons.x />}
+							size='sm'
+							variant='ghost'
+							text='Remover'
+							icon={<Icons.trash className='h-4 w-4' />}
+							className='text-destructive hover:text-destructive'
 						/>
-					</div>
 
-					<div className='mt-2 flex justify-end'>
 						<ActionButton
 							onClick={onTriggerFileInput}
 							disabled={isUploading}
-							className='w-full'
-							variant='secondary'
-							text={isUploading ? 'Procesando...' : 'Cambiar imagen'}
-							icon={isUploading ? <Icons.spinnerSimple className='h-4 w-4 animate-spin' /> : undefined}
+							size='sm'
+							variant='default'
+							text={isUploading ? 'Subiendo...' : 'Cambiar imagen'}
+							icon={
+								isUploading ? (
+									<Icons.spinnerSimple className='h-4 w-4 animate-spin' />
+								) : (
+									<Icons.upload className='h-4 w-4' />
+								)
+							}
 						/>
 					</div>
 				</div>
 			)}
-		</>
+		</div>
 	)
 }

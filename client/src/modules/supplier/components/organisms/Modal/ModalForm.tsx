@@ -9,7 +9,7 @@ import { useForm, FormProvider } from 'react-hook-form'
 import { validateEcuadorianRUC } from '@/common/utils/ecValidation-util'
 
 import { AlertMessage } from '@/components/layout/atoms/Alert'
-import { I_Supplier } from '@/modules/supplier/types/supplier'
+import { I_Supplier } from '@/common/types/modules/supplier'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
 import { FormFooter } from '@/modules/supplier/components/organisms/Modal/FormFooter'

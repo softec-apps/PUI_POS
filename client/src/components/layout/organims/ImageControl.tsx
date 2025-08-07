@@ -5,14 +5,14 @@ import Image from 'next/image'
 import { Icons } from '@/components/icons'
 import { Separator } from '@/components/ui/separator'
 import { useState, useEffect, useCallback } from 'react'
-import { I_Product } from '@/modules/product/types/product'
+import { I_Photo } from '@/common/types/photo'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { formatDate } from '@/common/utils/dateFormater-util'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface ImageControlProps {
-	recordData?: I_Product
+	recordData?: I_Photo
 	// Nueva prop para URL directa
 	imageUrl?: string
 	// Configuración de detalles
@@ -117,8 +117,8 @@ export const ImageControl = ({
 			const link = document.createElement('a')
 
 			// Obtener extensión del archivo o usar jpg por defecto
-			const fileExtension = imageSource.split('.').pop()?.toLowerCase() || 'jpg'
-			const fileName = `${displayName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${fileExtension}`
+			const fileExtension = imageSource?.split('.')?.pop()?.toLowerCase() || 'jpg'
+			const fileName = `${displayName?.replace(/[^a-z0-9]/gi, '_')?.toLowerCase()}.${fileExtension}`
 
 			link.href = url
 			link.download = fileName
@@ -200,9 +200,9 @@ export const ImageControl = ({
 		return (
 			<>
 				{/* Miniatura clickeable */}
-				<div className={`flex w-full justify-center ${className}`}>
+				<div className={`flex w-auto ${className}`}>
 					<Card
-						className={`group relative overflow-hidden border-none bg-transparent p-0 transition-all duration-300 ${getHoverClasses()} ${getCursorClass()}`}
+						className={`group relative overflow-hidden border-none bg-transparent p-0 shadow-none transition-all duration-300 ${getHoverClasses()} ${getCursorClass()}`}
 						onClick={handleImageClick}
 						style={{
 							width: imageWidth,
@@ -210,7 +210,7 @@ export const ImageControl = ({
 						}}>
 						<CardContent className='h-full p-0'>
 							<div
-								className='border-border/50 relative h-full w-full overflow-hidden rounded-xl border'
+								className='border-border/50 h-full w-full overflow-hidden rounded-xl border'
 								style={{
 									width: imageWidth,
 									height: imageHeight,
@@ -332,7 +332,7 @@ export const ImageControl = ({
 														<div className='flex items-center justify-between'>
 															<span className='text-muted-foreground text-sm'>Formato:</span>
 															<span className='text-sm font-medium'>
-																{imageSource.split('.').pop()?.toUpperCase() || 'UNKNOWN'}
+																{imageSource?.split('.')?.pop()?.toUpperCase() || 'UNKNOWN'}
 															</span>
 														</div>
 

@@ -10,7 +10,7 @@ import {
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-import { I_Template } from '@/modules/template/types/template'
+import { I_Template } from '@/common/types/modules/template'
 import { EmptyState } from '@/components/layout/organims/EmptyState'
 import { animations } from '@/modules/template/components/atoms/animations'
 import { CardView } from '@/modules/template/components/organisms/ViewCard'

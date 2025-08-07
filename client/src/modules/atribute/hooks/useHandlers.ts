@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { ModalState } from '@/modules/atribute/types/modalState'
 import { AttributeFormData } from '@/modules/atribute/components/organisms/Modal/ModalAttributeForm'
-import { I_Attribute, I_CreateAttribute, I_UpdateAttribute } from '@/modules/atribute/types/attribute'
+import { I_Attribute, I_CreateAttribute, I_UpdateAttribute } from '@/common/types/modules/attribute'
 
 interface Props {
 	modalState: ModalState

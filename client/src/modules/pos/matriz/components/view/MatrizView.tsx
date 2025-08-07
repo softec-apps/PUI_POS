@@ -12,7 +12,7 @@ import { Star, Search, ImageIcon, Grid3X3, Filter, ShoppingCart, Plus } from 'lu
 import { Typography } from '@/components/ui/typography'
 import { EmptyState } from '@/components/layout/organims/EmptyState'
 
-import { I_Category } from '@/modules/category/types/category'
+import { I_Category } from '@/common/types/modules/category'
 import { useCartStore } from '@/common/stores/useCartStore'
 
 import { Icons } from '@/components/icons'

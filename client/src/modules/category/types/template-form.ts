@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { I_Category } from '@/modules/category/types/category'
+import { I_Category } from '@/common/types/modules/category'
 
 export const categorySchema = z.object({
 	name: z

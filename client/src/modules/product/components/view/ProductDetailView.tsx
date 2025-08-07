@@ -7,7 +7,7 @@ import { Badge } from '@/components/layout/atoms/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useEffect, useState } from 'react'
-import { I_Product } from '@/modules/product/types/product'
+import { I_Product } from '@/common/types/modules/product'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
 import { ImageControl } from '@/components/layout/organims/ImageControl'
 import { Typography } from '@/components/ui/typography'
@@ -71,6 +71,7 @@ export function ProductDetailView({ productId }: Props) {
 	const Label = ({ children }: { children: string }) => (
 		<label className='text-muted-foreground text-sm font-medium'>{children}</label>
 	)
+
 	if (loading) {
 		return (
 			<div className='flex h-screen flex-1 flex-col items-center justify-center'>

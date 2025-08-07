@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Table as ReactTable } from '@tanstack/react-table'
 
-import { I_Kardex } from '@/modules/kardex/types/kardex'
+import { I_Kardex } from '@/common/types/modules/kardex'
 
 import { Icons } from '@/components/icons'
 import { Typography } from '@/components/ui/typography'

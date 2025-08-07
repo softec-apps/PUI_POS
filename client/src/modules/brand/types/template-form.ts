@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { I_Brand } from '@/modules/brand/types/brand'
+import { I_Brand } from '@/common/types/modules/brand'
 
 export const BrandSchema = z.object({
 	name: z.string().min(3, 'Mínimo 3 caracteres').max(50, 'Máximo 50 caracteres'),

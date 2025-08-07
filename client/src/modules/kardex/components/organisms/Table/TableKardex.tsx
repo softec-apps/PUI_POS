@@ -1,5 +1,4 @@
 'use client'
-
 import {
 	SortingState,
 	useReactTable,
@@ -9,8 +8,7 @@ import {
 } from '@tanstack/react-table'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-
-import { I_Kardex } from '@/modules/kardex/types/kardex'
+import { I_Kardex } from '@/common/types/modules/kardex'
 import { EmptyState } from '@/components/layout/organims/EmptyState'
 import { animations } from '@/modules/kardex/components/atoms/animations'
 import { CardView } from '@/modules/kardex/components/organisms/ViewCard'
@@ -24,14 +22,68 @@ interface TableKardexProps {
 	loading: boolean
 	recordData: I_Kardex[]
 	viewType: ViewType
+	showActions?: boolean
+	// Props para control de sorting
+	sortableColumns?: string[]
+	enableSorting?: boolean
+	// Props para mostrar/ocultar columnas específicas
+	showProductCode?: boolean
+	showMovementType?: boolean
+	showQuantity?: boolean
+	showUnitCost?: boolean
+	showSubtotal?: boolean
+	showTaxRate?: boolean
+	showTaxAmount?: boolean
+	showTotal?: boolean
+	showStockAfter?: boolean
+	showStockBefore?: boolean
+	showResponsible?: boolean
+	showInfo?: boolean
 }
 
-export function TableKardex({ recordData, loading, viewType }: TableKardexProps) {
+export function TableKardex({
+	recordData,
+	loading,
+	viewType,
+	showActions = true,
+	// Props de sorting con valores por defecto
+	sortableColumns,
+	enableSorting = true,
+	// Props de columnas con valores por defecto (todas visibles)
+	showProductCode = true,
+	showMovementType = true,
+	showQuantity = true,
+	showUnitCost = true,
+	showSubtotal = true,
+	showTaxRate = true,
+	showTaxAmount = true,
+	showTotal = true,
+	showStockAfter = true,
+	showStockBefore = true,
+	showResponsible = true,
+	showInfo = true,
+}: TableKardexProps) {
 	const [globalFilter, setGlobalFilter] = useState('')
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
-	const columns = tableColumns({})
+	const columns = tableColumns({
+		showActions,
+		sortableColumns,
+		enableSorting,
+		showProductCode,
+		showMovementType,
+		showQuantity,
+		showUnitCost,
+		showSubtotal,
+		showTaxRate,
+		showTaxAmount,
+		showTotal,
+		showStockAfter,
+		showStockBefore,
+		showResponsible,
+		showInfo,
+	})
 
 	const table = useReactTable({
 		data: recordData,
@@ -50,7 +102,6 @@ export function TableKardex({ recordData, loading, viewType }: TableKardexProps)
 	})
 
 	if (loading) return <LoadingStates viewType={viewType} />
-
 	if (recordData?.length === 0) return <EmptyState />
 
 	return (

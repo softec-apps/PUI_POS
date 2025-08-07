@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { ModalState } from '@/modules/supplier/types/modalState'
 import { supplierFormData } from '@/modules/supplier/components/organisms/Modal/ModalForm'
-import { I_Supplier, I_CreateSupplier, I_UpdateSupplier } from '@/modules/supplier/types/supplier'
+import { I_Supplier, I_CreateSupplier, I_UpdateSupplier } from '@/common/types/modules/supplier'
 
 interface Props {
 	modalState: ModalState
