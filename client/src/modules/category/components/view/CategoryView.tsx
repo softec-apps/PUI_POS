@@ -110,7 +110,12 @@ export function CategoryView() {
 
 	if (errorCategory && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
 
-	if (errorCategory) return <FatalErrorState />
+	if (errorCategory)
+		return (
+			<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
+				<FatalErrorState />
+			</Card>
+		)
 
 	return (
 		<div className='flex flex-1 flex-col space-y-6'>
