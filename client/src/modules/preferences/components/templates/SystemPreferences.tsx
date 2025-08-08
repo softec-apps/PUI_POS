@@ -14,6 +14,8 @@ import { validateEcuadorianRUC } from '@/common/utils/ecValidation-util'
 import { FileUploadSection } from '@/components/layout/organims/FileUpload'
 import { useFileUpload } from '@/common/hooks/useFileUpload'
 import { CardHeaderInfo } from '@/modules/preferences/components/atoms/CardHeaderInfo'
+import { FatalErrorState } from '@/components/layout/organims/ErrorStateCard'
+import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
 
 const systemPreferencesSchema = z.object({
 	accounting: z.enum(['SI', 'NO'], {
@@ -106,44 +108,10 @@ export function SystemPreferences() {
 		formState: { isDirty, isValid, errors, isValidating, dirtyFields },
 		control,
 		watch,
-		trigger,
 		getValues,
 	} = formMethods
 
 	const currentPreferences = recordsData?.data?.items?.[0]
-
-	// Debug: observar cambios en el formulario
-	const watchedValues = watch()
-	const currentValues = getValues()
-
-	// Validación manual para debugging
-	const debugValidation = async () => {
-		try {
-			const result = await systemPreferencesSchema.safeParseAsync(currentValues)
-			console.log('Manual Zod validation:', result)
-			if (!result.success) {
-				console.log('Zod validation errors:', result.error.issues)
-			}
-		} catch (error) {
-			console.log('Error in manual validation:', error)
-		}
-	}
-
-	// Ejecutar validación de debug cuando cambien los valores
-	React.useEffect(() => {
-		debugValidation()
-	}, [currentValues])
-
-	console.log('=== FORM DEBUG INFO ===')
-	console.log('Form values:', currentValues)
-	console.log('Watched values:', watchedValues)
-	console.log('Form errors:', errors)
-	console.log('Is valid:', isValid)
-	console.log('Is dirty:', isDirty)
-	console.log('Is validating:', isValidating)
-	console.log('Dirty fields:', dirtyFields)
-	console.log('All form state keys:', Object.keys(formMethods.formState))
-	console.log('========================')
 
 	useEffect(() => {
 		if (currentPreferences) {
@@ -287,9 +255,21 @@ export function SystemPreferences() {
 		handleSubmit(onSubmit)(e) // Llamar manualmente al submit de react-hook-form
 	}
 
-	if (loading) return <div className='flex justify-center py-8'>Cargando configuración...</div>
+	if (loading) {
+		return (
+			<div className='p-12'>
+				<SpinnerLoader text='Cargando... Por favor espera' />
+			</div>
+		)
+	}
 
-	if (error) return <div className='text-red-500'>Error al cargar la configuración: {error}</div>
+	if (error) {
+		return (
+			<div className='p-12'>
+				<FatalErrorState />
+			</div>
+		)
+	}
 
 	return (
 		<Card className='border-none bg-transparent p-0 shadow-none'>
