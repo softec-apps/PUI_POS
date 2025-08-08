@@ -33,3 +33,8 @@ export interface ApiUser {
 	updatedAt: string
 	deletedAt?: string | null
 }
+
+export interface I_Role {
+	id: string
+	name: string
+}
