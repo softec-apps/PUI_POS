@@ -99,7 +99,12 @@ export function AttributesView() {
 
 	if (errorAtribute && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
 
-	if (errorAtribute) return <FatalErrorState />
+	if (errorAtribute)
+		return (
+			<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
+				<FatalErrorState />
+			</Card>
+		)
 
 	return (
 		<div className='flex flex-1 flex-col space-y-6'>
