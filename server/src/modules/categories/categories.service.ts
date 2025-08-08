@@ -115,7 +115,7 @@ export class CategoriesService {
     return listResponse({
       data: paginatedData,
       resource: PATH_SOURCE.CATEGORY,
-      message: 'Categorias obtenidas exitosamente',
+      message: MESSAGE_RESPONSE_CATEGORY.LISTED,
     })
   }
 
@@ -166,7 +166,6 @@ export class CategoriesService {
         const fileObject = await this.filesService.findById(
           updateCategoryDto.photo.id,
         )
-
         if (!fileObject) {
           throw new NotFoundException({
             message: MESSAGE_RESPONSE_CATEGORY.NOT_FOUND.IMAGE,

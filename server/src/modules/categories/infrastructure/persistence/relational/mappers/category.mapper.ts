@@ -7,6 +7,7 @@ import { CategoryEntity } from '@/modules/categories/infrastructure/persistence/
 export class CategoryMapper {
   static toDomain(raw: CategoryEntity): Category {
     const domainEntity = new Category()
+
     domainEntity.id = raw.id
     domainEntity.name = raw.name
     domainEntity.description = raw.description

@@ -21,16 +21,11 @@ export class CategoriesRelationalRepository implements CategoryRepository {
 
   async create(
     data: Category,
-    entityManager?: EntityManager,
+    entityManager: EntityManager,
   ): Promise<Category> {
-    const repository = entityManager
-      ? entityManager.getRepository(CategoryEntity)
-      : this.categoryRepository
-
+    const repository = entityManager.getRepository(CategoryEntity)
     const persistenceModel = CategoryMapper.toPersistence(data)
-
     const newEntity = await repository.save(repository.create(persistenceModel))
-
     return CategoryMapper.toDomain(newEntity)
   }
 

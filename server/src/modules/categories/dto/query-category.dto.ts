@@ -62,7 +62,7 @@ export class QueryCategoryDto {
   @ApiPropertyOptional({
     type: () => FilterCategoryDto,
     description: 'Filtros adicionales (formato JSON string)',
-    example: '{"status":"active"}',
+    example: '{"field":"value"}',
   })
   @IsOptional()
   @ValidateNested()
@@ -77,7 +77,7 @@ export class QueryCategoryDto {
   @ApiPropertyOptional({
     type: [SortCategoryDto],
     description: 'Opciones de ordenamiento (formato JSON string array)',
-    example: '[{"orderBy":"name","order":"asc"}]',
+    example: '[{"filed":"value","order":"asc"}]',
   })
   @IsOptional()
   @ValidateNested({ each: true })

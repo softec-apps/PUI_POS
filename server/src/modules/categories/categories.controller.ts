@@ -15,7 +15,7 @@ import {
 import { AuthGuard } from '@nestjs/passport'
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger'
 import { Roles } from '@/modules/roles/roles.decorator'
-import { RoleEnum } from '@/common/constants/roles-const'
+import { RoleEnum, ROLES } from '@/common/constants/roles-const'
 import { RolesGuard } from '@/modules/roles/roles.guard'
 import { ParamCategoryDto } from './dto/param-category.dto'
 import { Category } from '@/modules/categories/domain/category'
@@ -30,7 +30,6 @@ import { EnhancedInfinityPaginationResponseDto } from '@/utils/dto/enhanced-infi
 
 @ApiTags(PATH_SOURCE.CATEGORY)
 @ApiBearerAuth()
-@Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller({
   path: PATH_SOURCE.CATEGORY,
@@ -45,9 +44,10 @@ export class CategoryController {
    * @returns The API standard response
    */
   @Post()
-  @SerializeOptions({ groups: ['admin'] })
-  @HttpCode(HttpStatus.CREATED)
   @CategoryApiDocs.create
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
   ): Promise<ApiResponse<Category>> {
@@ -60,9 +60,10 @@ export class CategoryController {
    * @returns The API standard response
    */
   @Get()
-  @SerializeOptions({ groups: ['admin'] })
-  @HttpCode(HttpStatus.OK)
   @CategoryApiDocs.findAll
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
+  @HttpCode(HttpStatus.OK)
   async findAll(
     @Query() query: QueryCategoryDto,
   ): Promise<ApiResponse<EnhancedInfinityPaginationResponseDto<Category>>> {
@@ -76,9 +77,10 @@ export class CategoryController {
    *
    */
   @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  @SerializeOptions({ groups: ['admin'] })
   @CategoryApiDocs.findOne
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
+  @HttpCode(HttpStatus.OK)
   async findOne(
     @Param() param: ParamCategoryDto,
   ): Promise<ApiResponse<Category>> {
@@ -91,9 +93,10 @@ export class CategoryController {
    * @returns The API standard responsea
    */
   @Put(':id')
-  @HttpCode(HttpStatus.OK)
-  @SerializeOptions({ groups: ['admin'] })
   @CategoryApiDocs.update
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
   async update(
     @Param() param: ParamCategoryDto,
     @Body() updateCategoryDto: UpdateCategoryDto,
@@ -108,9 +111,10 @@ export class CategoryController {
    * @warning This action is irreversible and will permanently remove the category
    */
   @Delete(':id/hard-delete')
-  @HttpCode(HttpStatus.OK)
-  @SerializeOptions({ groups: ['admin'] })
   @CategoryApiDocs.hardDelete
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
   hardDelete(@Param() param: ParamCategoryDto): Promise<ApiResponse> {
     return this.categoriesService.hardDelete(param.id)
   }
