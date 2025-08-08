@@ -13,19 +13,12 @@ import {
   SerializeOptions,
 } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger'
-
-// DOMAINS
 import { User } from '@/modules/users/domain/user'
-
-// SERVICE
 import { AuthService } from '@/modules/auth/auth.service'
-
-// TYPES
 import { NullableType } from '@/utils/types/nullable.type'
-
-// DTOS
+import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 import { AuthUpdateDto } from '@/modules/auth/dto/auth-update.dto'
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { LoginResponseDto } from '@/modules/auth/dto/login-response.dto'
 import { AuthEmailLoginDto } from '@/modules/auth/dto/auth-email-login.dto'
 import { RefreshResponseDto } from '@/modules/auth/dto/refresh-response.dto'
@@ -33,7 +26,6 @@ import { AuthConfirmEmailDto } from '@/modules/auth/dto/auth-confirm-email.dto'
 import { AuthRegisterLoginDto } from '@/modules/auth/dto/auth-register-login.dto'
 import { AuthResetPasswordDto } from '@/modules/auth/dto/auth-reset-password.dto'
 import { AuthForgotPasswordDto } from '@/modules/auth/dto/auth-forgot-password.dto'
-import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 
 @ApiTags('Auth')
 @Controller({

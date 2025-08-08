@@ -158,7 +158,7 @@ export class AuthService {
         id: StatusEnum.active,
       }
 
-      user = await this.usersService.create({
+      const createResponse = await this.usersService.create({
         email: socialEmail ?? null,
         firstName: socialData.firstName ?? null,
         lastName: socialData.lastName ?? null,
@@ -168,7 +168,10 @@ export class AuthService {
         status,
       })
 
-      user = await this.usersService.findById(user.id)
+      const userResponse = await this.usersService.findById(
+        createResponse.data.id,
+      )
+      user = userResponse.data
     }
 
     if (!user) {
@@ -210,7 +213,7 @@ export class AuthService {
   }
 
   async register(dto: AuthRegisterLoginDto): Promise<void> {
-    const user = await this.usersService.create({
+    const createResponse = await this.usersService.create({
       ...dto,
       email: dto.email,
       role: {
@@ -223,7 +226,7 @@ export class AuthService {
 
     const hash = await this.jwtService.signAsync(
       {
-        confirmEmailUserId: user.id,
+        confirmEmailUserId: createResponse.data.id,
       },
       {
         secret: this.configService.getOrThrow('auth.confirmEmailSecret', {
@@ -265,7 +268,8 @@ export class AuthService {
       })
     }
 
-    const user = await this.usersService.findById(userId)
+    const userResponse = await this.usersService.findById(userId)
+    const user = userResponse.data
 
     if (
       !user ||
@@ -277,11 +281,11 @@ export class AuthService {
       })
     }
 
-    user.status = {
-      id: StatusEnum.active,
-    }
-
-    await this.usersService.update(user.id, user)
+    await this.usersService.update(user.id, {
+      status: {
+        id: StatusEnum.active,
+      },
+    })
   }
 
   async confirmNewEmail(hash: string): Promise<void> {
@@ -309,7 +313,8 @@ export class AuthService {
       })
     }
 
-    const user = await this.usersService.findById(userId)
+    const userResponse = await this.usersService.findById(userId)
+    const user = userResponse.data
 
     if (!user) {
       throw new NotFoundException({
@@ -318,12 +323,12 @@ export class AuthService {
       })
     }
 
-    user.email = newEmail
-    user.status = {
-      id: StatusEnum.active,
-    }
-
-    await this.usersService.update(user.id, user)
+    await this.usersService.update(user.id, {
+      email: newEmail,
+      status: {
+        id: StatusEnum.active,
+      },
+    })
   }
 
   async forgotPassword(email: string): Promise<void> {
@@ -387,7 +392,8 @@ export class AuthService {
       })
     }
 
-    const user = await this.usersService.findById(userId)
+    const userResponse = await this.usersService.findById(userId)
+    const user = userResponse.data
 
     if (!user) {
       throw new UnprocessableEntityException({
@@ -398,24 +404,28 @@ export class AuthService {
       })
     }
 
-    user.password = password
-
     await this.sessionService.deleteByUserId({
       userId: user.id,
     })
 
-    await this.usersService.update(user.id, user)
+    await this.usersService.update(user.id, {
+      password: password,
+    })
   }
 
   async me(userJwtPayload: JwtPayloadType): Promise<NullableType<User>> {
-    return this.usersService.findById(userJwtPayload.id)
+    const userResponse = await this.usersService.findById(userJwtPayload.id)
+    return userResponse.data
   }
 
   async update(
     userJwtPayload: JwtPayloadType,
     userDto: AuthUpdateDto,
   ): Promise<NullableType<User>> {
-    const currentUser = await this.usersService.findById(userJwtPayload.id)
+    const currentUserResponse = await this.usersService.findById(
+      userJwtPayload.id,
+    )
+    const currentUser = currentUserResponse.data
 
     if (!currentUser) {
       throw new UnprocessableEntityException({
@@ -505,7 +515,10 @@ export class AuthService {
 
     await this.usersService.update(userJwtPayload.id, userDto)
 
-    return this.usersService.findById(userJwtPayload.id)
+    const updatedUserResponse = await this.usersService.findById(
+      userJwtPayload.id,
+    )
+    return updatedUserResponse.data
   }
 
   async refreshToken(
@@ -522,7 +535,8 @@ export class AuthService {
       .update(randomStringGenerator())
       .digest('hex')
 
-    const user = await this.usersService.findById(session.user.id)
+    const userResponse = await this.usersService.findById(session.user.id)
+    const user = userResponse.data
 
     if (!user?.role) throw new UnauthorizedException()
 
@@ -547,7 +561,8 @@ export class AuthService {
   }
 
   async softDelete(user: User): Promise<void> {
-    await this.usersService.remove(user.id)
+    // Usar hardDelete ya que no hay método softDelete/remove
+    await this.usersService.hardDelete(user.id)
   }
 
   async logout(data: Pick<JwtRefreshPayloadType, 'sessionId'>) {
