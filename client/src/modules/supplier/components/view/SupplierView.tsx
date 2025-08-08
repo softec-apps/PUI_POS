@@ -99,7 +99,12 @@ export function SupplierView() {
 
 	if (errorSupplier && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
 
-	if (errorSupplier) return <FatalErrorState />
+	if (errorSupplier)
+		return (
+			<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
+				<FatalErrorState />
+			</Card>
+		)
 
 	return (
 		<div className='flex flex-1 flex-col space-y-6'>

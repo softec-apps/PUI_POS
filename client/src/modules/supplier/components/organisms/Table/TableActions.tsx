@@ -9,10 +9,9 @@ interface Props {
 	recordData: I_Supplier
 	onEdit: (recordData: I_Supplier) => void
 	onHardDelete: (recordData: I_Supplier) => void
-	onViewDetails?: () => void
 }
 
-export const TableActions = ({ recordData, onEdit, onHardDelete, onViewDetails }: Props) => (
+export const TableActions = ({ recordData, onEdit, onHardDelete }: Props) => (
 	<DropdownMenu>
 		<DropdownMenuTrigger asChild>
 			<ActionButton
@@ -30,11 +29,6 @@ export const TableActions = ({ recordData, onEdit, onHardDelete, onViewDetails }
 				className='flex cursor-pointer items-center gap-2 rounded-xl'>
 				<Icons.pencilMinus />
 				<span>Editar</span>
-			</DropdownMenuItem>
-
-			<DropdownMenuItem onClick={onViewDetails} className='flex cursor-pointer items-center gap-2 rounded-xl'>
-				<Icons.eye />
-				<span>Detalles</span>
 			</DropdownMenuItem>
 
 			<DropdownMenuItem
