@@ -114,9 +114,9 @@ export function KardexDetailView({ id }: Props) {
 
 	if (movementsError || productError) {
 		return (
-			<div className='flex h-screen flex-1 flex-col items-center justify-center'>
+			<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
 				<FatalErrorState />
-			</div>
+			</Card>
 		)
 	}
 
@@ -132,16 +132,14 @@ export function KardexDetailView({ id }: Props) {
 							</div>
 						</Link>
 
-						<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-							<ImageControl
-								recordData={product}
-								enableHover={false}
-								enableClick={false}
-								quality={10}
-								imageHeight={80}
-								imageWidth={80}
-							/>
-						</div>
+						<ImageControl
+							recordData={product}
+							enableHover={false}
+							enableClick={false}
+							quality={10}
+							imageHeight={80}
+							imageWidth={80}
+						/>
 
 						<div className='flex-1'>
 							<div className='mb-2 line-clamp-1 break-words'>
