@@ -8,11 +8,10 @@ import { useProduct } from '@/common/hooks/useProduct'
 import { useCategory } from '@/common/hooks/useCategory'
 import { useDebounce } from '@/common/hooks/useDebounce'
 
-import { Star, Search, ImageIcon, Grid3X3, Filter, ShoppingCart, Plus } from 'lucide-react'
+import { Star, Search, ImageIcon, Filter, Plus } from 'lucide-react'
 import { Typography } from '@/components/ui/typography'
 import { EmptyState } from '@/components/layout/organims/EmptyState'
 
-import { I_Category } from '@/common/types/modules/category'
 import { useCartStore } from '@/common/stores/useCartStore'
 
 import { Icons } from '@/components/icons'
@@ -42,7 +41,6 @@ const sectionVariants = {
 export function MatrizView() {
 	const [selectedCategory, setSelectedCategory] = useState('all')
 	const [searchTerm, setSearchTerm] = useState('')
-	const [showCategories, setShowCategories] = useState(true)
 	const [selectedProductIndex, setSelectedProductIndex] = useState(-1)
 	const [isSearchFocused, setIsSearchFocused] = useState(false)
 
@@ -73,27 +71,17 @@ export function MatrizView() {
 
 	const allProducts = productResponse?.data?.items || []
 
-	const pagination = productResponse?.data?.pagination || {
-		totalCount: 0,
-		totalPages: 1,
-		currentPage: 1,
-		hasNextPage: false,
-		hasPreviousPage: false,
-		lastPage: 1,
-		firstPage: 1,
-	}
-
 	const categories = [
 		{
 			id: 'all',
 			name: 'Todos',
-			photo: Star,
+			photo: '',
 			itemCount: productResponse?.data?.pagination?.totalRecords || 0,
 		},
 		...(categoryData?.data?.items.map(cat => ({
 			id: cat.id,
 			name: cat.name,
-			photo: ImageIcon,
+			photo: cat.photo,
 			itemCount: 0,
 		})) ?? []),
 	]
@@ -173,46 +161,37 @@ export function MatrizView() {
 			<div className='flex flex-1 flex-col'>
 				<ScrollArea className='overflow-auto pr-2'>
 					<div className='space-y-6 pb-4' onKeyDown={handleKeyDown}>
-						{/* Header con título y controles */}
+						{/* Categorías */}
 						<motion.div
 							variants={sectionVariants}
 							initial='hidden'
 							animate='visible'
-							className='flex flex-col gap-4 px-2 sm:flex-row sm:items-center sm:justify-between'>
-							<div className='flex items-center gap-3'>
-								<div>
-									<Typography variant='h3' className='font-bold'>
-										Vista Matriz
-									</Typography>
-									<Typography variant='muted' className='text-sm'>
-										Gestión completa de inventario
-									</Typography>
-								</div>
-							</div>
-
-							{/* Información de resultados y navegación */}
-							{searchTerm && (
-								<div className='flex items-center gap-2'>
-									<Badge variant='outline' className='text-xs'>
-										{allProducts.length} resultados
-									</Badge>
-									{allProducts.length > 0 && (
-										<Badge variant='secondary' className='text-xs'>
-											↑↓ navegar • Enter añadir
-										</Badge>
-									)}
-								</div>
+							transition={{ delay: 0.2 }}
+							className='space-y-4 px-2'>
+							{loadingCategories ? (
+								<motion.div
+									variants={containerVariants}
+									initial='hidden'
+									animate='visible'
+									className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+									<CategoryCardSkeleton count={6} />
+								</motion.div>
+							) : (
+								<motion.div
+									variants={containerVariants}
+									initial='hidden'
+									animate='visible'
+									className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+									{categories.map(category => (
+										<CategoryCard
+											key={category.id}
+											category={category}
+											isSelected={selectedCategory === category.id}
+											onSelect={() => setSelectedCategory(category.id)}
+										/>
+									))}
+								</motion.div>
 							)}
-
-							{/* Toggle de categorías */}
-							<Button
-								variant={showCategories ? 'default' : 'ghost'}
-								size='sm'
-								onClick={() => setShowCategories(!showCategories)}
-								className='flex items-center gap-2'>
-								<Filter className='h-4 w-4' />
-								{showCategories ? 'Ocultar' : 'Mostrar'} Categorías
-							</Button>
 						</motion.div>
 
 						{/* Barra de búsqueda mejorada */}
@@ -256,50 +235,6 @@ export function MatrizView() {
 								)}
 							</div>
 						</motion.div>
-
-						{/* Categorías */}
-						{showCategories && (
-							<motion.div
-								variants={sectionVariants}
-								initial='hidden'
-								animate='visible'
-								transition={{ delay: 0.2 }}
-								className='space-y-4 px-2'>
-								<div className='flex items-center justify-between'>
-									<Typography variant='h4' className='font-semibold'>
-										Categorías
-									</Typography>
-									<Badge variant='outline' className='text-xs'>
-										{categories.length} disponibles
-									</Badge>
-								</div>
-
-								{loadingCategories ? (
-									<motion.div
-										variants={containerVariants}
-										initial='hidden'
-										animate='visible'
-										className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
-										<CategoryCardSkeleton count={6} />
-									</motion.div>
-								) : (
-									<motion.div
-										variants={containerVariants}
-										initial='hidden'
-										animate='visible'
-										className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
-										{categories.map(category => (
-											<CategoryCard
-												key={category.id}
-												category={category}
-												isSelected={selectedCategory === category.id}
-												onSelect={() => setSelectedCategory(category.id)}
-											/>
-										))}
-									</motion.div>
-								)}
-							</motion.div>
-						)}
 
 						{/* Productos con selección mejorada */}
 						<motion.div

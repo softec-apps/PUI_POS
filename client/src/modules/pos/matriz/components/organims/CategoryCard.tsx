@@ -4,9 +4,8 @@ import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
 import { I_Category } from '@/common/types/modules/category'
-import { Check } from 'lucide-react'
+import Image from 'next/image'
 
 const itemVariants = {
 	hidden: { opacity: 0, y: 20 },
@@ -20,65 +19,35 @@ interface CardProps {
 }
 
 export const CategoryCard: React.FC<CardProps> = ({ category, isSelected = false, onSelect = () => {} }) => {
-	const IconComponent = category?.photo
-
 	return (
-		<motion.div variants={itemVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className='relative'>
+		<motion.div
+			variants={itemVariants}
+			whileHover={{ scale: 1.02 }}
+			whileTap={{ scale: 0.98 }}
+			className='aspect-square w-full'>
 			<Card
 				className={cn(
-					'cursor-pointer border-2 shadow-sm transition-all duration-300 hover:shadow-md',
-					'relative min-h-[100px] overflow-hidden',
-					isSelected
-						? 'border-primary bg-primary/5 ring-primary/20 shadow-md ring-2'
-						: 'border-border bg-card hover:border-primary/50 hover:bg-accent/50'
+					'h-full cursor-pointer border-2 p-0 transition-all duration-500',
+					isSelected ? 'border-primary ring-primary/50 ring-2' : 'hover:border-primary/50'
 				)}
 				onClick={onSelect}>
-				{/* Indicador de selección */}
-				{isSelected && (
-					<div className='bg-primary text-primary-foreground absolute top-2 right-2 z-10 rounded-full p-1'>
-						<Check className='h-3 w-3' />
-					</div>
-				)}
-
-				<CardContent className='flex h-full flex-col justify-between p-4'>
-					{/* Contenido principal */}
-					<div className='flex flex-col items-center space-y-3 text-center'>
-						{/* Ícono grande */}
-						<div
-							className={cn(
-								'flex h-12 w-12 items-center justify-center rounded-xl transition-colors',
-								'lg:h-14 lg:w-14',
-								isSelected
-									? 'bg-primary text-primary-foreground shadow-lg'
-									: 'bg-muted text-muted-foreground group-hover:bg-primary/10'
-							)}>
-							<IconComponent className='h-6 w-6 lg:h-7 lg:w-7' />
-						</div>
-
-						{/* Nombre de categoría */}
-						<div className='space-y-1'>
-							<h3
-								className={cn(
-									'text-sm leading-tight font-semibold lg:text-base',
-									isSelected ? 'text-primary' : 'text-foreground'
-								)}>
-								{category?.name}
-							</h3>
-
-							{/* Badge con contador */}
-							<Badge variant={isSelected ? 'default' : 'secondary'} className='px-2 py-0.5 text-xs'>
-								{category?.itemCount || 0} items
-							</Badge>
-						</div>
+				<CardContent className='flex h-full flex-col p-0'>
+					<div className='relative h-full w-full overflow-hidden'>
+						<Image
+							alt={category?.name || 'Category image'}
+							src={
+								category?.photo?.path ||
+								'https://us.123rf.com/450wm/dustin999/dustin9992302/dustin999230203648/199476687-icono-de-imagen-en-estilo-plano-moderno-aislado-en-el-s%C3%ADmbolo-de-imagen-de-fondo-gris-para-el-dise%C3%B1o.jpg?ver=6'
+							}
+							fill
+							className='rounded-t-lg object-cover'
+							unoptimized
+						/>
 					</div>
 
-					{/* Indicador visual de estado activo */}
-					<div
-						className={cn(
-							'absolute right-0 bottom-0 left-0 h-1 transition-all duration-300',
-							isSelected ? 'bg-primary' : 'bg-transparent'
-						)}
-					/>
+					<div className='bg-background right-0 bottom-0 left-0 rounded-b-lg border-t p-2 text-center'>
+						<h3 className={cn('text-primary text-sm font-medium', isSelected && 'text-primary')}>{category?.name}</h3>
+					</div>
 				</CardContent>
 			</Card>
 		</motion.div>
@@ -93,24 +62,10 @@ export const CategoryCardSkeleton: React.FC<SkeletonCardProps> = ({ count = 6 })
 	return (
 		<>
 			{Array.from({ length: count }).map((_, i) => (
-				<motion.div
-					key={`category-skeleton-${i}`}
-					variants={itemVariants}
-					initial='hidden'
-					animate='visible'
-					transition={{ delay: i * 0.1 }}>
-					<Card className='border-border bg-muted/20 min-h-[100px]'>
-						<CardContent className='flex h-full flex-col justify-between p-4'>
-							<div className='flex flex-col items-center space-y-3 text-center'>
-								{/* Skeleton del ícono */}
-								<Skeleton className='h-12 w-12 rounded-xl lg:h-14 lg:w-14' />
-
-								{/* Skeleton del texto */}
-								<div className='w-full space-y-2'>
-									<Skeleton className='mx-auto h-4 w-3/4' />
-									<Skeleton className='mx-auto h-5 w-16 rounded-full' />
-								</div>
-							</div>
+				<motion.div key={`category-skeleton-${i}`} variants={itemVariants} className='aspect-square w-full'>
+					<Card className='border-border h-full'>
+						<CardContent className='h-full p-0'>
+							<Skeleton className='h-full w-full' />
 						</CardContent>
 					</Card>
 				</motion.div>

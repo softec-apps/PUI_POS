@@ -30,16 +30,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
 
 	const handleCardClick = e => {
 		// Prevenir que el click en botones active la selección
-		if (e.target.closest('button')) {
-			return
-		}
+		if (e.target.closest('button')) return
 
-		if (onSelect) {
-			onSelect()
-		}
-		if (!isOutOfStock) {
-			onAddToCart(product)
-		}
+		if (onSelect) onSelect()
+
+		if (!isOutOfStock) onAddToCart(product)
 	}
 
 	return (
@@ -50,7 +45,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
 				whileTap={{ scale: isOutOfStock ? 1 : 0.98 }}>
 				<Card
 					className={cn(
-						'cursor-pointer border-2 p-0 shadow-sm transition-all duration-200 select-none',
+						'cursor-pointer border-2 p-0 transition-all duration-200 select-none',
 						'group relative overflow-hidden',
 
 						isOutOfStock ? 'cursor-not-allowed opacity-60' : 'hover:border-primary/50 hover:shadow-md active:scale-95'
