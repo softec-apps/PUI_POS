@@ -1,6 +1,6 @@
 'use client'
 
-import { I_User } from '@/modules/user/types/user'
+import { I_User } from '@/common/types/modules/user'
 import { Badge } from '@/components/layout/atoms/Badge'
 
 export const UserStatusBadge = ({ status }: { status: I_User['status'] }) => {
@@ -13,8 +13,8 @@ export const UserStatusBadge = ({ status }: { status: I_User['status'] }) => {
 
 	return (
 		<Badge
-			variant={statusMap[status.name as keyof typeof statusMap]?.variant || 'error'}
-			text={statusMap[status.name as keyof typeof statusMap]?.text || 'Desconocido'}
+			variant={statusMap[status?.name as keyof typeof statusMap]?.variant || 'error'}
+			text={statusMap[status?.name as keyof typeof statusMap]?.text || 'Desconocido'}
 		/>
 	)
 }

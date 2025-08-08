@@ -1,6 +1,5 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-
 import { createUserSchema, UserFormData } from '@/modules/user/types/user-form'
 
 export function useUserForm({ isEditing }: { isEditing: boolean }) {
@@ -18,9 +17,7 @@ export function useUserForm({ isEditing }: { isEditing: boolean }) {
 		mode: 'onChange',
 	})
 
-	const resetForm = () => {
-		form.reset()
-	}
+	const resetForm = () => form.reset()
 
 	return {
 		form,
