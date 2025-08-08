@@ -16,7 +16,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 	return (
 		<SidebarProvider defaultOpen={defaultOpen}>
 			<AppSidebar />
-			<SidebarInset className='bg-muted/30 dark:bg-background/35 border-border/50 border shadow-none'>
+			<SidebarInset className='bg-muted/40 dark:bg-background/35 border-border/50 border shadow-none'>
 				<Header />
 				{children}
 			</SidebarInset>

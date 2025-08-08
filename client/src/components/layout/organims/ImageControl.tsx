@@ -30,6 +30,8 @@ interface ImageControlProps {
 	altText?: string
 	imageName?: string
 	showTextEmpty?: boolean
+	// Nueva prop para controlar si la imagen debe ser completamente redonda
+	roundedFull?: boolean
 }
 
 export const ImageControl = ({
@@ -50,6 +52,8 @@ export const ImageControl = ({
 	altText = 'Imagen',
 	imageName = 'imagen',
 	showTextEmpty = false,
+	// Nueva prop - por defecto false (no redonda)
+	roundedFull = false,
 }: ImageControlProps) => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [imageLoaded, setImageLoaded] = useState(false)
@@ -195,6 +199,11 @@ export const ImageControl = ({
 		return 'cursor-default'
 	}
 
+	// Generar clases de border-radius basado en la prop roundedFull
+	const getRoundedClasses = () => {
+		return roundedFull ? 'rounded-full' : 'rounded-xl'
+	}
+
 	// Verificar si hay imagen disponible
 	if (imageSource) {
 		return (
@@ -210,7 +219,7 @@ export const ImageControl = ({
 						}}>
 						<CardContent className='h-full p-0'>
 							<div
-								className='border-border/50 h-full w-full overflow-hidden rounded-xl border'
+								className={`border-border/50 h-full w-full overflow-hidden border ${getRoundedClasses()}`}
 								style={{
 									width: imageWidth,
 									height: imageHeight,
@@ -220,7 +229,7 @@ export const ImageControl = ({
 									alt={displayAlt}
 									className={`bg-muted/20 object-contain transition-transform duration-500 ${
 										enableHover ? 'group-hover:scale-110' : ''
-									}`}
+									} ${getRoundedClasses()}`}
 									fill
 									unoptimized={unoptimized}
 									quality={quality}
@@ -230,7 +239,10 @@ export const ImageControl = ({
 
 							{/* Info badge mejorado - solo si está habilitado el hover y detalles */}
 							{enableHover && showDetails && (
-								<div className='absolute right-0 bottom-0 left-0 translate-y-full bg-gradient-to-t from-black/90 via-black/70 to-transparent p-2 transition-transform duration-300 group-hover:translate-y-0'>
+								<div
+									className={`absolute right-0 bottom-0 left-0 translate-y-full bg-gradient-to-t from-black/90 via-black/70 to-transparent p-2 transition-transform duration-300 group-hover:translate-y-0 ${
+										roundedFull ? 'rounded-b-full' : ''
+									}`}>
 									<div className='space-y-0.5'>
 										<p className='truncate text-xs leading-tight font-medium text-white'>{displayName}</p>
 										{displayDate && (
@@ -352,6 +364,11 @@ export const ImageControl = ({
 															<span className='text-muted-foreground text-sm'>Fuente:</span>
 															<span className='text-sm font-medium'>{recordData ? 'Producto' : 'URL directa'}</span>
 														</div>
+
+														<div className='flex items-center justify-between'>
+															<span className='text-muted-foreground text-sm'>Forma:</span>
+															<span className='text-sm font-medium'>{roundedFull ? 'Circular' : 'Rectangular'}</span>
+														</div>
 													</div>
 												</div>
 											</div>
@@ -392,7 +409,7 @@ export const ImageControl = ({
 	// Placeholder mejorado cuando no hay imagen
 	return (
 		<Card
-			className={`group bg-muted/20 border-border/50 relative overflow-hidden border border-dashed ${className}`}
+			className={`group bg-muted/20 border-border/50 relative overflow-hidden border border-dashed shadow-none ${className} ${getRoundedClasses()}`}
 			style={{
 				width: imageWidth,
 				height: imageHeight,

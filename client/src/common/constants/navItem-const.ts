@@ -14,6 +14,13 @@ export const ALL_NAV_ITEMS: NavConfig = [
 				isActive: false,
 				permission: PERMISSIONS.DASHBOARD,
 			},
+			{
+				title: 'Usuarios',
+				url: ROUTE_PATH.ADMIN.USER,
+				icon: 'user',
+				isActive: false,
+				permission: PERMISSIONS.USERS,
+			},
 		],
 	},
 	{

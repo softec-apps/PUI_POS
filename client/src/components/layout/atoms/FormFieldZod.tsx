@@ -70,6 +70,7 @@ export function UniversalFormField<T extends FieldValues>({
 	groupByCategory = false,
 }: UniversalFormFieldProps<T>) {
 	const [commandOpen, setCommandOpen] = React.useState(false)
+	const [showPassword, setShowPassword] = React.useState(false)
 
 	// Para campos hidden, no mostrar ningún UI
 	if (type === 'hidden') {
@@ -103,9 +104,7 @@ export function UniversalFormField<T extends FieldValues>({
 		return options.reduce(
 			(acc, option) => {
 				const category = option.category || 'Otros'
-				if (!acc[category]) {
-					acc[category] = []
-				}
+				if (!acc[category]) acc[category] = []
 				acc[category].push(option)
 				return acc
 			},
@@ -407,27 +406,35 @@ export function UniversalFormField<T extends FieldValues>({
 									</>
 								) : (
 									<>
-										<Input
-											placeholder={placeholder}
-											{...field}
-											type={type}
-											className={inputClasses}
-											min={min}
-											max={max}
-											step={step}
-											disabled={disabled}
-											onChange={e => {
-												const rawValue = e.target.value
-
-												// Comportamiento original para otros casos
-												let value: any = rawValue
-												if (type === 'number') value = value === '' ? null : Number(value)
-												field.onChange(value)
-												onChange?.(value)
-											}}
-											value={field.value ?? ''}
-										/>
-										{renderValidationIcon()}
+										<div className='relative'>
+											<Input
+												placeholder={placeholder}
+												{...field}
+												type={type === 'password' && showPassword ? 'text' : type}
+												className={inputClasses}
+												min={min}
+												max={max}
+												step={step}
+												disabled={disabled}
+												onChange={e => {
+													const rawValue = e.target.value
+													let value: any = rawValue
+													if (type === 'number') value = value === '' ? null : Number(value)
+													field.onChange(value)
+													onChange?.(value)
+												}}
+												value={field.value ?? ''}
+											/>
+											{type === 'password' && (
+												<button
+													type='button'
+													className='text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transform cursor-pointer p-1 pr-6 focus:outline-none'
+													onClick={() => setShowPassword(prev => !prev)}>
+													{showPassword ? <Icons.eyeClosed className='h-4 w-4' /> : <Icons.eye className='h-4 w-4' />}
+												</button>
+											)}
+											{renderValidationIcon()}
+										</div>
 									</>
 								)}
 							</div>

@@ -4,15 +4,14 @@ import { cn } from '@/lib/utils'
 import { Icons } from '@/components/icons'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
-interface Props {
+interface AlertMessageProps {
 	variant?: 'default' | 'destructive' | 'success' | 'warning' | 'info'
 	title?: string
 	message: string
 	className?: string
-	icon?: React.ReactNode
 }
 
-export function AlertMessage({ variant = 'default', title, message, className = '', icon }: Props) {
+export function AlertMessage({ variant = 'default', title, message, className = '' }: AlertMessageProps) {
 	const variantConfig = {
 		default: {
 			container: 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700',
@@ -50,11 +49,8 @@ export function AlertMessage({ variant = 'default', title, message, className = 
 				selectedVariant.container,
 				className
 			)}>
-			{icon || selectedVariant.icon}
-			<div className='flex flex-col items-start space-y-1'>
-				<AlertTitle className={cn('text-sm font-medium', selectedVariant.text)}>{title || 'Información'}</AlertTitle>
-				<AlertDescription className={cn('text-sm', selectedVariant.text)}>{message}</AlertDescription>
-			</div>
+			<AlertTitle className={cn('text-sm font-medium', selectedVariant.text)}>{title || 'Información'}</AlertTitle>
+			<AlertDescription className={cn('text-sm', selectedVariant.text)}>{message}</AlertDescription>
 		</Alert>
 	)
 }

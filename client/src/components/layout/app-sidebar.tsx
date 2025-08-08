@@ -114,7 +114,7 @@ export default function AppSidebar() {
 				)}
 			</SidebarHeader>
 
-			<SidebarContent className=''>
+			<SidebarContent>
 				<ScrollArea className='h-screen overflow-auto'>
 					{shouldShowSkeleton ? (
 						<div className='space-y-6'>

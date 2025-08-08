@@ -4,18 +4,13 @@ import React from 'react'
 import { Badge as BadgeUI } from '@/components/ui/badge'
 
 type BadgeVariant =
-	| 'success'
-	| 'info'
-	| 'error'
-	| 'warning'
-	| 'destructive'
 	| 'default'
-	| 'primary'
 	| 'secondary'
-	| 'accent'
+	| 'destructive'
 	| 'outline'
-	| 'ghost'
-	| 'link'
+	| 'success'
+	| 'warning'
+	| 'info'
 	| 'purple'
 	| 'pink'
 	| 'indigo'
@@ -24,56 +19,43 @@ type BadgeVariant =
 	| 'orange'
 
 interface Props {
-	variant?: BadgeVariant
+	variant?: BadgeVariant | React.ReactNode
 	text: string | React.ReactNode
-	decord?: boolean
+	decor?: boolean
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
+	// Variantes estándar de shadcn/ui
+	default: 'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
+	secondary: 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
+	destructive: 'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
+	outline: 'text-foreground',
+
+	// Variantes personalizadas con colores shadcn/ui
 	success:
-		'bg-green-600/10 text-green-600 focus-visible:ring-green-600/20 dark:bg-green-400/10 dark:text-green-400 dark:focus-visible:ring-green-400/40 [a&]:hover:bg-green-600/5 dark:[a&]:hover:bg-green-400/5',
-	info: 'bg-blue-600/10 text-blue-600 focus-visible:ring-blue-600/20 dark:bg-blue-400/10 dark:text-blue-400 dark:focus-visible:ring-blue-400/40 [a&]:hover:bg-blue-600/5 dark:[a&]:hover:bg-blue-400/5',
+		'border-transparent bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30',
 	warning:
-		'bg-yellow-600/10 text-yellow-600 focus-visible:ring-yellow-600/20 dark:bg-yellow-400/10 dark:text-yellow-400 dark:focus-visible:ring-yellow-400/40 [a&]:hover:bg-yellow-600/5 dark:[a&]:hover:bg-yellow-400/5',
-	error:
-		'bg-red-600/10 text-red-600 focus-visible:ring-red-600/20 dark:bg-red-400/10 dark:text-red-400 dark:focus-visible:ring-red-400/40 [a&]:hover:bg-red-600/5 dark:[a&]:hover:bg-red-400/5',
-	destructive:
-		'bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 [a&]:hover:bg-destructive/5',
-	default:
-		'bg-gray-600/10 text-gray-600 focus-visible:ring-gray-600/20 dark:bg-gray-400/10 dark:text-gray-300 dark:focus-visible:ring-gray-400/40 [a&]:hover:bg-gray-600/5 dark:[a&]:hover:bg-gray-400/5',
-	primary:
-		'bg-primary/10 text-primary focus-visible:ring-primary/20 dark:bg-primary/20 dark:text-primary-foreground dark:focus-visible:ring-primary/40 [a&]:hover:bg-primary/15 dark:[a&]:hover:bg-primary/25',
-	secondary:
-		'bg-secondary/10 text-secondary focus-visible:ring-secondary/20 dark:bg-secondary/20 dark:text-secondary-foreground dark:focus-visible:ring-secondary/40 [a&]:hover:bg-secondary/15 dark:[a&]:hover:bg-secondary/25',
-	accent:
-		'bg-accent/10 text-accent focus-visible:ring-accent/20 dark:bg-accent/20 dark:text-accent-foreground dark:focus-visible:ring-accent/40 [a&]:hover:bg-accent/15 dark:[a&]:hover:bg-accent/25',
-	outline: 'bg-transparent border border-border text-foreground [a&]:hover:bg-accent/10',
-	ghost: 'bg-transparent text-foreground [a&]:hover:bg-accent/10',
-	link: 'bg-transparent text-primary underline-offset-4 [a&]:hover:underline',
+		'border-transparent bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80 dark:bg-yellow-900/20 dark:text-yellow-400 dark:hover:bg-yellow-900/30',
+	info: 'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30',
 	purple:
-		'bg-purple-600/10 text-purple-600 focus-visible:ring-purple-600/20 dark:bg-purple-400/10 dark:text-purple-400 dark:focus-visible:ring-purple-400/40 [a&]:hover:bg-purple-600/5 dark:[a&]:hover:bg-purple-400/5',
-	pink: 'bg-pink-600/10 text-pink-600 focus-visible:ring-pink-600/20 dark:bg-pink-400/10 dark:text-pink-400 dark:focus-visible:ring-pink-400/40 [a&]:hover:bg-pink-600/5 dark:[a&]:hover:bg-pink-400/5',
+		'border-transparent bg-purple-100 text-purple-800 hover:bg-purple-100/80 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/30',
+	pink: 'border-transparent bg-pink-100 text-pink-800 hover:bg-pink-100/80 dark:bg-pink-900/20 dark:text-pink-400 dark:hover:bg-pink-900/30',
 	indigo:
-		'bg-indigo-600/10 text-indigo-600 focus-visible:ring-indigo-600/20 dark:bg-indigo-400/10 dark:text-indigo-400 dark:focus-visible:ring-indigo-400/40 [a&]:hover:bg-indigo-600/5 dark:[a&]:hover:bg-indigo-400/5',
-	cyan: 'bg-cyan-600/10 text-cyan-600 focus-visible:ring-cyan-600/20 dark:bg-cyan-400/10 dark:text-cyan-400 dark:focus-visible:ring-cyan-400/40 [a&]:hover:bg-cyan-600/5 dark:[a&]:hover:bg-cyan-400/5',
-	teal: 'bg-teal-600/10 text-teal-600 focus-visible:ring-teal-600/20 dark:bg-teal-400/10 dark:text-teal-400 dark:focus-visible:ring-teal-400/40 [a&]:hover:bg-teal-600/5 dark:[a&]:hover:bg-teal-400/5',
+		'border-transparent bg-indigo-100 text-indigo-800 hover:bg-indigo-100/80 dark:bg-indigo-900/20 dark:text-indigo-400 dark:hover:bg-indigo-900/30',
+	cyan: 'border-transparent bg-cyan-100 text-cyan-800 hover:bg-cyan-100/80 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/30',
+	teal: 'border-transparent bg-teal-100 text-teal-800 hover:bg-teal-100/80 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30',
 	orange:
-		'bg-orange-600/10 text-orange-600 focus-visible:ring-orange-600/20 dark:bg-orange-400/10 dark:text-orange-400 dark:focus-visible:ring-orange-400/40 [a&]:hover:bg-orange-600/5 dark:[a&]:hover:bg-orange-400/5',
+		'border-transparent bg-orange-100 text-orange-800 hover:bg-orange-100/80 dark:bg-orange-900/20 dark:text-orange-400 dark:hover:bg-orange-900/30',
 }
 
 const dotColors: Record<BadgeVariant, string> = {
-	success: 'bg-green-600 dark:bg-green-400',
-	info: 'bg-blue-600 dark:bg-blue-400',
-	warning: 'bg-yellow-600 dark:bg-yellow-400',
-	error: 'bg-red-600 dark:bg-red-400',
-	destructive: 'bg-destructive',
-	default: 'bg-gray-600 dark:bg-gray-400',
-	primary: 'bg-primary dark:bg-primary-foreground',
-	secondary: 'bg-secondary dark:bg-secondary-foreground',
-	accent: 'bg-accent dark:bg-accent-foreground',
+	default: 'bg-primary-foreground',
+	secondary: 'bg-secondary-foreground',
+	destructive: 'bg-destructive-foreground',
 	outline: 'bg-foreground',
-	ghost: 'bg-foreground',
-	link: 'bg-primary',
+	success: 'bg-green-600 dark:bg-green-400',
+	warning: 'bg-yellow-600 dark:bg-yellow-400',
+	info: 'bg-blue-600 dark:bg-blue-400',
 	purple: 'bg-purple-600 dark:bg-purple-400',
 	pink: 'bg-pink-600 dark:bg-pink-400',
 	indigo: 'bg-indigo-600 dark:bg-indigo-400',
@@ -82,10 +64,10 @@ const dotColors: Record<BadgeVariant, string> = {
 	orange: 'bg-orange-600 dark:bg-orange-400',
 }
 
-export function Badge({ variant = 'default', text, decord = false }: Props) {
+export function Badge({ variant = 'default', text, decor = false }: Props) {
 	return (
 		<BadgeUI className={`rounded-full border-none focus-visible:outline-none ${variantStyles[variant]}`}>
-			{decord && <span className={`size-1.5 rounded-full ${dotColors[variant]}`} />}
+			{decor && <span className={`mr-1.5 size-1.5 rounded-full ${dotColors[variant]}`} />}
 			{text}
 		</BadgeUI>
 	)
