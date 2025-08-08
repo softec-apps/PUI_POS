@@ -5,11 +5,6 @@ export const ATTRIBUTE_ENDPOINTS_CONFIG: ApiConfig = {
 	queryKey: [ENDPOINT_API.ATRIBUTE],
 	baseEndpoint: `/${ENDPOINT_API.ATRIBUTE}`,
 	extraInvalidateKeys: [[ENDPOINT_API.TEMPLATE]],
-	successMessages: {
-		create: 'Atributo creado exitosamente',
-		update: 'Atributo actualizado exitosamente',
-		hardDelete: 'Atributo eliminado permanentemente',
-	},
 	endpoints: {
 		list: { path: '', method: 'GET' },
 		create: { path: '', method: 'POST' },

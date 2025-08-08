@@ -95,15 +95,15 @@ export const useGenericApi = <T, CreateT, UpdateT>(config: ApiConfig) => {
 			}) => {
 				return await apiService.executeRequest(endpoint, options)
 			},
-			onSuccess: data => {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			onSuccess: (response: { message?: string; [key: string]: any }) => {
+				// Actualizar el cache si aplica
 				queryClient.setQueryData(baseQueryKey, (oldData: any) => {
 					if (!oldData?.data?.items) return oldData
 					return {
 						...oldData,
 						data: {
 							...oldData.data,
-							items: [...oldData.data.items, data],
+							items: [...oldData.data.items, response],
 							pagination: {
 								...oldData.data.pagination,
 								totalRecords: oldData.data.pagination.totalRecords + 1,
@@ -114,12 +114,9 @@ export const useGenericApi = <T, CreateT, UpdateT>(config: ApiConfig) => {
 
 				invalidateQueries()
 
-				extraInvalidateKeys.forEach(keyArr => {
-					queryClient.invalidateQueries({ queryKey: keyArr, exact: false })
-				})
+				extraInvalidateKeys.forEach(keyArr => queryClient.invalidateQueries({ queryKey: keyArr, exact: false }))
 
-				const message = successMessageKey ? config.successMessages?.[successMessageKey] : undefined
-				if (message) toast.success(message)
+				if (response?.message) toast.success(response.message)
 			},
 			onError: error => {
 				handleHttpToast(error as unknown as HttpErrorResponse)

@@ -28,8 +28,7 @@ export function handleHttpToast(error: HttpErrorResponse, customMessages: Record
 		if (data.error?.details) {
 			const details = data.error.details
 			const detailMessages = Object.values(details).join(', ')
-			const mainMessage = data.error.message || 'Error de validación'
-			return getToastMethod(status)(`${mainMessage}: ${detailMessages}`)
+			return getToastMethod(status)(`${detailMessages}`)
 		}
 
 		// Fallback to error message if available

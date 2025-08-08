@@ -28,7 +28,6 @@ export interface ApiConfig {
 	extraInvalidateKeys?: string[][]
 	enabled?: boolean
 	staleTime?: number
-	successMessages?: SuccessMessages
 	endpoints?: {
 		list?: ApiEndpoint
 		create?: ApiEndpoint

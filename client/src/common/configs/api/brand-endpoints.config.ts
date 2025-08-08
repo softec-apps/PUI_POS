@@ -5,11 +5,6 @@ export const BRAND_ENDPOINTS_CONFIG: ApiConfig = {
 	queryKey: [ENDPOINT_API.BRAND],
 	baseEndpoint: `/${ENDPOINT_API.BRAND}`,
 	extraInvalidateKeys: [],
-	successMessages: {
-		create: 'Marca creada exitosamente',
-		update: 'Marca actualizada exitosamente',
-		hardDelete: 'Marca eliminada permanentemente',
-	},
 	endpoints: {
 		list: { path: '', method: 'GET' },
 		create: { path: '', method: 'POST' },

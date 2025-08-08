@@ -5,13 +5,6 @@ export const SUPPLIER_ENDPOINTS_CONFIG: ApiConfig = {
 	queryKey: [ENDPOINT_API.SUPPLIER],
 	baseEndpoint: `/${ENDPOINT_API.SUPPLIER}`,
 	extraInvalidateKeys: [[ENDPOINT_API.SUPPLIER]],
-	successMessages: {
-		create: 'Proveedor creado exitosamente',
-		update: 'Proveedor actualizado exitosamente',
-		restore: 'Proveedor restaurado exitosamente',
-		softDelete: 'Proveedor removido exitosamente',
-		hardDelete: 'Proveedor eliminado permanentemente',
-	},
 	endpoints: {
 		list: { path: '', method: 'GET' },
 		create: { path: '', method: 'POST' },

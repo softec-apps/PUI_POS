@@ -5,13 +5,6 @@ export const PRODUCT_ENDPOINTS_CONFIG: ApiConfig = {
 	queryKey: [ENDPOINT_API.PRODUCT],
 	baseEndpoint: `/${ENDPOINT_API.PRODUCT}`,
 	extraInvalidateKeys: [[ENDPOINT_API.KARDEX]],
-	successMessages: {
-		create: 'Producto creado exitosamente',
-		update: 'Producto actualizado exitosamente',
-		restore: 'Producto restaurado exitosamente',
-		softDelete: 'Producto removido exitosamente',
-		hardDelete: 'Producto eliminado permanentemente',
-	},
 	endpoints: {
 		list: { path: '', method: 'GET' },
 		create: { path: '', method: 'POST' },
