@@ -11,6 +11,7 @@ export const MESSAGE_RESPONSE = {
   CONFLIC: {
     EMAIL: 'Ya existe una usuario con ese e-mail',
     PHOTO: 'Ya existe una usuario con ese e-mail',
+    HARD_DELETE: 'No pudes eliminar tu propio usuario',
   },
   NOT_FOUND: {
     ID: 'No se encontro la usuario',

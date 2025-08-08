@@ -10,8 +10,8 @@ import {
   HttpStatus,
   HttpCode,
   SerializeOptions,
-  Put,
   Patch,
+  Request,
 } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { User } from '@/modules/users/domain/user'
@@ -114,7 +114,10 @@ export class UsersController {
   @Roles(RoleEnum.Admin, RoleEnum.Manager)
   @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
   @HttpCode(HttpStatus.OK)
-  async hardDelete(@Param() param: ParamUserDto): Promise<ApiResponse> {
-    return await this.usersService.hardDelete(param.id)
+  async hardDelete(
+    @Param() param: ParamUserDto,
+    @Request() req: any,
+  ): Promise<ApiResponse> {
+    return await this.usersService.hardDelete(param.id, req.user.id)
   }
 }

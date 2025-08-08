@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -30,6 +31,7 @@ import { MESSAGE_RESPONSE } from '@/modules/users/messages/responseOperation.mes
 import { EnhancedInfinityPaginationResponseDto } from '@/utils/dto/enhanced-infinity-pagination-response.dto'
 import { infinityPaginationWithMetadata } from '@/utils/infinity-pagination'
 import { QueryUserDto } from '@/modules/users/dto/query-user.dto'
+import { title } from 'node:process'
 
 @Injectable()
 export class UsersService {
@@ -92,18 +94,17 @@ export class UsersService {
       }
 
       let status: Status | undefined = undefined
-      if (createUserDto.status?.id) {
-        const statusObject = Object.values(StatusEnum)
-          .map(String)
-          .includes(String(createUserDto.status.id))
-        if (!statusObject) {
-          throw new NotFoundException({
-            message: MESSAGE_RESPONSE.NOT_FOUND.STATUS,
-          })
-        }
-        status = {
-          id: createUserDto.status.id,
-        }
+      const statusId = createUserDto.status?.id ?? 1 // Asignar 1 si es null o undefine, 1 == active
+      const statusObject = Object.values(StatusEnum)
+        .map(String)
+        .includes(String(statusId))
+      if (!statusObject) {
+        throw new NotFoundException({
+          message: MESSAGE_RESPONSE.NOT_FOUND.STATUS,
+        })
+      }
+      status = {
+        id: statusId,
       }
 
       await this.usersRepository.create(
@@ -317,15 +318,22 @@ export class UsersService {
     })
   }
 
-  async hardDelete(id: User['id']): Promise<ApiResponse<void>> {
+  async hardDelete(
+    id: User['id'],
+    userId?: string,
+  ): Promise<ApiResponse<void>> {
     return this.dataSource.transaction(async (entityManager) => {
       const user = await this.usersRepository.findById(id)
 
-      if (!user) {
+      if (!user)
         throw new NotFoundException({
           message: MESSAGE_RESPONSE.NOT_FOUND.ID,
         })
-      }
+
+      if (user?.id === userId)
+        throw new BadRequestException({
+          message: MESSAGE_RESPONSE.CONFLIC.HARD_DELETE,
+        })
 
       await this.usersRepository.hardDelete(id, entityManager)
 
