@@ -18,6 +18,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { FatalErrorState } from '@/components/layout/organims/ErrorStateCard'
 import { NotFoundState } from '@/components/layout/organims/NotFoundState'
 import { formatPrice } from '@/common/utils/formatPrice-util'
+import Link from 'next/link'
+import { ROUTE_PATH } from '@/common/constants/routes-const'
 
 type Props = {
 	productId: string
@@ -90,9 +92,9 @@ export function ProductDetailView({ productId }: Props) {
 
 	if (error) {
 		return (
-			<div className='flex flex-1 flex-col items-center justify-center space-y-6'>
+			<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
 				<FatalErrorState />
-			</div>
+			</Card>
 		)
 	}
 
@@ -102,16 +104,19 @@ export function ProductDetailView({ productId }: Props) {
 			<Card className='border-none bg-transparent p-0 shadow-none'>
 				<CardContent className='p-0'>
 					<div className='flex items-center gap-4'>
-						<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-							<ImageControl
-								recordData={product}
-								enableHover={false}
-								enableClick={false}
-								quality={10}
-								imageHeight={80}
-								imageWidth={80}
-							/>
-						</div>
+						<Link href={ROUTE_PATH.ADMIN.PRODUCT} className='text-muted-foreground'>
+							<div className='bg-muted hover:bg-accent rounded-full p-4 transition-all duration-500'>
+								<Icons.arrowNarrowLeft />
+							</div>
+						</Link>
+						<ImageControl
+							recordData={product}
+							enableHover={false}
+							enableClick={false}
+							quality={10}
+							imageHeight={80}
+							imageWidth={80}
+						/>
 
 						<div className='flex-1'>
 							<div className='mb-2 line-clamp-1 break-words'>

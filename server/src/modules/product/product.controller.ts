@@ -73,7 +73,7 @@ export class ProductController {
   }
 
   /**
-   * Get all products with pagination
+   * Get all product
    * @param param - Parameter containing the template ID
    * @returns The API standard response
    *
@@ -122,7 +122,7 @@ export class ProductController {
   @Roles(RoleEnum.Admin, RoleEnum.Manager)
   @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
   @HttpCode(HttpStatus.OK)
-  hardDelete(@Param() param: ParamProductDto): Promise<ApiResponse> {
-    return this.productService.hardDelete(param.id)
+  async hardDelete(@Param() param: ParamProductDto): Promise<ApiResponse> {
+    return await this.productService.hardDelete(param.id)
   }
 }
