@@ -2,19 +2,54 @@
 
 import { Icons } from '@/components/icons'
 import { ColumnDef } from '@tanstack/react-table'
-import { I_Template } from '@/common/types/modules/template'
+import { I_User } from '@/modules/user/types/user'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { TableActions } from '@/modules/template/components/organisms/Table/TableActions'
-import { TableInfoDate } from '@/modules/template/components/organisms/Table/TableInfoDate'
+import { ImageControl } from '@/components/layout/organims/ImageControl'
+import { UserStatusBadge } from '@/modules/user/components/atoms/UserStatusBadge'
+import { TableActions } from '@/modules/user/components/organisms/Table/TableActions'
+import { TableInfoDate } from '@/modules/user/components/organisms/Table/TableInfoDate'
+import { UserRoleBadge } from '../../atoms/UserRoleBadge'
 
-interface Props {
-	onEdit: (recordData: I_Template) => void
-	onHardDelete: (recordData: I_Template) => void
+interface createTableColumnsProps {
+	onEdit: (recordData: I_User) => void
+	onHardDelete: (recordData: I_User) => void
 }
 
-export const tableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I_Template>[] => [
+export const createTableColumns = ({ onEdit, onHardDelete }: createTableColumnsProps): ColumnDef<I_User>[] => [
 	{
-		accessorKey: 'name',
+		accessorKey: 'photo',
+		header: ({ column }) => (
+			<ActionButton
+				variant='link'
+				size='xs'
+				className='p-0'
+				text={
+					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
+						Imagen
+						{column.getIsSorted() === 'asc' ? (
+							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : column.getIsSorted() === 'desc' ? (
+							<Icons.sortDescendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : null}
+					</div>
+				}
+				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+			/>
+		),
+		cell: ({ row }) => (
+			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
+				<ImageControl
+					recordData={row.original}
+					enableHover={false}
+					enableClick={false}
+					imageHeight={50}
+					imageWidth={50}
+				/>
+			</div>
+		),
+	},
+	{
+		accessorKey: 'firstName',
 		header: ({ column }) => (
 			<ActionButton
 				variant='link'
@@ -34,13 +69,13 @@ export const tableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I_Templ
 			/>
 		),
 		cell: ({ row }) => (
-			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				{row.original.name}
+			<div className='max-w-96 truncate'>
+				{row.original.firstName} {row.original.lastName}
 			</div>
 		),
 	},
 	{
-		accessorKey: 'description',
+		accessorKey: 'email',
 		header: ({ column }) => (
 			<ActionButton
 				variant='link'
@@ -48,7 +83,29 @@ export const tableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I_Templ
 				className='p-0'
 				text={
 					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
-						Descripción
+						Email
+						{column.getIsSorted() === 'asc' ? (
+							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : column.getIsSorted() === 'desc' ? (
+							<Icons.sortDescendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : null}
+					</div>
+				}
+				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+			/>
+		),
+		cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.email}</div>,
+	},
+	{
+		accessorKey: 'role.name',
+		header: ({ column }) => (
+			<ActionButton
+				variant='link'
+				size='xs'
+				className='p-0'
+				text={
+					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
+						Rol
 						{column.getIsSorted() === 'asc' ? (
 							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
 						) : column.getIsSorted() === 'desc' ? (
@@ -60,13 +117,13 @@ export const tableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I_Templ
 			/>
 		),
 		cell: ({ row }) => (
-			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				{row.original.description || 'Sin descripción'}
+			<div className='max-w-96 truncate'>
+				<UserRoleBadge role={row.original.role} />
 			</div>
 		),
 	},
 	{
-		accessorKey: 'category',
+		accessorKey: 'status.name',
 		header: ({ column }) => (
 			<ActionButton
 				variant='link'
@@ -74,7 +131,7 @@ export const tableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I_Templ
 				className='p-0'
 				text={
 					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
-						Categoría
+						Estado
 						{column.getIsSorted() === 'asc' ? (
 							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
 						) : column.getIsSorted() === 'desc' ? (
@@ -86,34 +143,8 @@ export const tableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I_Templ
 			/>
 		),
 		cell: ({ row }) => (
-			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				{row.original.category?.name || '---'}
-			</div>
-		),
-	},
-	{
-		accessorKey: 'atributes',
-		header: ({ column }) => (
-			<ActionButton
-				variant='link'
-				size='xs'
-				className='p-0'
-				text={
-					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
-						Atibutos
-						{column.getIsSorted() === 'asc' ? (
-							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
-						) : column.getIsSorted() === 'desc' ? (
-							<Icons.sortDescendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
-						) : null}
-					</div>
-				}
-				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-			/>
-		),
-		cell: ({ row }) => (
-			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				{row.original.atributes?.length || '0'}
+			<div className='max-w-56 truncate'>
+				<UserStatusBadge status={row.original.status} />
 			</div>
 		),
 	},

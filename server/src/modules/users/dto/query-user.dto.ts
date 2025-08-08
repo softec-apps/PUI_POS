@@ -1,56 +1,108 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator'
-import { Transform, Type, plainToInstance } from 'class-transformer'
-import { User } from '../domain/user'
+import { User } from '@/modules/users/domain/user'
 import { RoleDto } from '@/modules/roles/dto/role.dto'
+import { StatusDto } from '@/statuses/dto/status.dto'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { Transform, Type, plainToInstance } from 'class-transformer'
+import {
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator'
 
 export class FilterUserDto {
-  @ApiPropertyOptional({ type: RoleDto })
+  @ApiPropertyOptional({
+    type: RoleDto,
+    description:
+      'Estado de la categoría (1 = admin, 2 = cashier, 3 = manager, 4 = inventory, 5 = customer)',
+  })
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => RoleDto)
-  roles?: RoleDto[] | null
+  roleId?: RoleDto[] | null
+
+  @ApiPropertyOptional({
+    type: StatusDto,
+    description: 'Estado de la categoría (1 = Active, 2 = Inactive )',
+  })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => StatusDto)
+  statusId?: StatusDto[] | null
 }
 
 export class SortUserDto {
-  @ApiProperty()
-  @Type(() => String)
+  @ApiProperty({
+    description: 'Campo por el que ordenar',
+    example: 'email',
+  })
   @IsString()
   orderBy: keyof User
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Dirección de ordenamiento (asc o desc)',
+    example: 'asc',
+  })
   @IsString()
-  order: string
+  @IsIn(['asc', 'desc'], { message: 'order debe ser "asc" o "desc"' })
+  order: 'asc' | 'desc'
 }
 
 export class QueryUserDto {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    description: 'Página solicitada',
+    example: 1,
+  })
   @Transform(({ value }) => (value ? Number(value) : 1))
   @IsNumber()
   @IsOptional()
   page?: number
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    description: 'Cantidad de resultados por página',
+    example: 10,
+  })
   @Transform(({ value }) => (value ? Number(value) : 10))
   @IsNumber()
   @IsOptional()
   limit?: number
 
-  @ApiPropertyOptional({ type: String })
+  @ApiPropertyOptional({
+    type: () => FilterUserDto,
+    description: 'Filtros adicionales (formato JSON string)',
+    example: '{"field":"value"}',
+  })
   @IsOptional()
-  @Transform(({ value }) =>
-    value ? plainToInstance(FilterUserDto, JSON.parse(value)) : undefined,
-  )
   @ValidateNested()
   @Type(() => FilterUserDto)
+  @Transform(({ value }) =>
+    typeof value === 'string' && value
+      ? plainToInstance(FilterUserDto, JSON.parse(value))
+      : value,
+  )
   filters?: FilterUserDto | null
 
-  @ApiPropertyOptional({ type: String })
-  @IsOptional()
-  @Transform(({ value }) => {
-    return value ? plainToInstance(SortUserDto, JSON.parse(value)) : undefined
+  @ApiPropertyOptional({
+    type: [SortUserDto],
+    description: 'Opciones de ordenamiento (formato JSON string array)',
+    example: '[{"filed":"value","order":"asc"}]',
   })
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => SortUserDto)
+  @Transform(({ value }) =>
+    typeof value === 'string' && value
+      ? JSON.parse(value).map((sort: any) => plainToInstance(SortUserDto, sort))
+      : value,
+  )
   sort?: SortUserDto[] | null
+
+  @ApiPropertyOptional({
+    description: 'Búsqueda general',
+    example: 'categoria',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string | null
 }

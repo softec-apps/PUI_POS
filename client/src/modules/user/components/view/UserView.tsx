@@ -2,23 +2,27 @@
 
 import { useCallback, useMemo, useState } from 'react'
 
+import { useUser } from '@/common/hooks/useUser'
+import { useHandlers } from '@/modules/user/hooks/useHandlers'
+import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
+
+import { ViewType } from '@/modules/user/components/molecules/ViewSelector'
+
 import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
-import { useTemplate } from '@/common/hooks/useTemplate'
 import { UtilBanner } from '@/components/UtilBanner'
-import { useHandlers } from '@/modules/template/hooks/useHandlers'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { useModalState } from '@/modules/template/hooks/useModalState'
-import { usePagination } from '@/modules/template/hooks/usePagination'
-import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
-import { TemplateModals } from '@/modules/template/components/templates/Modals'
-import { TemplateHeader } from '@/modules/template/components/templates/Header'
-import { TemplateFilters } from '@/modules/template/components/templates/Filters'
-import { PaginationControls } from '@/modules/template/components/templates/Pagination'
-import { TemplateTable } from '@/modules/template/components/organisms/Table/TableTemplate'
+import { useModalState } from '@/modules/user/hooks/useModalState'
+import { usePagination } from '@/modules/user/hooks/usePagination'
+
+import { UserModals } from '@/modules/user/components/templates/Modals'
+import { UserHeader } from '@/modules/user/components/templates/Header'
+import { UserFilters } from '@/modules/user/components/templates/Filters'
+import { PaginationControls } from '@/modules/user/components/templates/Pagination'
+import { TableUser } from '@/modules/user/components/organisms/Table/TableUser'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
 
-export function TemplateView() {
+export function UserView() {
 	const [retryCount, setRetryCount] = useState(0)
 	const [viewType, setViewType] = useState<ViewType>('table')
 
@@ -32,6 +36,7 @@ export function TemplateView() {
 		handlePrevPage,
 		handleLimitChange,
 		handleSearchChange,
+		handleStatusChange,
 		handleSort,
 		handleResetAll,
 		handlePageChange,
@@ -40,68 +45,78 @@ export function TemplateView() {
 	// ✅ Memoizar parámetros de paginación para evitar recreaciones
 	const paginationParams = useMemo(
 		() => ({
+			search: searchTerm,
 			page: pagination.page,
 			limit: pagination.limit,
-			search: searchTerm,
-			filters: currentStatus ? { status: currentStatus } : undefined,
 			sort: currentSort ? [currentSort] : undefined,
+			filters: currentStatus ? { status: currentStatus } : undefined,
 		}),
 		[pagination.page, pagination.limit, searchTerm, currentStatus, currentSort]
 	)
 
-	// ✅ Main template hook con parámetros memoizados
+	// ✅ Main user hook con parámetros memoizados
 	const {
-		template,
+		recordsData,
 		loading,
-		error: errorTemplate,
-		createTemplate,
-		updateTemplate,
-		hardDeleteTemplate,
-		refetchTemplate,
-	} = useTemplate(paginationParams)
+		error: errorUser,
+		createRecord,
+		updateRecord,
+		hardDeleteRecord,
+		refetchRecords,
+	} = useUser(paginationParams)
 
 	// ✅ Data refresh hook
-	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchTemplate)
+	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchRecords)
 
 	// ✅ Form and modal hooks
 	const modalState = useModalState()
 
 	// ✅ Handlers optimizados
-	const templateHandlers = useHandlers({
+	const userHandlers = useHandlers({
 		modalState,
-		createTemplate,
-		updateTemplate,
-		hardDeleteTemplate,
+		createRecord,
+		updateRecord,
+		hardDeleteRecord,
 	})
 
 	// ✅ Optimized next page handler
 	const handleNext = useCallback(() => {
-		handleNextPage(template?.data?.pagination?.hasNextPage)
-	}, [handleNextPage, template?.data?.pagination?.hasNextPage])
+		handleNextPage(recordsData?.data?.pagination?.hasNextPage)
+	}, [handleNextPage, recordsData?.data?.pagination?.hasNextPage])
 
 	// ✅ Memoizar datos derivados
-	const templateData = useMemo(
+	const userData = useMemo(
 		() => ({
-			items: template?.data?.items || [],
-			pagination: template?.data?.pagination,
-			hasNextPage: template?.data?.pagination?.hasNextPage,
+			items: recordsData?.data?.items || [],
+			pagination: recordsData?.data?.pagination,
+			hasNextPage: recordsData?.data?.pagination?.hasNextPage,
 		}),
-		[template?.data]
+		[recordsData?.data]
 	)
 
 	// Función para reintentar la carga
 	const handleRetry = useCallback(() => {
 		setRetryCount(prev => prev + 1)
-		refetchTemplate()
-	}, [refetchTemplate])
+		refetchRecords()
+	}, [refetchRecords])
 
-	if (errorTemplate && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
+	if (errorUser && retryCount < 3)
+		return (
+			<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
+				<RetryErrorState onRetry={handleRetry} />
+			</Card>
+		)
 
-	if (errorTemplate) return <FatalErrorState />
+	if (errorUser)
+		return (
+			<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
+				<FatalErrorState />
+			</Card>
+		)
 
 	return (
 		<div className='flex flex-1 flex-col space-y-6'>
-			{templateData?.pagination?.totalRecords === 0 ? (
+			{userData?.pagination?.totalRecords === 0 ? (
 				<Card className='flex h-screen items-center justify-center border-none bg-transparent shadow-none'>
 					<UtilBanner
 						icon={<Icons.dataBase />}
@@ -113,7 +128,7 @@ export function TemplateView() {
 						size='lg'
 						variant='default'
 						icon={<Icons.plus />}
-						text='Nueva plantilla'
+						text='Nuevo usuario'
 						className='rounded-xl'
 						onClick={modalState.openCreateDialog}
 					/>
@@ -121,14 +136,15 @@ export function TemplateView() {
 			) : (
 				<>
 					{/* Header */}
-					<TemplateHeader onCreateClick={modalState.openCreateDialog} />
+					<UserHeader onCreateClick={modalState.openCreateDialog} />
 
 					{/* Filters and search */}
-					<TemplateFilters
+					<UserFilters
 						searchValue={searchTerm}
 						currentSort={currentSort}
 						currentStatus={currentStatus}
 						isRefreshing={isRefreshing}
+						onStatusChange={handleStatusChange}
 						onSearchChange={handleSearchChange}
 						onSort={handleSort}
 						onRefresh={handleRefresh}
@@ -138,10 +154,10 @@ export function TemplateView() {
 					/>
 
 					{/* Table */}
-					<TemplateTable
-						recordData={templateData.items}
+					<TableUser
+						recordsData={userData.items}
 						loading={loading}
-						onEdit={templateHandlers.handleEdit}
+						onEdit={userHandlers.handleEdit}
 						onHardDelete={modalState.openHardDeleteModal}
 						viewType={viewType}
 					/>
@@ -154,13 +170,13 @@ export function TemplateView() {
 						onPageChange={handlePageChange}
 						onNextPage={handleNext}
 						onLimitChange={handleLimitChange}
-						metaDataPagination={template?.data?.pagination}
+						metaDataPagination={recordsData?.data?.pagination}
 					/>
 				</>
 			)}
 
 			{/* Modals */}
-			<TemplateModals modalState={modalState} templateHandlers={templateHandlers} />
+			<UserModals modalState={modalState} userHandlers={userHandlers} />
 		</div>
 	)
 }

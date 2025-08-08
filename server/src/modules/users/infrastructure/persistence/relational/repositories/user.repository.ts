@@ -1,14 +1,17 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
-import { FindOptionsWhere, Repository, In } from 'typeorm'
-import { UserEntity } from '../entities/user.entity'
-import { NullableType } from '../../../../../../utils/types/nullable.type'
-import { FilterUserDto, SortUserDto } from '../../../../dto/query-user.dto'
-import { User } from '../../../../domain/user'
-import { UserRepository } from '../../user.repository'
-import { UserMapper } from '../mappers/user.mapper'
-import { IPaginationOptions } from '../../../../../../utils/types/pagination-options'
+import { User } from '@/modules/users/domain/user'
+import { FindOptionsWhere, Repository, In, EntityManager, ILike } from 'typeorm'
+import { NullableType } from '@/utils/types/nullable.type'
+import { IPaginationOptions } from '@/utils/types/pagination-options'
+import { FilterUserDto, SortUserDto } from '@/modules/users/dto/query-user.dto'
+import { UserRepository } from '@/modules/users/infrastructure/persistence/user.repository'
+import { UserEntity } from '@/modules/users/infrastructure/persistence/relational/entities/user.entity'
+import { UserMapper } from '@/modules/users/infrastructure/persistence/relational/mappers/user.mapper'
+import { StatusEntity } from '@/statuses/infrastructure/persistence/relational/entities/status.entity'
+import { RoleEntity } from '@/modules/roles/infrastructure/persistence/relational/entities/role.entity'
+import { FileEntity } from '@/modules/files/infrastructure/persistence/relational/entities/file.entity'
 
 @Injectable()
 export class UsersRelationalRepository implements UserRepository {
@@ -17,11 +20,10 @@ export class UsersRelationalRepository implements UserRepository {
     private readonly usersRepository: Repository<UserEntity>,
   ) {}
 
-  async create(data: User): Promise<User> {
+  async create(data: User, entityManager: EntityManager): Promise<User> {
+    const repository = entityManager.getRepository(UserEntity)
     const persistenceModel = UserMapper.toPersistence(data)
-    const newEntity = await this.usersRepository.save(
-      this.usersRepository.create(persistenceModel),
-    )
+    const newEntity = await repository.save(repository.create(persistenceModel))
     return UserMapper.toDomain(newEntity)
   }
 
@@ -29,48 +31,129 @@ export class UsersRelationalRepository implements UserRepository {
     filterOptions,
     sortOptions,
     paginationOptions,
+    searchOptions,
   }: {
     filterOptions?: FilterUserDto | null
     sortOptions?: SortUserDto[] | null
     paginationOptions: IPaginationOptions
-  }): Promise<User[]> {
-    const where: FindOptionsWhere<UserEntity> = {}
-    if (filterOptions?.roles?.length) {
-      where.role = filterOptions.roles.map((role) => ({
-        id: Number(role.id),
-      }))
+    searchOptions?: string | null
+  }): Promise<{
+    data: User[]
+    totalCount: number // Total con filtros (para paginación)
+    totalRecords: number // Total sin filtros (estadísticas generales)
+  }> {
+    let whereClause:
+      | FindOptionsWhere<UserEntity>
+      | FindOptionsWhere<UserEntity>[] = {}
+
+    // Aplicar filtros
+    if (filterOptions) {
+      const filteredEntries = Object.entries(filterOptions).filter(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        ([_, value]) => value !== undefined && value !== null,
+      )
+      if (filteredEntries.length > 0) {
+        whereClause = filteredEntries.reduce((acc, [key, value]) => {
+          acc[key as keyof UserEntity] = value as any
+          return acc
+        }, {} as FindOptionsWhere<UserEntity>)
+      }
     }
 
-    const entities = await this.usersRepository.find({
-      skip: (paginationOptions.page - 1) * paginationOptions.limit,
-      take: paginationOptions.limit,
-      where: where,
-      order: sortOptions?.reduce(
-        (accumulator, sort) => ({
-          ...accumulator,
-          [sort.orderBy]: sort.order,
-        }),
-        {},
-      ),
-    })
+    // Aplicar búsqueda
+    if (searchOptions?.trim()) {
+      const searchTerm = `%${searchOptions.trim().toLowerCase()}%`
+      if (Array.isArray(whereClause) || Object.keys(whereClause).length > 0) {
+        whereClause = [
+          {
+            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
+            email: ILike(searchTerm),
+          },
+          {
+            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
+            firstName: ILike(searchTerm),
+          },
+          {
+            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
+            lastName: ILike(searchTerm),
+          },
+        ]
+      } else {
+        whereClause = [
+          { email: ILike(searchTerm) },
+          { firstName: ILike(searchTerm) },
+          { lastName: ILike(searchTerm) },
+        ]
+      }
+    }
 
-    return entities.map((user) => UserMapper.toDomain(user))
+    const orderClause = sortOptions?.length
+      ? sortOptions.reduce(
+          (acc, sort) => {
+            acc[sort.orderBy] = sort.order
+            return acc
+          },
+          {} as Record<string, any>,
+        )
+      : { createdAt: 'DESC' }
+
+    // Consultas en paralelo para mejor rendimiento
+    const [entities, totalCount, totalRecords] = await Promise.all([
+      // 1. Datos paginados (con filtros)
+      this.usersRepository.find({
+        skip: (paginationOptions.page - 1) * paginationOptions.limit,
+        take: paginationOptions.limit,
+        where: whereClause,
+        order: orderClause,
+        withDeleted: true,
+      }),
+      // 2. Total CON filtros (para paginación)
+      this.usersRepository.count({
+        where: whereClause,
+        withDeleted: true,
+      }),
+      // 3. Total SIN filtros (estadísticas brutas)
+      this.usersRepository.count({
+        withDeleted: true,
+      }),
+    ])
+
+    return {
+      data: entities.map(UserMapper.toDomain),
+      totalCount, // Total filtrado
+      totalRecords, // Total absoluto
+    }
   }
 
   async findById(id: User['id']): Promise<NullableType<User>> {
     const entity = await this.usersRepository.findOne({
       where: { id: String(id) },
+      withDeleted: true,
     })
-
     return entity ? UserMapper.toDomain(entity) : null
   }
 
   async findByIds(ids: User['id'][]): Promise<User[]> {
     const entities = await this.usersRepository.find({
       where: { id: In(ids) },
+      withDeleted: true,
     })
-
     return entities.map((user) => UserMapper.toDomain(user))
+  }
+
+  async findByField<K extends keyof User>(
+    field: K,
+    value: User[K],
+    options: { withDeleted?: boolean } = { withDeleted: false },
+  ): Promise<NullableType<User>> {
+    if (!value) return null
+    const entity = await this.usersRepository.findOne({
+      where: {
+        [field]: value,
+      },
+      withDeleted: options.withDeleted,
+    })
+    return entity ? UserMapper.toDomain(entity) : null
   }
 
   async findByEmail(email: User['email']): Promise<NullableType<User>> {
@@ -99,28 +182,95 @@ export class UsersRelationalRepository implements UserRepository {
     return entity ? UserMapper.toDomain(entity) : null
   }
 
-  async update(id: User['id'], payload: Partial<User>): Promise<User> {
-    const entity = await this.usersRepository.findOne({
+  async update(
+    id: User['id'],
+    payload: Partial<User>,
+    entityManager: EntityManager,
+  ): Promise<User> {
+    const repository = entityManager.getRepository(UserEntity)
+
+    const existingEntity = await repository.findOne({
       where: { id: String(id) },
+      withDeleted: true,
     })
 
-    if (!entity) {
-      throw new Error('User not found')
+    if (!existingEntity) throw new Error('User not found')
+
+    // Preparar el payload para que sea compatible con UserEntity
+    const entityPayload: Partial<UserEntity> = {}
+
+    // Copiar propiedades simples
+    if (payload.email !== undefined) entityPayload.email = payload.email
+    if (payload.password !== undefined)
+      entityPayload.password = payload.password
+    if (payload.provider !== undefined)
+      entityPayload.provider = payload.provider
+    if (payload.socialId !== undefined)
+      entityPayload.socialId = payload.socialId
+    if (payload.firstName !== undefined)
+      entityPayload.firstName = payload.firstName
+    if (payload.lastName !== undefined)
+      entityPayload.lastName = payload.lastName
+
+    // Manejar relaciones complejas
+    if (payload.photo !== undefined) {
+      if (payload.photo === null) {
+        entityPayload.photo = null
+      } else if (payload.photo) {
+        const photoEntity = new FileEntity()
+        photoEntity.id = payload.photo.id
+        photoEntity.path = payload.photo.path
+        entityPayload.photo = photoEntity
+      }
     }
 
-    const updatedEntity = await this.usersRepository.save(
-      this.usersRepository.create(
-        UserMapper.toPersistence({
-          ...UserMapper.toDomain(entity),
-          ...payload,
-        }),
-      ),
+    if (payload.role !== undefined) {
+      if (payload.role === null || payload.role === undefined) {
+        entityPayload.role = undefined
+      } else {
+        const roleEntity = new RoleEntity()
+        roleEntity.id = Number(payload.role.id)
+        entityPayload.role = roleEntity
+      }
+    }
+
+    if (payload.status !== undefined) {
+      if (payload.status === null || payload.status === undefined) {
+        entityPayload.status = undefined
+      } else {
+        const statusEntity = new StatusEntity()
+        statusEntity.id = Number(payload.status.id)
+        entityPayload.status = statusEntity
+      }
+    }
+
+    const updatedEntity = await repository.save(
+      repository.create({
+        ...existingEntity,
+        ...entityPayload,
+      }),
     )
 
     return UserMapper.toDomain(updatedEntity)
   }
 
-  async remove(id: User['id']): Promise<void> {
-    await this.usersRepository.softDelete(id)
+  async softDelete(
+    id: User['id'],
+    entityManager: EntityManager,
+  ): Promise<void> {
+    const repository = entityManager.getRepository(UserEntity)
+    await repository.softDelete(id)
+  }
+
+  async restore(id: User['id'], entityManager: EntityManager): Promise<void> {
+    const repository = entityManager.getRepository(UserEntity)
+    await repository.restore(id)
+  }
+  async hardDelete(
+    id: User['id'],
+    entityManager: EntityManager,
+  ): Promise<void> {
+    const repository = entityManager.getRepository(UserEntity)
+    await repository.delete(id)
   }
 }

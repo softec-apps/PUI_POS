@@ -5,11 +5,11 @@ import { Icons } from '@/components/icons'
 import { Typography } from '@/components/ui/typography'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 
-interface Props {
+interface UserHeaderProps {
 	onCreateClick: () => void
 }
 
-export function TemplateHeader({ onCreateClick }: Props) {
+export function UserHeader({ onCreateClick }: UserHeaderProps) {
 	return (
 		<motion.section
 			initial={{ opacity: 0, y: -12, filter: 'blur(0px)' }}
@@ -19,20 +19,14 @@ export function TemplateHeader({ onCreateClick }: Props) {
 			<div className='flex flex-col gap-2'>
 				<div className='flex items-baseline gap-4'>
 					<Typography variant='h3' className='font-bold'>
-						Plantillas
+						Usuarios
 					</Typography>
 				</div>
-				<Typography variant='span'>Gestiona las plantillas de tus productos</Typography>
+				<Typography variant='span'>Gestiona tus usuarios</Typography>
 			</div>
 
 			<div className='flex gap-2'>
-				<ActionButton
-					size='lg'
-					variant='default'
-					icon={<Icons.plus />}
-					text='Nueva plantilla'
-					onClick={onCreateClick}
-				/>
+				<ActionButton size='lg' variant='default' icon={<Icons.plus />} text='Nuevo usuario' onClick={onCreateClick} />
 			</div>
 		</motion.section>
 	)

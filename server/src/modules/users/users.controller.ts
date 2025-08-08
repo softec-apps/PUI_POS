@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseGuards,
@@ -11,128 +10,111 @@ import {
   HttpStatus,
   HttpCode,
   SerializeOptions,
+  Put,
+  Patch,
 } from '@nestjs/common'
-import { CreateUserDto } from './dto/create-user.dto'
-import { UpdateUserDto } from './dto/update-user.dto'
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiParam,
-  ApiTags,
-} from '@nestjs/swagger'
-import { Roles } from '@/modules/roles/roles.decorator'
-import { RoleEnum } from '@/common/constants/roles-const'
 import { AuthGuard } from '@nestjs/passport'
-import {
-  InfinityPaginationResponse,
-  InfinityPaginationResponseDto,
-} from '../../utils/dto/infinity-pagination-response.dto'
-import { NullableType } from '../../utils/types/nullable.type'
-import { QueryUserDto } from './dto/query-user.dto'
-import { User } from './domain/user'
-import { UsersService } from './users.service'
+import { User } from '@/modules/users/domain/user'
+import { Roles } from '@/modules/roles/roles.decorator'
 import { RolesGuard } from '@/modules/roles/roles.guard'
-import { infinityPagination } from '../../utils/infinity-pagination'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { UsersService } from '@/modules/users/users.service'
+import { RoleEnum, ROLES } from '@/common/constants/roles-const'
+import { QueryUserDto } from '@/modules/users/dto/query-user.dto'
+import { PATH_SOURCE } from '@/common/constants/pathSource.const'
+import { ApiResponse } from '@/utils/types/request-response.type'
+import { ParamUserDto } from '@/modules/users/dto/param-user.dto'
+import { UpdateUserDto } from '@/modules/users/dto/update-user.dto'
+import { CreateUserDto } from '@/modules/users/dto/create-user.dto'
+import { UserApiDocs } from '@/modules/users/docs/user-swagger.docs'
+import { EnhancedInfinityPaginationResponseDto } from '@/utils/dto/enhanced-infinity-pagination-response.dto'
 
+@ApiTags(PATH_SOURCE.USER)
 @ApiBearerAuth()
-@Roles(RoleEnum.Admin)
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@ApiTags('Users')
 @Controller({
-  path: 'users',
+  path: PATH_SOURCE.USER,
   version: '1',
 })
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // USER - CREATE
-  @ApiCreatedResponse({
-    type: User,
-  })
-  @SerializeOptions({
-    groups: ['admin'],
-  })
+  /**
+   * Create a new user.
+   * @param createUserDto - Data transfer object for user creation.
+   * @returns The API standard response
+   */
   @Post()
+  @UserApiDocs.create
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createProfileDto: CreateUserDto): Promise<User> {
-    return this.usersService.create(createProfileDto)
+  async create(
+    @Body() createProfileDto: CreateUserDto,
+  ): Promise<ApiResponse<User>> {
+    return await this.usersService.create(createProfileDto)
   }
 
-  // USER - FIND ALL
-  @ApiOkResponse({
-    type: InfinityPaginationResponse(User),
-  })
-  @SerializeOptions({
-    groups: ['admin'],
-  })
+  /**
+   * Get all users with pagination
+   * @param query - Query parameters (filtering, sort, search and pagination)
+   * @returns The API standard response
+   */
   @Get()
+  @UserApiDocs.findAll
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
   @HttpCode(HttpStatus.OK)
   async findAll(
     @Query() query: QueryUserDto,
-  ): Promise<InfinityPaginationResponseDto<User>> {
-    const page = query?.page ?? 1
-    let limit = query?.limit ?? 10
-    if (limit > 50) limit = 50
-
-    return infinityPagination(
-      await this.usersService.findManyWithPagination({
-        filterOptions: query?.filters,
-        sortOptions: query?.sort,
-        paginationOptions: {
-          page,
-          limit,
-        },
-      }),
-      { page, limit },
-    )
+  ): Promise<ApiResponse<EnhancedInfinityPaginationResponseDto<User>>> {
+    return await this.usersService.findManyWithPagination(query)
   }
 
-  @ApiOkResponse({
-    type: User,
-  })
-  @SerializeOptions({
-    groups: ['admin'],
-  })
+  /**
+   * Get all user
+   * @param param - Parameter containing the template ID
+   * @returns The API standard response
+   *
+   */
   @Get(':id')
+  @UserApiDocs.findOne
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
   @HttpCode(HttpStatus.OK)
-  @ApiParam({
-    name: 'id',
-    type: String,
-    required: true,
-  })
-  findOne(@Param('id') id: User['id']): Promise<NullableType<User>> {
-    return this.usersService.findById(id)
+  async findOne(@Param('id') id: User['id']): Promise<ApiResponse<User>> {
+    return await this.usersService.findById(id)
   }
 
-  @ApiOkResponse({
-    type: User,
-  })
-  @SerializeOptions({
-    groups: ['admin'],
-  })
+  /**
+   * Update a user.
+   * @param UpdateUserDto - Data transfer object for user update.
+   * @returns The API standard responsea
+   */
   @Patch(':id')
+  @UserApiDocs.update
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
   @HttpCode(HttpStatus.OK)
-  @ApiParam({
-    name: 'id',
-    type: String,
-    required: true,
-  })
-  update(
-    @Param('id') id: User['id'],
+  async update(
+    @Param() param: ParamUserDto,
     @Body() updateProfileDto: UpdateUserDto,
-  ): Promise<User | null> {
-    return this.usersService.update(id, updateProfileDto)
+  ): Promise<ApiResponse<User>> {
+    return await this.usersService.update(param.id, updateProfileDto)
   }
 
-  @Delete(':id')
-  @ApiParam({
-    name: 'id',
-    type: String,
-    required: true,
-  })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: User['id']): Promise<void> {
-    return this.usersService.remove(id)
+  /**
+   * Permanently delete a user (hard delete)
+   * @param param - Parameter containing the user ID to delete
+   * @returns The API standard response confirming deletion
+   * @warning This action is irreversible and will permanently remove the user
+   */
+  @Delete(':id/hard-delete')
+  @UserApiDocs.hardDelete
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
+  async hardDelete(@Param() param: ParamUserDto): Promise<ApiResponse> {
+    return await this.usersService.hardDelete(param.id)
   }
 }

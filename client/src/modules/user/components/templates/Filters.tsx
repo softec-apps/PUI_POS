@@ -8,60 +8,67 @@ import {
 	DropdownMenuTrigger,
 	DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
+import { Sparkles, Zap } from 'lucide-react'
 import { Icons } from '@/components/icons'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { motion, AnimatePresence } from 'framer-motion'
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { Sparkles } from 'lucide-react'
-import { SORT_OPTIONS } from '@/modules/template/constants/template.constants'
-import { ViewSelector, ViewType } from '@/modules/template/components/molecules/ViewSelector'
+import { SORT_OPTIONS } from '@/modules/user/constants/user.constants'
+import { ViewSelector, ViewType } from '@/modules/user/components/molecules/ViewSelector'
 
-interface Props {
+interface UserFiltersProps {
 	searchValue: string
 	isRefreshing: boolean
 	currentSort?: string
-	currentStatus?: boolean
+	currentStatus?: 'active' | 'inactive' | ''
 	onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 	onSort: (sortKey: string) => void
+	onStatusChange: (status: 'active' | 'inactive' | '') => void
 	onRefresh: () => void
 	onResetAll: () => void
 	viewType: ViewType
 	onViewChange: (type: ViewType) => void
 }
 
-export function TemplateFilters({
+export function UserFilters({
 	searchValue,
 	isRefreshing,
 	currentSort,
 	currentStatus,
 	onSearchChange,
 	onSort,
+	onStatusChange,
 	onRefresh,
 	onResetAll,
 	viewType,
 	onViewChange,
-}: Props) {
+}: UserFiltersProps) {
 	const [isMounted, setIsMounted] = useState(false)
 	const [isSearchFocused, setIsSearchFocused] = useState(false)
-
-	// Count active filters: search, sort, status (even if false)
-	const activeFiltersCount = [searchValue.length > 0, currentStatus !== undefined, currentSort !== ''].filter(
-		Boolean
-	).length
+	const activeFiltersCount = [searchValue.length > 0, currentStatus !== '', currentSort !== ''].filter(Boolean).length
 
 	useEffect(() => setIsMounted(true), [])
 
-	const clearSearch = useCallback(
-		() => onSearchChange({ target: { value: '' } } as React.ChangeEvent<HTMLInputElement>),
-		[onSearchChange]
-	)
+	const clearSearch = () => onSearchChange({ target: { value: '' } } as React.ChangeEvent<HTMLInputElement>)
 
-	const getCurrentSortLabel = useCallback(() => {
+	const getCurrentSortLabel = () => {
 		if (!currentSort) return 'Ordenar'
-		return SORT_OPTIONS.find(option => option.key === currentSort)?.label || 'Ordenar'
-	}, [currentSort])
+		const sortOption = SORT_OPTIONS.find(option => option.key === currentSort)
+		return sortOption?.label || 'Ordenar'
+	}
+
+	const getCurrentStatusLabel = () => {
+		if (!currentStatus) return 'Filtro'
+
+		const statusLabels = {
+			active: 'Activo',
+			inactive: 'Inactivo',
+		}
+
+		return statusLabels[currentStatus] || 'Filtro'
+	}
 
 	if (!isMounted) return null
 
@@ -91,7 +98,7 @@ export function TemplateFilters({
 								value={searchValue}
 								onFocus={() => setIsSearchFocused(true)}
 								onBlur={() => setIsSearchFocused(false)}
-								aria-label='Buscar categorías'
+								aria-label='Buscar registros'
 							/>
 
 							<AnimatePresence>
@@ -147,6 +154,58 @@ export function TemplateFilters({
 												{option.label}
 											</span>
 											{currentSort === option.key && (
+												<motion.div
+													className='bg-primary h-2 w-2 rounded-full'
+													initial={{ scale: 0 }}
+													animate={{ scale: 1 }}
+													transition={{ type: 'spring', stiffness: 500 }}
+												/>
+											)}
+										</motion.div>
+									</DropdownMenuItem>
+								))}
+							</DropdownMenuContent>
+						</DropdownMenu>
+
+						{/* Filtro por estado */}
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<ActionButton icon={<Icons.filter />} text={getCurrentStatusLabel()} variant='outline' />
+							</DropdownMenuTrigger>
+
+							<DropdownMenuContent
+								align='end'
+								className='border-border/50 bg-card/90 w-auto rounded-xl shadow-xl backdrop-blur-xl'>
+								<DropdownMenuLabel className='text-muted-foreground flex items-center gap-2 text-xs tracking-wide uppercase'>
+									<Zap className='h-3 w-3' />
+									Estado
+								</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								{[
+									{ key: '', label: 'Todos', color: 'bg-accent-foreground/40' },
+									{ key: 'active', label: 'Activo', color: 'bg-green-500' },
+									{ key: 'inactive', label: 'Inactivo', color: 'bg-red-500' },
+								].map((status, index) => (
+									<DropdownMenuItem
+										key={status.key}
+										onClick={() => onStatusChange(status.key as 'active' | 'inactive' | '')}
+										className='hover:bg-accent/80 text-accent-foreground/75 cursor-pointer rounded-lg transition-all duration-200'>
+										<motion.div
+											className='flex w-full items-center justify-between'
+											initial={{ opacity: 0, x: -10 }}
+											animate={{ opacity: 1, x: 0 }}
+											transition={{ delay: index * 0.05 }}>
+											<div className='flex items-center gap-2'>
+												<motion.div
+													className={`h-2 w-2 rounded-full ${status.color}`}
+													whileHover={{ scale: 1.3 }}
+													transition={{ type: 'spring', stiffness: 400 }}
+												/>
+												<span className={currentStatus === status.key ? 'text-primary font-medium' : ''}>
+													{status.label}
+												</span>
+											</div>
+											{currentStatus === status.key && (
 												<motion.div
 													className='bg-primary h-2 w-2 rounded-full'
 													initial={{ scale: 0 }}
@@ -216,6 +275,36 @@ export function TemplateFilters({
 										<span>{getCurrentSortLabel()}</span>
 										<button
 											onClick={() => onSort('')}
+											className='hover:bg-muted-foreground text-muted-foreground hover:text-muted cursor-pointer rounded-full p-0.5 transition-all duration-500'>
+											<Icons.x className='h-3 w-3' />
+										</button>
+									</Badge>
+								)}
+
+								{currentStatus && (
+									<Badge
+										variant='secondary'
+										onClick={() => onStatusChange('')}
+										className={`gap-1.5 rounded-lg py-1 pr-1 pl-2 ${
+											currentStatus === 'active'
+												? 'text-green-500'
+												: currentStatus === 'inactive'
+													? 'text-red-500'
+													: ''
+										}`}>
+										<div
+											className={`h-2 w-2 rounded-full ${
+												currentStatus === 'active'
+													? 'bg-green-500'
+													: currentStatus === 'inactive'
+														? 'bg-red-500'
+														: ''
+											}`}
+										/>
+
+										<span>{getCurrentStatusLabel()}</span>
+										<button
+											onClick={() => onStatusChange('')}
 											className='hover:bg-muted-foreground text-muted-foreground hover:text-muted cursor-pointer rounded-full p-0.5 transition-all duration-500'>
 											<Icons.x className='h-3 w-3' />
 										</button>

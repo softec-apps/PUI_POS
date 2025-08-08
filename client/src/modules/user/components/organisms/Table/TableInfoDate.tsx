@@ -1,10 +1,10 @@
 'use client'
 
 import { formatDate } from '@/common/utils/dateFormater-util'
-import { I_Template } from '@/common/types/modules/template'
+import { I_User } from '@/modules/user/types/user'
 
 interface Props {
-	recordData: I_Template
+	recordData: I_User
 }
 
 export const TableInfoDate = ({ recordData }: Props) => (

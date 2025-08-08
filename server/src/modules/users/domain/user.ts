@@ -8,9 +8,10 @@ const idType = Number
 
 export class User {
   @ApiProperty({
-    type: idType,
+    type: String,
+    example: '63ee8a88-ed2e-4499-9190-e65ee225ee66',
   })
-  id: number | string
+  id: string
 
   @ApiProperty({
     type: String,

@@ -1,13 +1,14 @@
-import { FileEntity } from '@/modules/files/infrastructure/persistence/relational/entities/file.entity'
+import { User } from '@/modules/users/domain/user'
 import { FileMapper } from '@/modules/files/infrastructure/persistence/relational/mappers/file.mapper'
+import { FileEntity } from '@/modules/files/infrastructure/persistence/relational/entities/file.entity'
 import { RoleEntity } from '@/modules/roles/infrastructure/persistence/relational/entities/role.entity'
-import { StatusEntity } from '../../../../../../statuses/infrastructure/persistence/relational/entities/status.entity'
-import { User } from '../../../../domain/user'
-import { UserEntity } from '../entities/user.entity'
+import { StatusEntity } from '@/statuses/infrastructure/persistence/relational/entities/status.entity'
+import { UserEntity } from '@/modules/users/infrastructure/persistence/relational/entities/user.entity'
 
 export class UserMapper {
   static toDomain(raw: UserEntity): User {
     const domainEntity = new User()
+
     domainEntity.id = raw.id
     domainEntity.email = raw.email
     domainEntity.password = raw.password
@@ -15,58 +16,60 @@ export class UserMapper {
     domainEntity.socialId = raw.socialId
     domainEntity.firstName = raw.firstName
     domainEntity.lastName = raw.lastName
-    if (raw.photo) {
-      domainEntity.photo = FileMapper.toDomain(raw.photo)
-    }
+
+    // Manejo más seguro de la foto
+    domainEntity.photo = raw.photo ? FileMapper.toDomain(raw.photo) : null
+
     domainEntity.role = raw.role
     domainEntity.status = raw.status
     domainEntity.createdAt = raw.createdAt
     domainEntity.updatedAt = raw.updatedAt
     domainEntity.deletedAt = raw.deletedAt
+
     return domainEntity
   }
 
   static toPersistence(domainEntity: User): UserEntity {
-    let role: RoleEntity | undefined = undefined
-
-    if (domainEntity.role) {
-      role = new RoleEntity()
-      role.id = Number(domainEntity.role.id)
-    }
-
-    let photo: FileEntity | undefined | null = undefined
-
-    if (domainEntity.photo) {
-      photo = new FileEntity()
-      photo.id = domainEntity.photo.id
-      photo.path = domainEntity.photo.path
-    } else if (domainEntity.photo === null) {
-      photo = null
-    }
-
-    let status: StatusEntity | undefined = undefined
-
-    if (domainEntity.status) {
-      status = new StatusEntity()
-      status.id = Number(domainEntity.status.id)
-    }
-
     const persistenceEntity = new UserEntity()
-    if (domainEntity.id && typeof domainEntity.id === 'string') {
-      persistenceEntity.id = domainEntity.id
-    }
+
+    persistenceEntity.id = domainEntity.id
     persistenceEntity.email = domainEntity.email
     persistenceEntity.password = domainEntity.password
     persistenceEntity.provider = domainEntity.provider
     persistenceEntity.socialId = domainEntity.socialId
     persistenceEntity.firstName = domainEntity.firstName
     persistenceEntity.lastName = domainEntity.lastName
-    persistenceEntity.photo = photo
-    persistenceEntity.role = role
-    persistenceEntity.status = status
+
+    // Manejo de la foto
+    if (domainEntity.photo) {
+      persistenceEntity.photo = new FileEntity()
+      persistenceEntity.photo.id = domainEntity.photo.id
+      persistenceEntity.photo.path = domainEntity.photo.path
+    } else {
+      persistenceEntity.photo = null
+    }
+
+    // Manejo del role
+    if (domainEntity.role) {
+      persistenceEntity.role = new RoleEntity()
+      persistenceEntity.role.id = Number(domainEntity.role.id)
+    } else {
+      persistenceEntity.role = undefined
+    }
+
+    // Manejo del status
+    if (domainEntity.status) {
+      persistenceEntity.status = new StatusEntity()
+      persistenceEntity.status.id = Number(domainEntity.status.id)
+    } else {
+      persistenceEntity.status = undefined
+    }
+
+    // Asignación de fechas
     persistenceEntity.createdAt = domainEntity.createdAt
     persistenceEntity.updatedAt = domainEntity.updatedAt
-    persistenceEntity.deletedAt = domainEntity.deletedAt
+    persistenceEntity.deletedAt = domainEntity.deletedAt ?? null
+
     return persistenceEntity
   }
 }

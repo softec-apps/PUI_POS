@@ -1,72 +1,65 @@
 import { useCallback } from 'react'
-import { ModalState } from '@/modules/template/types/modalState'
-import { TemplateFormData } from '@/modules/template/types/template-form'
-import { I_UpdateTemplate, I_CreateTemplate, I_Template } from '@/common/types/modules/template'
+import { ModalState } from '@/modules/user/types/modalState'
+import { UserFormData } from '@/modules/user/types/user-form'
+import { I_UpdateUser, I_CreateUser, I_User } from '@/modules/user/types/user'
 
 interface Props {
 	modalState: ModalState
-	clearPreview: () => void
-	createTemplate: (data: I_CreateTemplate) => Promise<void>
-	updateTemplate: (id: string, data: I_UpdateTemplate) => Promise<void>
-	hardDeleteTemplate: (id: string) => Promise<void>
+	createRecord: (data: I_CreateUser) => Promise<void>
+	updateRecord: (id: string, data: I_UpdateUser) => Promise<void>
+	hardDeleteRecord: (id: string) => Promise<void>
 }
 
-export function useHandlers({ modalState, clearPreview, createTemplate, updateTemplate, hardDeleteTemplate }: Props) {
+export function useHandlers({ modalState, createRecord, updateRecord, hardDeleteRecord }: Props) {
 	const handleFormSubmit = useCallback(
-		async (data: TemplateFormData) => {
+		async (data: UserFormData) => {
 			try {
-				const templateData = {
-					name: data.name,
-					description: data.description,
-					categoryId: data.categoryId,
-					atributeIds: data.atributeIds,
+				const { roleId, statusId, ...rest } = data
+				const recordData: I_CreateUser = {
+					...rest,
+					role: { id: parseInt(roleId, 10) },
+					status: { id: parseInt(statusId, 10) },
+					photo: data.photo ? { id: data.photo } : '',
 				}
-
 				if (modalState.currentRecord?.id) {
-					await updateTemplate(modalState.currentRecord.id, templateData)
+					await updateRecord(modalState.currentRecord.id, recordData)
 				} else {
-					await createTemplate(templateData)
+					await createRecord(recordData)
 				}
-
 				modalState.closeDialog()
-				clearPreview()
 			} catch (error) {
 				console.error('Save error:', error)
-				throw error // Re-throw para que el form maneje el error
+				throw error
 			}
 		},
-		[modalState, updateTemplate, createTemplate, clearPreview]
+		[modalState, updateRecord, createRecord]
 	)
 
 	const handleDialogClose = useCallback(() => {
 		modalState.closeDialog()
-		clearPreview()
-	}, [modalState, clearPreview])
-
-	const handleClearPreview = useCallback(() => clearPreview(), [clearPreview])
+	}, [modalState])
 
 	// Modal handlers
-	const handleEdit = useCallback((template: I_Template) => modalState.openEditDialog(template), [modalState])
+	const handleEdit = useCallback((record: I_User) => modalState.openEditDialog(record), [modalState])
 
 	const handleConfirmHardDelete = useCallback(async () => {
-		if (!modalState.templateToHardDelete) return
+		if (!modalState.recordToHardDelete) return
 
 		try {
 			modalState.setIsHardDeleting(true)
-			await hardDeleteTemplate(modalState.templateToHardDelete.id)
+			await hardDeleteRecord(modalState.recordToHardDelete.id)
 			modalState.closeHardDeleteModal()
 		} catch (error) {
 			console.error('Delete error:', error)
 		} finally {
 			modalState.setIsHardDeleting(false)
 		}
-	}, [modalState, hardDeleteTemplate])
+	}, [modalState, hardDeleteRecord])
 
 	return {
 		// Form handlers actualizados
 		handleFormSubmit,
 		handleDialogClose,
-		handleClearPreview,
 
 		// Modal handlers
 		handleEdit,

@@ -1,30 +1,37 @@
 'use client'
 
-import { ModalState } from '@/modules/template/types/modalState'
-import { HardDeleteModal } from '@/modules/template/components/organisms/Modal/ModalHardDelete'
-import { TemplateFormModal } from '@/modules/template/components/organisms/Modal/ModalTemplateForm'
+import { ModalState } from '@/modules/user/types/modalState'
+import { HardDeleteModal } from '@/modules/user/components/organisms/Modal/ModalHardDelete'
+import { UserFormModal } from '@/modules/user/components/organisms/Modal/ModalUserForm'
 
-interface Props {
+import { I_User, I_CreateUser, I_UpdateUser } from '@/modules/user/types/user'
+
+interface UserModalsProps {
 	modalState: ModalState
-	templateHandlers: any
+	userHandlers: {
+		handleFormSubmit: (data: I_CreateUser | I_UpdateUser) => Promise<void>
+		handleDialogClose: () => void
+		handleEdit: (record: I_User) => void
+		handleConfirmHardDelete: () => Promise<void>
+	}
 }
 
-export function TemplateModals({ modalState, templateHandlers }: Props) {
+export function UserModals({ modalState, userHandlers }: UserModalsProps) {
 	return (
 		<>
-			<TemplateFormModal
+			<UserFormModal
 				isOpen={modalState.isDialogOpen}
-				currentTemplate={modalState.currentRecord}
-				onClose={templateHandlers.handleDialogClose}
-				onSubmit={templateHandlers.handleFormSubmit}
+				currentRecord={modalState.currentRecord}
+				onClose={userHandlers.handleDialogClose}
+				onSubmit={userHandlers.handleFormSubmit}
 			/>
 
 			<HardDeleteModal
 				isOpen={modalState.isHardDeleteModalOpen}
-				template={modalState.templateToHardDelete}
+				currentRecord={modalState.recordToHardDelete}
 				isAction={modalState.isHardDeleting}
 				onClose={modalState.closeHardDeleteModal}
-				onConfirm={templateHandlers.handleConfirmHardDelete}
+				onConfirm={userHandlers.handleConfirmHardDelete}
 			/>
 		</>
 	)

@@ -1,34 +1,29 @@
 'use client'
 
-import Image from 'next/image'
-import { Icons } from '@/components/icons'
 import { Separator } from '@/components/ui/separator'
 import { Typography } from '@/components/ui/typography'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Badge } from '@/components/layout/atoms/Badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table as ReactTable } from '@tanstack/react-table'
-import { I_Template } from '@/common/types/modules/template'
-import { animations } from '@/modules/template/components/atoms/animations'
-import { TableActions } from '@/modules/template/components/organisms/Table/TableActions'
-import { TableInfoDate } from '@/modules/template/components/organisms/Table/TableInfoDate'
+import { I_User } from '@/modules/user/types/user'
+import { animations } from '@/modules/user/components/atoms/animations'
+import { TableActions } from '@/modules/user/components/organisms/Table/TableActions'
+import { TableInfoDate } from '@/modules/user/components/organisms/Table/TableInfoDate'
+import { UserStatusBadge } from '@/modules/user/components/atoms/UserStatusBadge'
+import { ImageControl } from '@/components/layout/organims/ImageControl'
+import { UserRoleBadge } from '../atoms/UserRoleBadge'
 
 interface Props {
-	table: ReactTable<I_Template>
-	onEdit: (recordData: I_Template) => void
-	onHardDelete: (recordData: I_Template) => void
+	recordsData: ReactTable<I_User>
+	onEdit: (recordData: I_User) => void
+	onHardDelete: (recordData: I_User) => void
 }
 
-export const ListView = ({ table, onEdit, onHardDelete }: Props) => (
+export const ListView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 	<div className='space-y-4'>
-		<motion.div
-			initial='hidden'
-			animate='visible'
-			variants={animations.container}
-			className='grid grid-cols-2 gap-4 space-y-4'
-			layout>
+		<motion.div initial='hidden' animate='visible' variants={animations.container} className='space-y-4' layout>
 			<AnimatePresence mode='sync'>
-				{table.getRowModel().rows.map(row => {
+				{recordsData.getRowModel().rows.map(row => {
 					const recordData = row.original
 					return (
 						<motion.div
@@ -40,60 +35,49 @@ export const ListView = ({ table, onEdit, onHardDelete }: Props) => (
 							whileHover='hover'
 							layout
 							className='group'>
-							<Card className='border-border/50 overflow-hidden border shadow-none transition-all duration-300'>
-								<CardContent className='px-4'>
+							<Card className='border-border/50 overflow-hidden border p-0 shadow-none transition-all duration-300'>
+								<CardContent className='p-4'>
 									<div className='flex items-start space-x-4'>
-										<div className='bg-muted/20 relative h-32 w-40 flex-shrink-0 rounded-xl'>
-											{recordData?.category?.photo ? (
-												<Image
-													src={recordData?.category?.photo?.path}
-													alt={recordData?.name}
-													fill
-													unoptimized
-													className='rounded-lg object-contain'
-												/>
-											) : (
-												<div className='bg-muted/50 flex h-full w-full items-center justify-center rounded-lg'>
-													<Icons.media className='text-muted-foreground h-8 w-8' />
-												</div>
-											)}
+										{/* Imagen del producto */}
+										<div className='relative'>
+											<ImageControl
+												recordData={recordData}
+												enableHover={false}
+												enableClick={false}
+												imageHeight={120}
+												imageWidth={120}
+											/>
 										</div>
 
+										{/* Información del producto */}
 										<div className='min-w-0 flex-1'>
 											<div className='flex items-start justify-between gap-2'>
 												<div className='min-w-0 flex-1 space-y-3'>
-													<div className='mb-1 flex items-start justify-between gap-2'>
-														<Typography variant='h6' className='line-clamp-1 break-words'>
-															{recordData.name}
-														</Typography>
-
+													{/* Header: Título y acciones */}
+													<div className='flex items-start justify-between gap-2'>
+														<div className='min-w-0 flex-1'>
+															<Typography variant='h6' className='mb-2 line-clamp-1 break-words'>
+																{recordData.firstName} {recordData.lastName}
+															</Typography>
+															<div className='flex items-center gap-2'>
+																<Typography variant='span' className='line-clamp-1 break-words'>
+																	{recordData.email}
+																</Typography>
+															</div>
+														</div>
 														<div className='flex-shrink-0'>
 															<TableActions recordData={recordData} onEdit={onEdit} onHardDelete={onHardDelete} />
 														</div>
 													</div>
 
-													<div className='flex items-center justify-between'>
-														<Typography
-															variant='span'
-															className='text-muted-foreground mb-2 line-clamp-1 text-sm break-words'>
-															Descripción: {recordData.description || 'Sin descripción'}
-														</Typography>
-
-														<Typography
-															variant='span'
-															className='text-muted-foreground mb-2 line-clamp-1 text-sm break-words'>
-															Descripción: {recordData.category?.name || '---'}
-														</Typography>
-													</div>
-
 													<Separator />
 
+													{/* Footer: Status y fecha */}
 													<div className='flex items-center justify-between gap-2'>
-														<Badge
-															decord={false}
-															variant='info'
-															text={`${recordData.atributes?.length} atrib` || '0'}
-														/>
+														<div className='space-x-2'>
+															<UserStatusBadge status={recordData.status} />
+															<UserRoleBadge role={recordData.role} />
+														</div>
 
 														<div className='text-muted-foreground text-right text-xs'>
 															<TableInfoDate recordData={recordData} />

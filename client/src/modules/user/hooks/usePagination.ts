@@ -7,7 +7,9 @@ export function usePagination() {
 	const [searchTerm, setSearchTerm] = useState<string>('')
 	const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 	const [currentSort, setCurrentSort] = useState<string>('')
-	const [currentStatus, setCurrentStatus] = useState<boolean | undefined>(undefined)
+	const [currentStatus, setCurrentStatus] = useState<
+		'active' | 'inactive' | ''
+	>('')
 
 	// 🆕 Nueva función para cambio directo de página
 	const handlePageChange = useCallback((page: number) => {
@@ -82,10 +84,22 @@ export function usePagination() {
 		}))
 	}, [])
 
+	const handleStatusChange = useCallback(
+		(status: 'active' | 'inactive' | '') => {
+			setCurrentStatus(status)
+			setPagination(prev => ({
+				...prev,
+				filters: status ? { status } : {},
+				page: 1,
+			}))
+		},
+		[]
+	)
+
 	const handleResetAll = useCallback(() => {
 		setSearchTerm('')
 		setCurrentSort('')
-		setCurrentStatus(undefined)
+		setCurrentStatus('')
 		setPagination(DEFAULT_PAGINATION)
 	}, [])
 
@@ -104,6 +118,7 @@ export function usePagination() {
 		handleNextPage,
 		handlePrevPage,
 		handleLimitChange,
+		handleStatusChange,
 		handleSearchChange,
 		handleSort,
 		handlePageChange,

@@ -1,16 +1,16 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { I_Template } from '@/common/types/modules/template'
+import { I_User } from '@/modules/user/types/user'
 
 export const useModalState = () => {
 	// Dialog state
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
-	const [currentRecord, setCurrentRecord] = useState<Partial<I_Template> | null>(null)
+	const [currentRecord, setCurrentRecord] = useState<Partial<I_User> | null>(null)
 
 	// Hard delete modal state
 	const [isHardDeleteModalOpen, setIsHardDeleteModalOpen] = useState(false)
-	const [templateToHardDelete, setTemplateToHardDelete] = useState<I_Template | null>(null)
+	const [recordToHardDelete, setRecordToHardDelete] = useState<I_User | null>(null)
 	const [isHardDeleting, setIsHardDeleting] = useState(false)
 
 	// Dialog handlers
@@ -19,8 +19,8 @@ export const useModalState = () => {
 		setIsDialogOpen(true)
 	}, [])
 
-	const openEditDialog = useCallback((template: I_Template) => {
-		setCurrentRecord(template)
+	const openEditDialog = useCallback((user: I_User) => {
+		setCurrentRecord(user)
 		setIsDialogOpen(true)
 	}, [])
 
@@ -31,19 +31,19 @@ export const useModalState = () => {
 
 	// Hard delete modal handlers
 	const openHardDeleteModal = useCallback(
-		(template: I_Template) => {
-			setTemplateToHardDelete(template)
+		(user: I_User) => {
+			setRecordToHardDelete(user)
 			setIsHardDeleteModalOpen(true)
 		},
-		[setTemplateToHardDelete]
+		[setRecordToHardDelete]
 	)
 
 	const closeHardDeleteModal = useCallback(() => {
 		if (!isHardDeleting) {
 			setIsHardDeleteModalOpen(false)
-			setTemplateToHardDelete(null)
+			setRecordToHardDelete(null)
 		}
-	}, [isHardDeleting, setTemplateToHardDelete])
+	}, [isHardDeleting, setRecordToHardDelete])
 
 	return {
 		// Dialog state
@@ -55,7 +55,7 @@ export const useModalState = () => {
 
 		// Hard delete modal state
 		isHardDeleteModalOpen,
-		templateToHardDelete,
+		recordToHardDelete,
 		isHardDeleting,
 		setIsHardDeleting,
 		openHardDeleteModal,

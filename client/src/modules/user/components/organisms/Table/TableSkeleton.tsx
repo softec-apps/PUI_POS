@@ -3,7 +3,7 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-const HEADERS = ['Nombre', 'Descripción', 'Categoría', 'Atributos', 'Información', '']
+const HEADERS = ['Imagen', 'Nombre', 'Email', 'Rol', 'Estado', 'Información', '']
 
 interface Props {
 	rows?: number

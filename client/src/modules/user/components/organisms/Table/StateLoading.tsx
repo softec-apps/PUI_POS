@@ -1,9 +1,9 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ViewType } from '@/modules/category/components/molecules/ViewSelector'
-import { TableSkeleton } from '@/modules/category/components/organisms/Table/TableSkeleton'
+import { Card, CardContent } from '@/components/ui/card'
+import { ViewType } from '@/modules/user/components/molecules/ViewSelector'
+import { TableSkeleton } from '@/modules/user/components/organisms/Table/TableSkeleton'
 
 interface LoadingStatesProps {
 	viewType: ViewType
