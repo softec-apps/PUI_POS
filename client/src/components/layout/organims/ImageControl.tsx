@@ -211,7 +211,7 @@ export const ImageControl = ({
 				{/* Miniatura clickeable */}
 				<div className={`flex w-auto ${className}`}>
 					<Card
-						className={`group relative overflow-hidden border-none bg-transparent p-0 shadow-none transition-all duration-300 ${getHoverClasses()} ${getCursorClass()}`}
+						className={`group dark:border-border/50 relative overflow-hidden bg-transparent p-0 shadow-none transition-all duration-500 ${getHoverClasses()} ${getCursorClass()}`}
 						onClick={handleImageClick}
 						style={{
 							width: imageWidth,
@@ -219,7 +219,7 @@ export const ImageControl = ({
 						}}>
 						<CardContent className='h-full p-0'>
 							<div
-								className={`border-border/50 h-full w-full overflow-hidden border ${getRoundedClasses()}`}
+								className={`h-auto w-auto overflow-hidden ${getRoundedClasses()}`}
 								style={{
 									width: imageWidth,
 									height: imageHeight,

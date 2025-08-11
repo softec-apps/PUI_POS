@@ -21,7 +21,7 @@ interface RetryErrorStateProps {
 
 export function RetryErrorState({ onRetry }: RetryErrorStateProps) {
 	return (
-		<div className='flex flex-col items-center justify-center gap-4'>
+		<div className='flex flex-col items-center justify-center gap-8'>
 			<ErrorStateCard
 				icon={<Icons.alertTriangle className='h-10 w-10' />}
 				title='¡Oops! Ha ocurrido un error'
@@ -41,7 +41,11 @@ export function RetryErrorState({ onRetry }: RetryErrorStateProps) {
 	)
 }
 
-export function FatalErrorState() {
+interface FatalErrorStateProps {
+	showReloadButton?: boolean
+}
+
+export function FatalErrorState({ showReloadButton = true }: FatalErrorStateProps) {
 	return (
 		<div className='flex flex-col items-center justify-center gap-8'>
 			<ErrorStateCard
@@ -49,12 +53,15 @@ export function FatalErrorState() {
 				title='¡Vaya! Algo no ha ido bien'
 				description='No eres tú, soy yo. Dame un poco de tiempo para solucionarlo.'
 			/>
-			<ActionButton
-				size='lg'
-				text='Recargar página'
-				icon={<Icons.refresh className='h-4 w-4' />}
-				onClick={() => window.location.reload()}
-			/>
+
+			{showReloadButton && (
+				<ActionButton
+					size='lg'
+					text='Recargar página'
+					icon={<Icons.refresh className='h-4 w-4' />}
+					onClick={() => window.location.reload()}
+				/>
+			)}
 		</div>
 	)
 }
