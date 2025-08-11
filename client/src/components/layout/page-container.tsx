@@ -13,7 +13,7 @@ export default function PageContainer({ children, scrollable = true }: PageConta
 		return (
 			<div className='h-[calc(100dvh-52px)] overflow-hidden'>
 				<ScrollArea className='h-full'>
-					<div className='p-4 pb-12'>{children}</div>
+					<div className='px-4 py-3 pb-12'>{children}</div>
 				</ScrollArea>
 			</div>
 		)

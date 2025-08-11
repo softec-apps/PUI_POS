@@ -1,10 +1,8 @@
 import { Role } from '@/modules/roles/domain/role'
 import { ApiProperty } from '@nestjs/swagger'
-import { FileType } from '@/modules/files/domain/file'
 import { Status } from '@/statuses/domain/status'
 import { Exclude, Expose } from 'class-transformer'
-
-const idType = Number
+import { FileType } from '@/modules/files/domain/file'
 
 export class User {
   @ApiProperty({

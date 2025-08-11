@@ -225,6 +225,7 @@ export default function AppSidebar() {
 											<div className='text-muted-foreground text-xs'>{userRole && getRoleDisplayName(userRole)}</div>
 										</div>
 									</DropdownMenuLabel>
+
 									<DropdownMenuSeparator />
 
 									<DropdownMenuGroup>

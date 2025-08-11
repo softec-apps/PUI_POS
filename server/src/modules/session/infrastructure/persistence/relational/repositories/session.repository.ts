@@ -27,6 +27,38 @@ export class SessionRelationalRepository implements SessionRepository {
     return entity ? SessionMapper.toDomain(entity) : null
   }
 
+  async findByField<K extends keyof Session>(
+    field: K,
+    value: Session[K],
+  ): Promise<NullableType<Session>> {
+    if (!value) return null
+
+    const entity = await this.sessionRepository.findOne({
+      where: {
+        [field]: value,
+      },
+      withDeleted: true,
+    })
+
+    return entity ? SessionMapper.toDomain(entity) : null
+  }
+
+  async findByUserId(
+    userId: User['id'],
+    options?: { withDeleted?: boolean },
+  ): Promise<Session[]> {
+    const entities = await this.sessionRepository.find({
+      where: {
+        user: {
+          id: String(userId),
+        },
+      },
+      withDeleted: options?.withDeleted ?? false,
+    })
+
+    return entities.map(SessionMapper.toDomain)
+  }
+
   async create(data: Session): Promise<Session> {
     const persistenceModel = SessionMapper.toPersistence(data)
     return this.sessionRepository.save(

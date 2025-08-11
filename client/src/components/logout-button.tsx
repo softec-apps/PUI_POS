@@ -1,9 +1,10 @@
 'use client'
-import { signOut } from 'next-auth/react'
 import { useState } from 'react'
+import { signOut } from 'next-auth/react'
+import { Icons } from '@/components/icons'
+import { logout } from '@/shared/services/auth.service'
 import { ROUTE_PATH } from '@/common/constants/routes-const'
-import { ActionButton } from './layout/atoms/ActionButton'
-import { Icons } from './icons'
+import { ActionButton } from '@/components/layout/atoms/ActionButton'
 
 export function LogoutButton() {
 	const [isLoading, setIsLoading] = useState(false)
@@ -11,6 +12,7 @@ export function LogoutButton() {
 	const handleLogout = async () => {
 		try {
 			setIsLoading(true)
+			await logout()
 			await signOut({
 				callbackUrl: `${ROUTE_PATH.AUTH.SIGNIN}`,
 				redirect: true,

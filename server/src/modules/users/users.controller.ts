@@ -104,6 +104,24 @@ export class UsersController {
   }
 
   /**
+   * Soft delete a user (hard delete)
+   * @param param - Parameter containing the user ID to delete
+   * @returns The API standard response confirming deletion
+   * @warning This action is irreversible and will soft remove the user
+   */
+  @Delete(':id')
+  @UserApiDocs.hardDelete
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
+  async softDelete(
+    @Param() param: ParamUserDto,
+    @Request() req: any,
+  ): Promise<ApiResponse> {
+    return await this.usersService.softDelete(param.id, req.user.id)
+  }
+
+  /**
    * Permanently delete a user (hard delete)
    * @param param - Parameter containing the user ID to delete
    * @returns The API standard response confirming deletion

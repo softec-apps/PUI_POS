@@ -15,7 +15,7 @@ interface ConfirmationModalProps {
 	title: string
 	description?: string
 	message: React.ReactNode
-	alertMessage?: string
+	alertMessage?: string | React.ReactNode
 	isProcessing: boolean
 	onClose: () => void
 	onConfirm: () => Promise<void>
@@ -24,6 +24,7 @@ interface ConfirmationModalProps {
 	variant?: VariantType
 	icon?: React.ReactNode
 	autoFocus?: boolean
+	confirmKey?: string
 }
 
 const variantStyles = {
@@ -252,7 +253,30 @@ export const ConfirmationModal = React.memo(function ConfirmationModal({
 	cancelText = 'Cancelar',
 	variant = 'default',
 	icon,
+	confirmKey,
 }: ConfirmationModalProps) {
+	React.useEffect(() => {
+		if (isOpen) {
+			setCopied(false)
+			setInputValue('')
+		}
+	}, [isOpen])
+
+	const [inputValue, setInputValue] = React.useState('')
+	const isConfirmEnabled = useMemo(() => {
+		if (!confirmKey) return true
+		return inputValue.trim() === confirmKey
+	}, [inputValue, confirmKey])
+
+	const [copied, setCopied] = React.useState(false)
+	const handleCopy = useCallback(() => {
+		if (confirmKey) {
+			navigator.clipboard.writeText(confirmKey)
+			setCopied(true)
+			setTimeout(() => setCopied(false), 1500)
+		}
+	}, [confirmKey])
+
 	const styles = useMemo(() => variantStyles[variant], [variant])
 	const handleConfirm = useCallback(async () => await onConfirm(), [onConfirm])
 	const handleKeyDown = useCallback(
@@ -313,6 +337,32 @@ export const ConfirmationModal = React.memo(function ConfirmationModal({
 										<AlertMessage variant={styles.alert} message={alertMessage} />
 									</motion.div>
 								)}
+
+								{confirmKey && (
+									<div className='mt-2'>
+										<div className='text-muted-foreground mb-1 flex items-center justify-between text-sm'>
+											<span>
+												Escribe <span className='font-medium'>&quot;{confirmKey}&quot;</span> para confirmar.
+											</span>
+											<ActionButton
+												onClick={handleCopy}
+												variant='ghost'
+												type='button'
+												icon={<Icons.copy />}
+												size='xs'
+												text={copied ? 'Copiado' : 'Copiar'}
+											/>
+										</div>
+
+										<input
+											type='text'
+											value={inputValue}
+											onChange={e => setInputValue(e.target.value)}
+											className='border-border bg-background text-foreground focus:ring-primary w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none'
+											placeholder='Escribe aquí...'
+										/>
+									</div>
+								)}
 							</AnimatePresence>
 						</motion.div>
 
@@ -332,7 +382,7 @@ export const ConfirmationModal = React.memo(function ConfirmationModal({
 							<motion.div variants={buttonVariants} initial='hidden' animate='visible' className='flex-1'>
 								<ActionButton
 									onClick={handleConfirm}
-									disabled={isProcessing}
+									disabled={isProcessing || !isConfirmEnabled}
 									className={`w-full font-medium transition-all duration-200 ${styles.button}`}
 									size='lg'
 									icon={isProcessing ? <Icons.spinnerSimple className='animate-spin' /> : null}

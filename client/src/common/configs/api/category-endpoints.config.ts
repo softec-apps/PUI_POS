@@ -4,7 +4,7 @@ import { ENDPOINT_API } from '@/common/constants/APIEndpoint-const'
 export const CATEGORY_ENDPOINTS_CONFIG: ApiConfig = {
 	queryKey: [ENDPOINT_API.CATEGORY],
 	baseEndpoint: `/${ENDPOINT_API.CATEGORY}`,
-	extraInvalidateKeys: [[ENDPOINT_API.TEMPLATE]],
+	extraInvalidateKeys: [[ENDPOINT_API.TEMPLATE], [ENDPOINT_API.CATEGORY]],
 	endpoints: {
 		list: { path: '', method: 'GET' },
 		create: { path: '', method: 'POST' },

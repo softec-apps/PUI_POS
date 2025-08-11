@@ -13,6 +13,20 @@ export class SessionService {
     return this.sessionRepository.findById(id)
   }
 
+  findByField<K extends keyof Session>(
+    field: K,
+    value: Session[K],
+  ): Promise<NullableType<Session>> {
+    return this.sessionRepository.findByField(field, value)
+  }
+
+  findByUserId(
+    userId: User['id'],
+    options?: { withDeleted?: boolean },
+  ): Promise<Session[]> {
+    return this.sessionRepository.findByUserId(userId, options)
+  }
+
   create(
     data: Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>,
   ): Promise<Session> {

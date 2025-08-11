@@ -7,6 +7,7 @@ export const PRODUCT_ENDPOINTS_CONFIG: ApiConfig = {
 	extraInvalidateKeys: [[ENDPOINT_API.KARDEX]],
 	endpoints: {
 		list: { path: '', method: 'GET' },
+		getById: { path: '/:id', method: 'GET', params: ['id'] },
 		create: { path: '', method: 'POST' },
 		update: { path: '/:id', method: 'PUT', params: ['id'] },
 		softDelete: { path: '/:id', method: 'DELETE', params: ['id'] },

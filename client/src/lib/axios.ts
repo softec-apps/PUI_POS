@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getSession } from 'next-auth/react'
+import { getSession, signOut } from 'next-auth/react'
 import { emitter } from '@/common/events/sessionEmitter-event'
 import { BASE_URL_API } from '@/common/constants/baseUrl-const'
 
@@ -11,58 +11,62 @@ const api = axios.create({
 	withCredentials: true,
 })
 
-// Request interceptor para agregar el token
+// Interceptor para agregar el token a cada solicitud
 api.interceptors.request.use(
 	async config => {
 		const session = await getSession()
-
-		if (session?.token) config.headers.Authorization = `Bearer ${session.token}`
-
+		if (session?.token) {
+			config.headers.Authorization = `Bearer ${session.token}`
+		}
 		return config
 	},
-	error => {
-		return Promise.reject(error)
-	}
+	error => Promise.reject(error)
 )
 
-// Response interceptor para manejar errores
+// Interceptor para manejar errores globalmente
 api.interceptors.response.use(
-	response => {
-		return response
-	},
+	response => response,
 	async error => {
 		const originalRequest = error.config
 
 		if (error.response?.status === 401) {
-			// Token expirado o no válido
 			if (!originalRequest._retry) {
 				originalRequest._retry = true
 
 				try {
-					// Intentar obtener una nueva sesión
 					const session = await getSession()
 
 					if (session?.token && !session.error) {
-						// Si tenemos un token válido, reintentar la petición
+						// Reintentar con token si existe
 						originalRequest.headers.Authorization = `Bearer ${session.token}`
 						return api(originalRequest)
-					} else {
-						// Si no hay token válido o hay error, emitir evento de no autorizado
-						emitter.emit('unauthorized')
 					}
 				} catch (refreshError) {
-					console.error('Error al obtener nueva sesión:', refreshError)
-					emitter.emit('unauthorized')
+					console.error('Error al intentar refrescar sesión:', refreshError)
 				}
-			} else {
-				// Ya se intentó renovar, emitir evento de no autorizado
-				emitter.emit('unauthorized')
+
+				// 👇 Forzar logout si no se puede renovar la sesión
+				try {
+					await axios.post(
+						`${BASE_URL_API}/api/v1/auth/logout`,
+						{},
+						{
+							headers: {
+								Authorization: `Bearer ${session?.token}`,
+								'Content-Type': 'application/json',
+							},
+						}
+					)
+				} catch (logoutError) {
+					console.warn('Error al llamar al logout del servidor:', logoutError)
+				} finally {
+					emitter.emit('unauthorized') // Puedes escuchar este evento si quieres mostrar algo en el frontend
+					await signOut({ redirect: false }) // Cierra sesión del cliente
+				}
 			}
 		} else if (error.response?.status === 403) {
-			// Acceso prohibido
 			emitter.emit('forbidden')
 		} else if (error.response?.status >= 500) {
-			// Error del servidor
 			const message = error.response?.data?.message || 'Error interno del servidor'
 			emitter.emit('serverError', message)
 		}

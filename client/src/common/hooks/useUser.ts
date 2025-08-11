@@ -1,9 +1,6 @@
-import api from '@/lib/axios'
-import { useCallback } from 'react'
 import { useGenericApi } from '@/common/hooks/useGenericApi'
-import { ENDPOINT_API } from '@/common/constants/APIEndpoint-const'
 import { USER_ENDPOINTS_CONFIG } from '@/common/configs/api/user-endpoints.config'
-import { I_CreateUser, I_User, I_UpdateUser, I_UserResponse, I_UserId } from '@/common/types/modules/user'
+import { I_CreateUser, I_User, I_UpdateUser, I_UserResponse } from '@/common/types/modules/user'
 
 interface UseUserParamsProps {
 	page?: number
@@ -46,44 +43,34 @@ export const useUser = (paginationParams: UseUserParamsProps = {}) => {
 	// ✅ Usa el query dinámico con los parámetros de paginación
 	const query = genericApi.buildQuery(queryParams)
 
-	// ✅ Memoizar la función getUserById para evitar re-creaciones
-	const getUserById = useCallback(async (id: I_UserId) => {
-		try {
-			const response = await api.get(`${ENDPOINT_API.USER}/${id}`)
-			return response.data.data
-		} catch (error) {
-			throw error
-		}
-	}, []) // Sin dependencias porque api y ENDPOINT_API son estables
-
 	return {
-		// Datos del query - manteniendo los mismos nombres
+		// ✅ Datos del query - manteniendo los mismos nombres
 		recordsData: query.data,
 		loading: query.isLoading,
 		error: query.error?.message,
 
-		// Funciones - manteniendo los mismos nombres
+		// ✅ Funciones de consulta
 		refetchRecords: query.refetch,
 
-		// Funciones CRUD - manteniendo los mismos nombres
-		getUserById: getUserById,
-		createRecord: genericApi.create,
-		updateRecord: genericApi.update,
-		restoreRecord: genericApi.restore,
-		softDeleteRecord: genericApi.delete,
-		hardDeleteRecord: genericApi.hardDelete,
+		// ✅ Funciones CRUD completas según USER_ENDPOINTS_CONFIG
+		getById: genericApi.getById, // GET /:id
+		createRecord: genericApi.create, // POST /
+		updateRecord: genericApi.update, // PATCH /:id
+		softDeleteRecord: genericApi.delete, // DELETE /:id (soft delete)
+		restoreRecord: genericApi.restore, // PATCH /:id/restore
+		hardDeleteRecord: genericApi.hardDelete, // DELETE /:id/hard-delete
 
-		// Estados granulares de loading - manteniendo los mismos nombres
+		// ✅ Estados granulares de loading
 		isCreating: genericApi.isCreating,
 		isUpdating: genericApi.isUpdating,
 		isRestoring: genericApi.isRestoring,
 		isSoftDeleting: genericApi.isDeleting,
 		isHardDeleting: genericApi.isHardDeleting,
 
-		// Mutations para control avanzado - ahora completamente dinámicas
+		// ✅ Mutations para control avanzado
 		mutations: genericApi.mutations, // Contiene todas las mutations configuradas
 
-		// Funciones adicionales del API genérico - manteniendo los mismos nombres
+		// ✅ Funciones adicionales del API genérico
 		executeCustomEndpoint: genericApi.executeCustomEndpoint,
 		apiService: genericApi.apiService,
 	}

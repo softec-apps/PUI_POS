@@ -55,11 +55,18 @@ export async function verifyToken(): Promise<User> {
 
 export async function logout(): Promise<void> {
 	try {
-		// NextAuth.js signOut handles both client and server cleanup
+		const token = await getAuthToken()
+		if (!token) throw new Error('No authentication token found')
+
+		await api.post('/auth/logout', null, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		})
 		await signOut({ redirect: false })
 	} catch (error) {
-		console.error('Error during logout:', error)
-		// Force sign out if there's an error
+		console.error('Error logging out from API:', error)
 		await signOut({ redirect: false })
+		// Puedes decidir si lanzar error o no, dependiendo del caso de uso
 	}
 }

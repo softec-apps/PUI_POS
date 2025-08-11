@@ -31,13 +31,14 @@ import { MESSAGE_RESPONSE } from '@/modules/users/messages/responseOperation.mes
 import { EnhancedInfinityPaginationResponseDto } from '@/utils/dto/enhanced-infinity-pagination-response.dto'
 import { infinityPaginationWithMetadata } from '@/utils/infinity-pagination'
 import { QueryUserDto } from '@/modules/users/dto/query-user.dto'
-import { title } from 'node:process'
+import { SessionService } from '../session/session.service'
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly filesService: FilesService,
+    private readonly sessionService: SessionService,
     private readonly usersRepository: UserRepository,
   ) {}
 
@@ -295,6 +296,57 @@ export class UsersService {
       return updatedResponse({
         resource: PATH_SOURCE.USER,
         message: MESSAGE_RESPONSE.UPDATED,
+      })
+    })
+  }
+
+  async softDelete(
+    id: User['id'],
+    userId?: string,
+  ): Promise<ApiResponse<void>> {
+    return this.dataSource.transaction(async (entityManager) => {
+      const user = await this.usersRepository.findById(id)
+
+      if (!user) {
+        throw new NotFoundException({
+          message: MESSAGE_RESPONSE.NOT_FOUND.ID,
+        })
+      }
+
+      if (user?.id === userId) {
+        throw new BadRequestException({
+          message: MESSAGE_RESPONSE.CONFLIC.SOFT_DELETE,
+        })
+      }
+
+      // Validación opcional si quieres verificar si el status existe en el enum
+      const isValidStatus = Object.values(StatusEnum)
+        .map((value) => String(value))
+        .includes('2')
+
+      if (!isValidStatus) {
+        throw new BadRequestException({
+          message: 'El status con ID 2 no es válido',
+        })
+      }
+
+      // ✅ Actualizar el status del usuario antes del soft delete
+      await this.usersRepository.update(
+        id,
+        {
+          status: {
+            id: 2,
+          },
+        },
+        entityManager,
+      )
+
+      // ✅ Luego realizar el soft delete
+      await this.usersRepository.softDelete(id, entityManager)
+
+      return deletedResponse({
+        resource: PATH_SOURCE.USER,
+        message: MESSAGE_RESPONSE.DELETED.SOFT,
       })
     })
   }

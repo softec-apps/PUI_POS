@@ -4,10 +4,6 @@ export const roles = {
 	data: {
 		items: [
 			{
-				id: '1',
-				name: 'admin',
-			},
-			{
 				id: '2',
 				name: 'cashier',
 			},
@@ -21,7 +17,7 @@ export const roles = {
 			},
 		] as I_Role[],
 		meta: {
-			totalRecords: 4,
+			totalRecords: 3,
 			totalPages: 1,
 			currentPage: 1,
 			pageSize: 10,

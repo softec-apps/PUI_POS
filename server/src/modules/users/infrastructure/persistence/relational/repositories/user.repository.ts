@@ -2,7 +2,14 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
 import { User } from '@/modules/users/domain/user'
-import { FindOptionsWhere, Repository, In, EntityManager, ILike } from 'typeorm'
+import {
+  FindOptionsWhere,
+  Repository,
+  In,
+  EntityManager,
+  ILike,
+  Not,
+} from 'typeorm'
 import { NullableType } from '@/utils/types/nullable.type'
 import { IPaginationOptions } from '@/utils/types/pagination-options'
 import { FilterUserDto, SortUserDto } from '@/modules/users/dto/query-user.dto'
@@ -68,22 +75,42 @@ export class UsersRelationalRepository implements UserRepository {
           {
             ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
             email: ILike(searchTerm),
+            role: { id: Not(1) }, // Excluir roleId = 1
           },
           {
             ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
             firstName: ILike(searchTerm),
+            role: { id: Not(1) }, // Excluir roleId = 1
           },
           {
             ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
             lastName: ILike(searchTerm),
+            role: { id: Not(1) }, // Excluir roleId = 1
           },
         ]
       } else {
         whereClause = [
-          { email: ILike(searchTerm) },
-          { firstName: ILike(searchTerm) },
-          { lastName: ILike(searchTerm) },
+          { email: ILike(searchTerm), role: { id: Not(1) } },
+          { firstName: ILike(searchTerm), role: { id: Not(1) } },
+          { lastName: ILike(searchTerm), role: { id: Not(1) } },
         ]
+      }
+    } else {
+      // Si no hay búsqueda, agregar la condición de exclusión del roleId = 1
+      if (Array.isArray(whereClause)) {
+        whereClause = whereClause.map((clause) => ({
+          ...clause,
+          role: { id: Not(1) },
+        }))
+      } else if (Object.keys(whereClause).length > 0) {
+        whereClause = {
+          ...whereClause,
+          role: { id: Not(1) },
+        }
+      } else {
+        whereClause = {
+          role: { id: Not(1) },
+        }
       }
     }
 
@@ -99,7 +126,7 @@ export class UsersRelationalRepository implements UserRepository {
 
     // Consultas en paralelo para mejor rendimiento
     const [entities, totalCount, totalRecords] = await Promise.all([
-      // 1. Datos paginados (con filtros)
+      // 1. Datos paginados (con filtros y excluir roleId = 1)
       this.usersRepository.find({
         skip: (paginationOptions.page - 1) * paginationOptions.limit,
         take: paginationOptions.limit,
@@ -107,13 +134,14 @@ export class UsersRelationalRepository implements UserRepository {
         order: orderClause,
         withDeleted: true,
       }),
-      // 2. Total CON filtros (para paginación)
+      // 2. Total CON filtros (para paginación, excluir roleId = 1)
       this.usersRepository.count({
         where: whereClause,
         withDeleted: true,
       }),
-      // 3. Total SIN filtros (estadísticas brutas)
+      // 3. Total SIN filtros (estadísticas brutas, excluir roleId = 1)
       this.usersRepository.count({
+        where: { role: { id: Not(1) } },
         withDeleted: true,
       }),
     ])
@@ -121,7 +149,7 @@ export class UsersRelationalRepository implements UserRepository {
     return {
       data: entities.map(UserMapper.toDomain),
       totalCount, // Total filtrado
-      totalRecords, // Total absoluto
+      totalRecords, // Total absoluto (sin roleId = 1)
     }
   }
 

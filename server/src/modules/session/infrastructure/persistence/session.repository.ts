@@ -16,6 +16,17 @@ export abstract class SessionRepository {
     >,
   ): Promise<Session | null>
 
+  abstract findByField<K extends keyof Session>(
+    field: K,
+    value: Session[K],
+    options?: { withDeleted?: boolean },
+  ): Promise<NullableType<Session>>
+
+  abstract findByUserId(
+    userId: User['id'],
+    options?: { withDeleted?: boolean },
+  ): Promise<Session[]>
+
   abstract deleteById(id: Session['id']): Promise<void>
 
   abstract deleteByUserId(conditions: { userId: User['id'] }): Promise<void>
