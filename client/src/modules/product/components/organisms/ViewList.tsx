@@ -61,29 +61,37 @@ export const ListView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 															<Typography variant='h6' className='mb-2 line-clamp-1 break-words'>
 																{recordData.name}
 															</Typography>
-															<div className='flex items-center gap-2'>
+															<div className='flex items-center gap-4'>
+																<div className='flex items-center gap-2'>
+																	<Icons.barCode className='text-primary h-4 w-4' />
+																	<Typography variant='span' className='text-primary text-sm'>
+																		{recordData?.barCode || 'N/A'}
+																	</Typography>
+																</div>
+
 																<Typography variant='overline' className='line-clamp-1 break-words'>
 																	{recordData.code}
 																</Typography>
-
-																<Badge
-																	text={`${recordData.stock} unidad${recordData.stock > 1 ? 'es' : ''}`}
-																	variant='info'
-																/>
-
-																{recordData.isVariant && <Badge variant='default' text='Variante' />}
 															</div>
 														</div>
+
 														<div className='flex-shrink-0'>
 															<TableActions recordData={recordData} onEdit={onEdit} onHardDelete={onHardDelete} />
 														</div>
 													</div>
 
 													{/* Precio y Stock */}
-													<div className='flex items-center justify-between'>
-														<Typography variant='h6' className='text-primary font-semibold'>
-															${formatPrice(recordData.price)} USD
-														</Typography>
+													<div className='flex items-center gap-4'>
+														<div className='flex items-center justify-between'>
+															<Typography variant='h6' className='text-primary font-semibold'>
+																${formatPrice(recordData.price)} USD
+															</Typography>
+														</div>
+
+														<Badge
+															text={`${recordData.stock} unidad${recordData.stock > 1 ? 'es' : ''}`}
+															variant='info'
+														/>
 													</div>
 
 													{/* Información de clasificación */}
@@ -114,16 +122,6 @@ export const ListView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 													<Typography variant='span' className='text-muted-foreground line-clamp-2 text-sm break-words'>
 														{recordData.description || 'Sin descripción'}
 													</Typography>
-
-													{/* Códigos adicionales */}
-													<div className='flex flex-wrap gap-4'>
-														<Typography variant='span' className='text-muted-foreground text-xs'>
-															SKU: {recordData.sku || 'N/A'}
-														</Typography>
-														<Typography variant='span' className='text-muted-foreground text-xs'>
-															Código de barras: {recordData.barCode || 'N/A'}
-														</Typography>
-													</div>
 
 													<Separator />
 

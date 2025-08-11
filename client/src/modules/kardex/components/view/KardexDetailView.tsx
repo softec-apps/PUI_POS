@@ -19,7 +19,6 @@ import { Typography } from '@/components/ui/typography'
 import { Card, CardContent } from '@/components/ui/card'
 import { PaginationControls } from '../templates/Pagination'
 import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductStatusBadge'
-import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { ROUTE_PATH } from '@/common/constants/routes-const'
 import { Icons } from '@/components/icons'
@@ -91,9 +90,7 @@ export function KardexDetailView({ id }: Props) {
 			}
 		}
 
-		if (id) {
-			fetchProduct()
-		}
+		if (id) fetchProduct()
 	}, [id, getProductById])
 
 	if (productLoading) {
@@ -121,7 +118,7 @@ export function KardexDetailView({ id }: Props) {
 	}
 
 	return (
-		<div className='flex flex-1 flex-col space-y-6'>
+		<div className='flex flex-1 flex-col space-y-10'>
 			{/* Header */}
 			<Card className='border-none bg-transparent p-0 shadow-none'>
 				<CardContent className='p-0'>
@@ -164,50 +161,50 @@ export function KardexDetailView({ id }: Props) {
 				</CardContent>
 			</Card>
 
-			<Separator />
+			<div className='space-y-4'>
+				<KardexFilters
+					searchValue={searchTerm}
+					currentSort={currentSort}
+					currentMovementType={currentMovementType}
+					onMovementTypeChange={handleMovementTypeChange}
+					isRefreshing={isRefreshing}
+					onSearchChange={handleSearchChange}
+					onSort={handleSort}
+					onRefresh={handleRefresh}
+					onResetAll={handleResetAll}
+				/>
 
-			<KardexFilters
-				searchValue={searchTerm}
-				currentSort={currentSort}
-				currentMovementType={currentMovementType}
-				onMovementTypeChange={handleMovementTypeChange}
-				isRefreshing={isRefreshing}
-				onSearchChange={handleSearchChange}
-				onSort={handleSort}
-				onRefresh={handleRefresh}
-				onResetAll={handleResetAll}
-			/>
-
-			{/* Table */}
-			{movementsLoading ? (
-				<LoadingStates viewType='table' />
-			) : !movementsKardex?.data?.items || movementsKardex.data.items.length === 0 ? (
-				searchTerm ? (
-					<EmptyState />
+				{/* Table */}
+				{movementsLoading ? (
+					<LoadingStates viewType='table' />
+				) : !movementsKardex?.data?.items || movementsKardex.data.items.length === 0 ? (
+					searchTerm ? (
+						<EmptyState />
+					) : (
+						<EmptyState />
+					)
 				) : (
-					<EmptyState />
-				)
-			) : (
-				<>
-					<TableKardex
-						recordData={movementsKardex.data.items}
-						loading={movementsLoading}
-						viewType={'table'}
-						showActions={false}
-						showProductCode={false}
-					/>
+					<>
+						<TableKardex
+							recordData={movementsKardex.data.items}
+							loading={movementsLoading}
+							viewType={'table'}
+							showActions={false}
+							showProductCode={false}
+						/>
 
-					<PaginationControls
-						loading={movementsLoading}
-						pagination={pagination}
-						onPrevPage={handlePrevPage}
-						onPageChange={handlePageChange}
-						onNextPage={handleNextPage}
-						onLimitChange={handleLimitChange}
-						metaDataPagination={movementsKardex?.data?.pagination}
-					/>
-				</>
-			)}
+						<PaginationControls
+							loading={movementsLoading}
+							pagination={pagination}
+							onPrevPage={handlePrevPage}
+							onPageChange={handlePageChange}
+							onNextPage={handleNextPage}
+							onLimitChange={handleLimitChange}
+							metaDataPagination={movementsKardex?.data?.pagination}
+						/>
+					</>
+				)}
+			</div>
 		</div>
 	)
 }

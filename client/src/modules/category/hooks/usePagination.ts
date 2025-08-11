@@ -20,7 +20,6 @@ export function usePagination() {
 		}))
 	}, [])
 
-	// 🆕 Nueva función para cambio directo de página
 	const handlePageChange = useCallback((page: number) => {
 		setPagination(prev => ({
 			...prev,
@@ -59,8 +58,6 @@ export function usePagination() {
 		}
 	}, [searchTerm, updatePaginationSearch])
 
-	// 🔧 FUNCIÓN COMPLETAMENTE CORREGIDA: handleSort
-	// Ahora maneja el sortKey completo (field + order) en lugar de solo el field
 	const handleSort = useCallback((sortKey: string) => {
 		// Si el sortKey está vacío, limpiar ordenamiento
 		if (!sortKey) {

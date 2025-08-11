@@ -62,19 +62,24 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => {
 
 									<CardContent className='flex-grow px-4'>
 										<div className='flex h-full flex-col space-y-3'>
+											<Badge
+												variant={row.original.status === 'active' ? 'success' : 'warning'}
+												text={row.original.status === 'active' ? 'Activo' : 'Inactivo'}
+											/>
+
 											<Typography variant='h6'>{recordData.legalName}</Typography>
 
 											<div className='flex flex-col space-y-2'>
 												<div className='flex items-center space-x-2'>
 													<div className='flex h-5 w-5 items-center justify-center'>
-														<Icons.hash className='text-muted-foreground h-3 w-3' />
+														<Icons.hash className='text-muted-foreground h-4 w-4' />
 													</div>
 													<Typography variant='small'>{recordData.ruc}</Typography>
 												</div>
 
 												<div className='flex items-center space-x-2'>
 													<div className='flex h-5 w-5 items-center justify-center'>
-														<Icons.store className='text-muted-foreground h-3 w-3' />
+														<Icons.store className='text-muted-foreground h-4 w-4' />
 													</div>
 													<Typography variant='small'>{recordData.commercialName || 'Sin nombre comercial'}</Typography>
 												</div>
@@ -82,13 +87,7 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => {
 										</div>
 									</CardContent>
 
-									<CardFooter className='flex flex-none items-center justify-between p-4'>
-										<Badge
-											decord={false}
-											variant={row.original.status === 'active' ? 'success' : 'warning'}
-											text={row.original.status === 'active' ? 'Activo' : 'Inactivo'}
-										/>
-
+									<CardFooter className='flex flex-none items-center justify-between px-4 pb-4'>
 										<TableInfoDate recordData={recordData} />
 									</CardFooter>
 								</Card>

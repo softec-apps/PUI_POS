@@ -145,15 +145,6 @@ export function RecordFormModal({ isOpen, currentRecord, onClose, onSubmit }: Pr
 
 				<FormProvider {...methods}>
 					<form onSubmit={handleSubmit(handleFormSubmit)} className='flex-1 space-y-6 overflow-auto p-4'>
-						<AlertMessage
-							message={
-								currentRecord
-									? 'Modifica los campos necesarios y guarda los cambios para actualizar este proveedor. Los cambios afectarán a todas las plantillas y productos que utilicen este proveedor.'
-									: 'Los proveedores definen características específicas de productos (como color, tamaño, material, etc.) y se utilizan para construir plantillas de productos.'
-							}
-							variant='info'
-						/>
-
 						<Card className='border-none bg-transparent p-0 shadow-none'>
 							<CardHeader className='p-0'>
 								<CardTitle className='flex items-center gap-2 text-lg'>

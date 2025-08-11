@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/layout/atoms/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { useEffect, useState } from 'react'
 import { I_Product } from '@/common/types/modules/product'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
 import { ImageControl } from '@/components/layout/organims/ImageControl'
@@ -26,29 +25,10 @@ type Props = {
 }
 
 export function ProductDetailView({ productId }: Props) {
-	const { getProductById } = useProduct()
-	const [product, setProduct] = useState<I_Product | null>(null)
-	const [loading, setLoading] = useState(true)
-	const [error, setError] = useState<string | null>(null)
+	const { getById } = useProduct()
+	const { data, isLoading, isError } = getById(productId)
 
-	useEffect(() => {
-		const fetchProduct = async () => {
-			try {
-				setLoading(true)
-				setError(null)
-				const productData = await getProductById(productId)
-
-				setProduct(productData)
-			} catch (err) {
-				setError(err.response.data.error.message)
-				console.error('Error fetching product:', err)
-			} finally {
-				setLoading(false)
-			}
-		}
-
-		if (productId) fetchProduct()
-	}, [productId, getProductById])
+	const product: I_Product | null = data?.data ?? console.log()
 
 	const InfoRow = ({
 		label,
@@ -74,7 +54,7 @@ export function ProductDetailView({ productId }: Props) {
 		<label className='text-muted-foreground text-sm font-medium'>{children}</label>
 	)
 
-	if (loading) {
+	if (isLoading) {
 		return (
 			<div className='flex h-screen flex-1 flex-col items-center justify-center'>
 				<SpinnerLoader text='Cargando... Por favor espera' />
@@ -90,7 +70,7 @@ export function ProductDetailView({ productId }: Props) {
 		)
 	}
 
-	if (error) {
+	if (isError) {
 		return (
 			<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
 				<FatalErrorState />
@@ -109,6 +89,7 @@ export function ProductDetailView({ productId }: Props) {
 								<Icons.arrowNarrowLeft />
 							</div>
 						</Link>
+
 						<ImageControl
 							recordData={product}
 							enableHover={false}

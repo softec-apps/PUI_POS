@@ -6,19 +6,19 @@ import { Table as ReactTable, flexRender } from '@tanstack/react-table'
 import { animations } from '@/modules/category/components/atoms/animations'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-interface Props {
+interface TableViewProps {
 	table: ReactTable<I_Category>
 }
 
-export const TableView = ({ table }: Props) => (
-	<div className='space-y-4'>
+export const TableView = ({ table }: TableViewProps) => {
+	return (
 		<motion.div initial='hidden' animate='visible' variants={animations.container}>
-			<Table>
-				<TableHeader>
+			<Table className='border-t border-b'>
+				<TableHeader className='bg-accent dark:bg-accent/30'>
 					{table.getHeaderGroups().map(headerGroup => (
 						<TableRow key={headerGroup.id}>
 							{headerGroup.headers.map(header => (
-								<TableHead key={header.id} className='text-muted-foreground whitespace-nowrap'>
+								<TableHead key={header.id} className='text-muted-foreground'>
 									{flexRender(header.column.columnDef.header, header.getContext())}
 								</TableHead>
 							))}
@@ -39,7 +39,7 @@ export const TableView = ({ table }: Props) => (
 								layout='position'
 								className='group'>
 								{row.getVisibleCells().map(cell => (
-									<TableCell key={cell.id} className='text-primary px-0'>
+									<TableCell key={cell.id} className='text-primary'>
 										{flexRender(cell.column.columnDef.cell, cell.getContext())}
 									</TableCell>
 								))}
@@ -49,5 +49,5 @@ export const TableView = ({ table }: Props) => (
 				</TableBody>
 			</Table>
 		</motion.div>
-	</div>
-)
+	)
+}

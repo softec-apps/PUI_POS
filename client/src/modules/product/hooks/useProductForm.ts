@@ -73,7 +73,7 @@ export function useProductForm() {
 			supplierId: '',
 			templateId: '',
 		},
-		mode: 'onChange',
+		mode: 'all',
 	})
 
 	const resetForm = () => {

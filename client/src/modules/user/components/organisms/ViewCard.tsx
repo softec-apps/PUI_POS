@@ -1,17 +1,18 @@
 'use client'
 
+import { Icons } from '@/components/icons'
+import { I_User } from '@/common/types/modules/user'
+import { Typography } from '@/components/ui/typography'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Table as ReactTable } from '@tanstack/react-table'
-import { I_User } from '@/modules/user/types/user'
-import { Icons } from '@/components/icons'
-import { Typography } from '@/components/ui/typography'
 import { animations } from '@/modules/user/components/atoms/animations'
+import { ImageControl } from '@/components/layout/organims/ImageControl'
+import { UserRoleBadge } from '@/modules/user/components/atoms/UserRoleBadge'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { UserStatusBadge } from '@/modules/user/components/atoms/UserStatusBadge'
 import { TableActions } from '@/modules/user/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/user/components/organisms/Table/TableInfoDate'
-import { UserStatusBadge } from '@/modules/user/components/atoms/UserStatusBadge'
-import { ImageControl } from '@/components/layout/organims/ImageControl'
-import { UserRoleBadge } from '../atoms/UserRoleBadge'
+import { Separator } from '@/components/ui/separator'
 
 interface CardViewProps {
 	recordsData: ReactTable<I_User>
@@ -42,7 +43,7 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: CardViewProps) =
 								whileHover='hover'
 								layout
 								className='group relative'>
-								<Card className='border-border/50 flex h-full flex-col p-0 shadow-none transition-all duration-300'>
+								<Card className='dark:border-border/50 h-full border p-0 shadow-none transition-all duration-500'>
 									{/* Header con imagen de perfil centrada */}
 									<CardHeader className='relative flex-none p-0 pt-6'>
 										{/* Botón de acciones en la esquina */}
@@ -51,16 +52,14 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: CardViewProps) =
 										</div>
 
 										<div className='flex flex-col items-center justify-center gap-4'>
-											<div className='ring-muted rounded-full p-1.5 ring-2'>
-												<ImageControl
-													recordData={recordData}
-													enableHover={false}
-													enableClick={false}
-													imageHeight={120}
-													imageWidth={120}
-													roundedFull
-												/>
-											</div>
+											<ImageControl
+												recordData={recordData}
+												enableHover={false}
+												enableClick={false}
+												imageHeight={120}
+												imageWidth={120}
+											/>
+
 											<div className='flex items-center justify-center gap-2'>
 												<UserStatusBadge status={recordData.status} />
 												<UserRoleBadge role={recordData.role} />
@@ -69,10 +68,10 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: CardViewProps) =
 									</CardHeader>
 
 									{/* Contenido principal centrado */}
-									<CardContent className='flex-grow p-0 text-center'>
+									<CardContent className='flex-grow px-4 text-center'>
 										<div className='flex flex-col items-center justify-center space-y-3'>
 											{/* Nombre completo */}
-											<Typography variant='h4' className='line-clamp-1 font-semibold break-words'>
+											<Typography variant='h5' className='line-clamp-1 font-semibold break-words'>
 												{recordData.firstName} {recordData.lastName}
 											</Typography>
 
@@ -85,7 +84,7 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: CardViewProps) =
 									</CardContent>
 
 									{/* Footer con estado */}
-									<CardFooter className='bg-muted/20 border-border/50 flex-none items-center justify-center border-t pb-4'>
+									<CardFooter className='flex flex-none items-center justify-center p-4 pt-0'>
 										<TableInfoDate recordData={recordData} />
 									</CardFooter>
 								</Card>

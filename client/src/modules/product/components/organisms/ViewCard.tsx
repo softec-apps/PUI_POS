@@ -68,13 +68,13 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 								<CardContent className='flex-grow px-4 py-0'>
 									<div className='flex h-full flex-col space-y-3'>
 										{/* Título y código */}
-										<div className='space-y-1'>
+										<div className='space-y-2'>
 											<div className='flex items-center justify-between gap-4'>
 												<Typography variant='overline' className='line-clamp-1 break-words'>
 													{recordData.code}
 												</Typography>
 
-												{recordData.isVariant && <Badge text='Variante' variant='default' />}
+												<ProductStatusBadge status={recordData.status} />
 											</div>
 
 											<Typography variant='h5' className='line-clamp-1 break-words'>
@@ -93,26 +93,33 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 											</div>
 										</div>
 
+										<div className='flex items-center gap-2'>
+											<Icons.barCode className='text-primary h-4 w-4' />
+											<Typography variant='span' className='text-primary text-sm'>
+												{recordData?.barCode || 'N/A'}
+											</Typography>
+										</div>
+
 										<Separator />
 
 										{/* Marca y Categoría */}
 										<div className='space-y-2'>
 											<div className='flex items-center gap-2'>
-												<Icons.brandMedium className='text-muted-foreground h-3 w-3' />
+												<Icons.brandMedium className='text-muted-foreground h-4 w-4' />
 												<Typography variant='span' className='text-muted-foreground text-xs'>
 													{recordData?.brand?.name || 'N/A'}
 												</Typography>
 											</div>
 
 											<div className='flex items-center gap-2'>
-												<Icons.listDetails className='text-muted-foreground h-3 w-3' />
+												<Icons.listDetails className='text-muted-foreground h-4 w-4' />
 												<Typography variant='span' className='text-muted-foreground text-xs'>
 													{recordData?.category?.name || 'N/A'}
 												</Typography>
 											</div>
 
 											<div className='flex items-center gap-2'>
-												<Icons.truck className='text-muted-foreground h-3 w-3' />
+												<Icons.truck className='text-muted-foreground h-4 w-4' />
 												<Typography variant='span' className='text-muted-foreground line-clamp-1 text-xs'>
 													{recordData?.supplier?.legalName || 'N/A'}
 												</Typography>
@@ -123,29 +130,11 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 										<Typography variant='span' className='text-muted-foreground line-clamp-3 flex-grow text-sm'>
 											{recordData.description || 'Sin descripción'}
 										</Typography>
-
-										{/* Códigos adicionales */}
-										<div className='space-y-1'>
-											<div className='flex items-center gap-2'>
-												<Typography variant='span' className='text-muted-foreground text-xs'>
-													SKU: {recordData.sku || 'N/A'}
-												</Typography>
-											</div>
-
-											<div className='flex items-center gap-2'>
-												<Typography variant='span' className='text-muted-foreground text-xs'>
-													Código de barras: {recordData.barCode || 'N/A'}
-												</Typography>
-											</div>
-										</div>
 									</div>
 								</CardContent>
 
-								<CardFooter className='flex flex-none items-center justify-between p-4 pt-0'>
-									<ProductStatusBadge status={recordData.status} />
-									<div className='text-muted-foreground text-xs'>
-										<TableInfoDate recordData={recordData} />
-									</div>
+								<CardFooter className='flex flex-none items-center justify-between px-4 pb-4'>
+									<TableInfoDate recordData={recordData} />
 								</CardFooter>
 							</Card>
 						</motion.div>

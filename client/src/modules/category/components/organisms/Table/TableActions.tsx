@@ -24,15 +24,17 @@ export const TableActions = ({ categoryData, onEdit, onHardDelete, onViewDetails
 			/>
 		</DropdownMenuTrigger>
 
-		<DropdownMenuContent align='end' className='border-border/50 rounded-2xl border'>
+		<DropdownMenuContent align='end' className='dark:border-border/50 rounded-2xl border shadow-none'>
 			<DropdownMenuItem
 				onClick={() => onEdit(categoryData)}
-				className='flex cursor-pointer items-center gap-2 rounded-xl'>
+				className='text-muted-foreground flex cursor-pointer items-center gap-2 rounded-xl'>
 				<Icons.pencilMinus />
 				<span>Editar</span>
 			</DropdownMenuItem>
 
-			<DropdownMenuItem onClick={onViewDetails} className='flex cursor-pointer items-center gap-2 rounded-xl'>
+			<DropdownMenuItem
+				onClick={onViewDetails}
+				className='text-muted-foreground flex cursor-pointer items-center gap-2 rounded-xl'>
 				<Icons.eye />
 				<span>Detalles</span>
 			</DropdownMenuItem>

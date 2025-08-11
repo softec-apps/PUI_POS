@@ -3,12 +3,12 @@
 import { Icons } from '@/components/icons'
 import { ColumnDef } from '@tanstack/react-table'
 import { I_Product } from '@/common/types/modules/product'
+import { formatPrice } from '@/common/utils/formatPrice-util'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { ImageControl } from '@/components/layout/organims/ImageControl'
 import { TableActions } from '@/modules/product/components/organisms/Table/TableActions'
 import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductStatusBadge'
 import { TableInfoDate } from '@/modules/product/components/organisms/Table/TableInfoDate'
-import { formatPrice } from '@/common/utils/formatPrice-util'
 
 interface Props {
 	onEdit: (recordData: I_Product) => void
@@ -150,7 +150,29 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 			/>
 		),
-		cell: ({ row }) => <div className='max-w-96 truncate font-semibold'>{row.original.stock}</div>,
+		cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.stock}</div>,
+	},
+	{
+		accessorKey: 'category.name',
+		header: ({ column }) => (
+			<ActionButton
+				variant='link'
+				size='xs'
+				className='p-0'
+				text={
+					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
+						Categoría
+						{column.getIsSorted() === 'asc' ? (
+							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : column.getIsSorted() === 'desc' ? (
+							<Icons.sortDescendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : null}
+					</div>
+				}
+				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+			/>
+		),
+		cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.category?.name || 'N/A'}</div>,
 	},
 	{
 		accessorKey: 'status',

@@ -6,9 +6,7 @@ import { Badge } from '@/components/layout/atoms/Badge'
 export const UserStatusBadge = ({ status }: { status: I_User['status'] }) => {
 	const statusMap = {
 		Active: { text: 'Activo', variant: 'success' },
-		Inactive: { text: 'Inactivo', variant: 'error' },
-		active: { text: 'Activo', variant: 'success' },
-		inactive: { text: 'Inactivo', variant: 'error' },
+		Inactive: { text: 'Inactivo', variant: 'destructive' },
 	} as const
 
 	return (

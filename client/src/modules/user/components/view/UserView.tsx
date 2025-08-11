@@ -6,8 +6,6 @@ import { useUser } from '@/common/hooks/useUser'
 import { useHandlers } from '@/modules/user/hooks/useHandlers'
 import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
 
-import { ViewType } from '@/modules/user/components/molecules/ViewSelector'
-
 import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
 import { UtilBanner } from '@/components/UtilBanner'
@@ -18,9 +16,9 @@ import { usePagination } from '@/modules/user/hooks/usePagination'
 import { UserModals } from '@/modules/user/components/templates/Modals'
 import { UserHeader } from '@/modules/user/components/templates/Header'
 import { UserFilters } from '@/modules/user/components/templates/Filters'
-import { PaginationControls } from '@/modules/user/components/templates/Pagination'
 import { TableUser } from '@/modules/user/components/organisms/Table/TableUser'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
+import { PaginationControls } from '@/components/layout/organims/Pagination'
 
 export function UserView() {
 	const [retryCount, setRetryCount] = useState(0)
@@ -62,6 +60,7 @@ export function UserView() {
 		createRecord,
 		updateRecord,
 		hardDeleteRecord,
+		softDeleteRecord,
 		refetchRecords,
 	} = useUser(paginationParams)
 
@@ -77,6 +76,7 @@ export function UserView() {
 		createRecord,
 		updateRecord,
 		hardDeleteRecord,
+		softDeleteRecord,
 	})
 
 	// ✅ Optimized next page handler
@@ -159,6 +159,7 @@ export function UserView() {
 						loading={loading}
 						onEdit={userHandlers.handleEdit}
 						onHardDelete={modalState.openHardDeleteModal}
+						onSoftDelete={modalState.openSoftDeleteModal}
 						viewType={viewType}
 					/>
 

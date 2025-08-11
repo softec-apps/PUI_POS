@@ -4,8 +4,8 @@ import { Icons } from '@/components/icons'
 import { Control } from 'react-hook-form'
 import { ProductFormData } from '@/modules/product/types/product-form'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { STATUS_OPTIONS } from '@/modules/product/constants/product.constants'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface EconomicSectionProps {
 	control: Control<ProductFormData>

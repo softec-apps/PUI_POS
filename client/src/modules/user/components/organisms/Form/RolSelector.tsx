@@ -6,7 +6,7 @@ import { I_Role } from '@/common/hooks/useRole'
 import { UserFormData } from '@/modules/user/types/user-form'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { translateRoleName } from '@/modules/user/utils/traslate.util'
+import { translateRoleName } from '@/common/utils/traslate.util'
 
 interface RolSectionProps {
 	control: Control<UserFormData>

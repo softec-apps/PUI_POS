@@ -1,6 +1,6 @@
 'use client'
 
-import { I_User } from '@/modules/user/types/user'
+import { I_User } from '@/common/types/modules/user'
 import { Badge } from '@/components/layout/atoms/Badge'
 
 export const UserRoleBadge = ({ role }: { role: I_User['role'] }) => {

@@ -1,12 +1,17 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { I_User } from '@/modules/user/types/user'
+import { I_User } from '@/common/types/modules/user'
 
 export const useModalState = () => {
 	// Dialog state
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
 	const [currentRecord, setCurrentRecord] = useState<Partial<I_User> | null>(null)
+
+	// Soft delete modal state
+	const [isSoftDeleteModalOpen, setIsSoftDeleteModalOpen] = useState(false)
+	const [recordToSoftDelete, setRecordToSoftDelete] = useState<I_User | null>(null)
+	const [isSoftDeleting, setIsSoftDeleting] = useState(false)
 
 	// Hard delete modal state
 	const [isHardDeleteModalOpen, setIsHardDeleteModalOpen] = useState(false)
@@ -45,6 +50,22 @@ export const useModalState = () => {
 		}
 	}, [isHardDeleting, setRecordToHardDelete])
 
+	// Soft delete modal handlers
+	const openSoftDeleteModal = useCallback(
+		(user: I_User) => {
+			setRecordToSoftDelete(user)
+			setIsSoftDeleteModalOpen(true)
+		},
+		[setRecordToSoftDelete]
+	)
+
+	const closeSoftDeleteModal = useCallback(() => {
+		if (!isSoftDeleting) {
+			setIsSoftDeleteModalOpen(false)
+			setRecordToSoftDelete(null)
+		}
+	}, [isSoftDeleting, setRecordToSoftDelete])
+
 	return {
 		// Dialog state
 		isDialogOpen,
@@ -60,5 +81,13 @@ export const useModalState = () => {
 		setIsHardDeleting,
 		openHardDeleteModal,
 		closeHardDeleteModal,
+
+		// Soft delete modal state
+		isSoftDeleteModalOpen,
+		recordToSoftDelete,
+		isSoftDeleting,
+		setIsSoftDeleting,
+		openSoftDeleteModal,
+		closeSoftDeleteModal,
 	}
 }

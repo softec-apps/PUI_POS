@@ -6,7 +6,7 @@ import { useProduct } from '@/common/hooks/useProduct'
 import { useHandlers } from '@/modules/product/hooks/useHandlers'
 import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
 
-import { ViewType } from '@/modules/product/components/molecules/ViewSelector'
+import { ViewType } from '@/components/layout/organims/ViewSelector'
 
 import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
@@ -18,7 +18,7 @@ import { usePagination } from '@/modules/product/hooks/usePagination'
 import { ProductModals } from '@/modules/product/components/templates/Modals'
 import { ProductHeader } from '@/modules/product/components/templates/Header'
 import { ProductFilters } from '@/modules/product/components/templates/Filters'
-import { PaginationControls } from '@/modules/product/components/templates/Pagination'
+import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { TableProduct } from '@/modules/product/components/organisms/Table/TableProduct'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
 

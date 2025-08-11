@@ -1,16 +1,23 @@
 import { useCallback } from 'react'
 import { ModalState } from '@/modules/user/types/modalState'
 import { UserFormData } from '@/modules/user/types/user-form'
-import { I_UpdateUser, I_CreateUser, I_User } from '@/modules/user/types/user'
+import { I_UpdateUser, I_CreateUser, I_User } from '@/common/types/modules/user'
 
-interface Props {
+interface useHandlersProps {
 	modalState: ModalState
 	createRecord: (data: I_CreateUser) => Promise<void>
 	updateRecord: (id: string, data: I_UpdateUser) => Promise<void>
+	softDeleteRecord: (id: string) => Promise<void>
 	hardDeleteRecord: (id: string) => Promise<void>
 }
 
-export function useHandlers({ modalState, createRecord, updateRecord, hardDeleteRecord }: Props) {
+export function useHandlers({
+	modalState,
+	createRecord,
+	updateRecord,
+	softDeleteRecord,
+	hardDeleteRecord,
+}: useHandlersProps) {
 	const handleFormSubmit = useCallback(
 		async (data: UserFormData) => {
 			try {
@@ -56,6 +63,20 @@ export function useHandlers({ modalState, createRecord, updateRecord, hardDelete
 		}
 	}, [modalState, hardDeleteRecord])
 
+	const handleConfirmSoftDelete = useCallback(async () => {
+		if (!modalState.recordToSoftDelete) return
+
+		try {
+			modalState.setIsSoftDeleting(true)
+			await softDeleteRecord(modalState.recordToSoftDelete.id)
+			modalState.closeSoftDeleteModal()
+		} catch (error) {
+			console.error('Delete error:', error)
+		} finally {
+			modalState.setIsSoftDeleting(false)
+		}
+	}, [modalState, softDeleteRecord])
+
 	return {
 		// Form handlers actualizados
 		handleFormSubmit,
@@ -66,5 +87,6 @@ export function useHandlers({ modalState, createRecord, updateRecord, hardDelete
 
 		// Confirmation handlers
 		handleConfirmHardDelete,
+		handleConfirmSoftDelete,
 	}
 }

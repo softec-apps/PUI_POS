@@ -12,6 +12,7 @@ import { I_Category } from '@/common/types/modules/category'
 import { animations } from '@/modules/category/components/atoms/animations'
 import { TableActions } from '@/modules/category/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/category/components/organisms/Table/TableInfoDate'
+import { ImageControl } from '@/components/layout/organims/ImageControl'
 
 interface ListViewProps {
 	table: ReactTable<I_Category>
@@ -25,7 +26,7 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 			initial='hidden'
 			animate='visible'
 			variants={animations.container}
-			className='grid grid-cols-2 gap-4 space-y-4'
+			className='grid grid-cols-1 gap-4 space-y-4'
 			layout>
 			<AnimatePresence mode='sync'>
 				{table.getRowModel().rows.map(row => {
@@ -40,24 +41,16 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 							whileHover='hover'
 							layout
 							className='group'>
-							<Card className='border-border/50 overflow-hidden border shadow-none transition-all duration-300'>
-								<CardContent>
+							<Card className='dark:border-border/50 border px-4 shadow-none transition-all duration-500'>
+								<CardContent className='p-0'>
 									<div className='flex items-start space-x-4'>
-										<div className='bg-muted/20 relative h-32 w-40 flex-shrink-0 rounded-xl'>
-											{categoryData?.photo ? (
-												<Image
-													src={categoryData.photo.path}
-													alt={categoryData.name}
-													fill
-													unoptimized
-													className='rounded-lg object-contain'
-												/>
-											) : (
-												<div className='bg-muted/50 flex h-full w-full items-center justify-center rounded-lg'>
-													<Icons.media className='text-muted-foreground h-8 w-8' />
-												</div>
-											)}
-										</div>
+										<ImageControl
+											recordData={categoryData}
+											imageWidth={150}
+											imageHeight={150}
+											enableHover={false}
+											enableClick={false}
+										/>
 
 										<div className='min-w-0 flex-1'>
 											<div className='flex items-start justify-between gap-2'>
@@ -75,8 +68,8 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 													<div className='flex items-center justify-between'>
 														<Typography
 															variant='span'
-															className='text-muted-foreground mb-2 line-clamp-1 text-sm break-words'>
-															Descripción: {categoryData.description || 'Sin descripción'}
+															className='text-muted-foreground mb-2 line-clamp-2 text-sm break-words'>
+															{categoryData.description || 'Sin descripción'}
 														</Typography>
 													</div>
 
@@ -90,7 +83,7 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 														/>
 
 														<div className='text-muted-foreground text-right text-xs'>
-															<TableInfoDate categoryData={categoryData} />
+															<TableInfoDate recordData={categoryData} />
 														</div>
 													</div>
 												</div>

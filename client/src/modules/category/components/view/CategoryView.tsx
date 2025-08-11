@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
+
 import { useCategory } from '@/common/hooks/useCategory'
 import { useFileUpload } from '@/modules/category/hooks/useFileUpload'
 import { useModalState } from '@/modules/category/hooks/useModalState'
@@ -11,12 +12,13 @@ import { useCategoryHandlers } from '@/modules/category/hooks/useCategoryHandler
 import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
 import { UtilBanner } from '@/components/UtilBanner'
+import { useDebounce } from '@/common/hooks/useDebounce'
+import { ViewType } from '@/components/layout/organims/ViewSelector'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { ViewType } from '@/modules/category/components/molecules/ViewSelector'
+import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { CategoryHeader } from '@/modules/category/components/templates/Header'
 import { CategoryModals } from '@/modules/category/components/templates/Modals'
 import { CategoryFilters } from '@/modules/category/components/templates/Filters'
-import { PaginationControls } from '@/modules/category/components/templates/Pagination'
 import { CategoryTable } from '@/modules/category/components/organisms/Table/TableCategory'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
 
@@ -24,35 +26,53 @@ export function CategoryView() {
 	const [retryCount, setRetryCount] = useState(0)
 	const [viewType, setViewType] = useState<ViewType>('table')
 
-	// Hooks de paginación
+	const [localSearchTerm, setLocalSearchTerm] = useState<string>('')
+	const debouncedSearchTerm = useDebounce(localSearchTerm, 500)
+
 	const {
 		pagination,
-		searchTerm,
 		currentSort,
 		currentStatus,
 		handleNextPage,
 		handlePrevPage,
 		handleLimitChange,
-		handleSearchChange,
 		handleSort,
 		handleStatusChange,
 		handleResetAll,
 		handlePageChange,
+		setPagination,
 	} = usePagination()
 
-	// Memoizar parámetros de paginación
+	useEffect(() => {
+		setPagination(prev => ({
+			...prev,
+			search: debouncedSearchTerm,
+			page: 1,
+		}))
+	}, [debouncedSearchTerm, setPagination])
+
+	const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value
+		setLocalSearchTerm(value)
+	}, [])
+
+	const handleResetAllWithSearch = useCallback(() => {
+		setLocalSearchTerm('')
+		handleResetAll()
+	}, [handleResetAll])
+
+	// Memoizar parámetros de paginación usando debouncedSearchTerm
 	const paginationParams = useMemo(
 		() => ({
-			search: searchTerm,
+			search: debouncedSearchTerm,
 			page: pagination.page,
 			limit: pagination.limit,
 			sort: currentSort ? [currentSort] : undefined,
 			filters: currentStatus ? { status: currentStatus } : undefined,
 		}),
-		[pagination.page, pagination.limit, searchTerm, currentStatus, currentSort]
+		[pagination.page, pagination.limit, debouncedSearchTerm, currentStatus, currentSort]
 	)
 
-	// Hook principal de categorías
 	const {
 		categories,
 		loading,
@@ -108,6 +128,7 @@ export function CategoryView() {
 		[categories?.data]
 	)
 
+	console.log(categories)
 	if (errorCategory && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
 
 	if (errorCategory)
@@ -143,7 +164,7 @@ export function CategoryView() {
 
 					{/* Filtros y búsqueda */}
 					<CategoryFilters
-						searchValue={searchTerm}
+						searchValue={localSearchTerm}
 						currentSort={currentSort}
 						currentStatus={currentStatus}
 						isRefreshing={isRefreshing}
@@ -151,7 +172,7 @@ export function CategoryView() {
 						onSort={handleSort}
 						onStatusChange={handleStatusChange}
 						onRefresh={handleRefresh}
-						onResetAll={handleResetAll}
+						onResetAll={handleResetAllWithSearch}
 						viewType={viewType}
 						onViewChange={setViewType}
 					/>

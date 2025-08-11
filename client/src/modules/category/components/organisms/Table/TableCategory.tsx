@@ -17,7 +17,7 @@ import { EmptyState } from '@/components/layout/organims/EmptyState'
 import { CardView } from '@/modules/category/components/organisms/ViewCard'
 import { ListView } from '@/modules/category/components/organisms/ViewList'
 import { TableView } from '@/modules/category/components/organisms/ViewTable'
-import { ViewType } from '@/modules/category/components/molecules/ViewSelector'
+import { ViewType } from '@/components/layout/organims/ViewSelector'
 import { LoadingStates } from '@/modules/category/components/organisms/Table/StateLoading'
 import { createTableColumns } from '@/modules/category/components/organisms/Table/TableColumns'
 
@@ -63,9 +63,8 @@ export function CategoryTable({ categoryData, loading, viewType, onEdit, onHardD
 				animate='animate'
 				exit='exit'
 				variants={animations.viewTransition}
-				className='h-full'
 				layout>
-				<motion.div variants={animations.container} className='h-full' layout>
+				<motion.div variants={animations.container} layout>
 					{viewType === 'table' && <TableView table={table} />}
 					{viewType === 'card' && <CardView table={table} onEdit={onEdit} onHardDelete={onHardDelete} />}
 					{viewType === 'list' && <ListView table={table} onEdit={onEdit} onHardDelete={onHardDelete} />}

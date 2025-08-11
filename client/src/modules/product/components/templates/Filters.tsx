@@ -16,7 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import React, { useEffect, useState } from 'react'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { SORT_OPTIONS } from '@/modules/product/constants/product.constants'
-import { ViewSelector, ViewType } from '@/modules/product/components/molecules/ViewSelector'
+import { ViewType, ViewSelector } from '@/components/layout/organims/ViewSelector'
 
 interface ProductFiltersProps {
 	searchValue: string
@@ -79,49 +79,54 @@ export function ProductFilters({
 		<div className='space-y-4'>
 			{/* Main Filters Container */}
 			<div className='flex flex-col justify-between gap-4 md:flex-row md:items-center'>
-				<div className='flex items-center gap-4'>
-					{/* Search Input */}
-					<motion.div
-						className='relative'
-						initial={{ opacity: 0, x: -15 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ delay: 0 }}>
-						<div
-							className={`relative rounded-xl transition-all duration-300 ${
-								isSearchFocused ? 'ring-primary/20 shadow-lg ring-2' : ''
-							}`}>
-							<div className='text-muted-foreground pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-4'>
-								<Icons.search size={18} />
-							</div>
-
-							<Input
-								placeholder='Buscar registros...'
-								className='text-accent-foreground/80 bg-accent/20 border-border/50 w-full rounded-xl pr-12 pl-12 shadow-none transition-all duration-300'
-								onChange={onSearchChange}
-								value={searchValue}
-								onFocus={() => setIsSearchFocused(true)}
-								onBlur={() => setIsSearchFocused(false)}
-								aria-label='Buscar registros'
-							/>
-
-							<AnimatePresence>
-								{searchValue && (
-									<motion.button
-										initial={{ opacity: 0, scale: 0.8 }}
-										animate={{ opacity: 1, scale: 1 }}
-										exit={{ opacity: 0, scale: 0.8 }}
-										onClick={clearSearch}
-										className='text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center pr-2 transition-colors'
-										aria-label='Limpiar búsqueda'>
-										<div className='bg-accent hover:bg-accent-foreground/20 cursor-pointer rounded-full p-1 transition-colors duration-300'>
-											<Icons.x className='h-4 w-4' />
-										</div>
-									</motion.button>
-								)}
-							</AnimatePresence>
+				<motion.div
+					className='items-center gap-2 space-y-4 sm:flex sm:space-y-0'
+					initial={{ opacity: 0, x: -15 }}
+					animate={{ opacity: 1, x: 0 }}
+					transition={{ delay: 0 }}>
+					<div
+						className={`relative rounded-xl transition-all duration-300 ${
+							isSearchFocused ? 'ring-primary/20 shadow-lg ring-2' : ''
+						}`}>
+						<div className='text-muted-foreground pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-4'>
+							<Icons.search size={18} />
 						</div>
-					</motion.div>
 
+						<Input
+							placeholder='Buscar registros...'
+							className='text-primary bg-background dark:border-border/50 w-full rounded-2xl pr-12 pl-12 shadow-none transition-all duration-500'
+							onChange={onSearchChange}
+							value={searchValue}
+							onFocus={() => setIsSearchFocused(true)}
+							onBlur={() => setIsSearchFocused(false)}
+							aria-label='Buscar categorías'
+						/>
+
+						<AnimatePresence>
+							{searchValue && (
+								<motion.button
+									initial={{ opacity: 0, scale: 0.8 }}
+									animate={{ opacity: 1, scale: 1 }}
+									exit={{ opacity: 0, scale: 0.8 }}
+									onClick={clearSearch}
+									className='text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center pr-2 transition-colors'
+									aria-label='Limpiar búsqueda'>
+									<div className='bg-accent hover:bg-accent-foreground/20 cursor-pointer rounded-full p-1 transition-colors duration-300'>
+										<Icons.x className='h-4 w-4' />
+									</div>
+								</motion.button>
+							)}
+						</AnimatePresence>
+					</div>
+
+					<ViewSelector currentView={viewType} onViewChange={onViewChange} />
+				</motion.div>
+
+				<motion.div
+					className='flex items-center gap-2'
+					initial={{ opacity: 0, x: 15 }}
+					animate={{ opacity: 1, x: 0 }}
+					transition={{ delay: 0 }}>
 					{/* Controls */}
 					<motion.div
 						className='flex items-center gap-2'
@@ -131,7 +136,7 @@ export function ProductFilters({
 						{/* Sort */}
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<ActionButton icon={<Icons.sortAscending />} text={getCurrentSortLabel()} variant='outline' />
+								<ActionButton icon={<Icons.sortAscending />} text={getCurrentSortLabel()} variant='ghost' />
 							</DropdownMenuTrigger>
 
 							<DropdownMenuContent
@@ -173,7 +178,7 @@ export function ProductFilters({
 						{/* Filtro por estado */}
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<ActionButton icon={<Icons.filter />} text={getCurrentStatusLabel()} variant='outline' />
+								<ActionButton icon={<Icons.filter />} text={getCurrentStatusLabel()} variant='ghost' />
 							</DropdownMenuTrigger>
 
 							<DropdownMenuContent
@@ -226,23 +231,13 @@ export function ProductFilters({
 						</DropdownMenu>
 					</motion.div>
 
-					<ViewSelector currentView={viewType} onViewChange={onViewChange} />
-				</div>
-
-				<motion.div
-					className='flex items-center gap-2'
-					initial={{ opacity: 0, x: 15 }}
-					animate={{ opacity: 1, x: 0 }}
-					transition={{ delay: 0 }}>
 					<ActionButton
 						icon={isRefreshing ? <Icons.refresh className='animate-spin' /> : <Icons.refresh />}
 						onClick={onRefresh}
 						disabled={isRefreshing}
 						text={isRefreshing ? 'Refrescando...' : 'Refrescar'}
-						variant='outline'
+						variant='secondary'
 					/>
-
-					<ActionButton icon={<Icons.download />} variant='outline' text='Reporte' />
 				</motion.div>
 			</div>
 

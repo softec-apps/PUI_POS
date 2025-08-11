@@ -3,7 +3,7 @@
 import { I_User } from '@/common/types/modules/user'
 import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
 
-interface HardDeleteModalProps {
+interface SoftDeleteModalProps {
 	isOpen: boolean
 	currentRecord: I_User | null
 	isAction: boolean
@@ -11,16 +11,16 @@ interface HardDeleteModalProps {
 	onConfirm: () => Promise<void>
 }
 
-export function HardDeleteModal({ isOpen, currentRecord, isAction, onClose, onConfirm }: HardDeleteModalProps) {
+export function SoftDeleteModal({ isOpen, currentRecord, isAction, onClose, onConfirm }: SoftDeleteModalProps) {
 	return (
 		<ConfirmationModal
 			isOpen={isOpen}
-			variant='destructive'
-			title='Eliminar usuario'
+			variant='warning'
+			title='Remover usuario'
 			description='Esta acción no se puede deshacer'
 			message={
 				<>
-					¿Deseas eliminar permanentemente al usuario{' '}
+					¿Deseas remover temporalmente al usuario{' '}
 					<span className='text-foreground font-semibold'>
 						{currentRecord?.email} ({currentRecord?.firstName} {currentRecord?.lastName})
 					</span>
@@ -29,15 +29,13 @@ export function HardDeleteModal({ isOpen, currentRecord, isAction, onClose, onCo
 			}
 			alertMessage={
 				<>
-					<p className='text-destructive'>El usuario perderá acceso al sistema de forma definitiva.</p>
-					<p className='text-destructive'>Sus relaciones quedaran huerfanas</p>
+					<p className='text-destructive'>El usuario perderá acceso al sistema de forma temporal.</p>
 				</>
 			}
-			confirmKey={currentRecord?.email}
 			isProcessing={isAction}
 			onClose={onClose}
 			onConfirm={onConfirm}
-			confirmText='Eliminar'
+			confirmText='Remover'
 			cancelText='Cancelar'
 		/>
 	)

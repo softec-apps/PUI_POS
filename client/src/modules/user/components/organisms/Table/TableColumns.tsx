@@ -12,10 +12,15 @@ import { UserRoleBadge } from '../../atoms/UserRoleBadge'
 
 interface createTableColumnsProps {
 	onEdit: (recordData: I_User) => void
+	onSoftDelete: (recordData: I_User) => void
 	onHardDelete: (recordData: I_User) => void
 }
 
-export const createTableColumns = ({ onEdit, onHardDelete }: createTableColumnsProps): ColumnDef<I_User>[] => [
+export const createTableColumns = ({
+	onEdit,
+	onSoftDelete,
+	onHardDelete,
+}: createTableColumnsProps): ColumnDef<I_User>[] => [
 	{
 		accessorKey: 'photo',
 		header: ({ column }) => (
@@ -157,7 +162,12 @@ export const createTableColumns = ({ onEdit, onHardDelete }: createTableColumnsP
 		id: 'actions',
 		cell: ({ row }) => (
 			<div className='flex justify-end'>
-				<TableActions recordData={row.original} onEdit={onEdit} onHardDelete={onHardDelete} />
+				<TableActions
+					recordData={row.original}
+					onEdit={onEdit}
+					onSoftDelete={onSoftDelete}
+					onHardDelete={onHardDelete}
+				/>
 			</div>
 		),
 	},

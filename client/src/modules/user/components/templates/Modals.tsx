@@ -1,10 +1,10 @@
 'use client'
 
 import { ModalState } from '@/modules/user/types/modalState'
-import { HardDeleteModal } from '@/modules/user/components/organisms/Modal/ModalHardDelete'
+import { I_User, I_CreateUser, I_UpdateUser } from '@/common/types/modules/user'
 import { UserFormModal } from '@/modules/user/components/organisms/Modal/ModalUserForm'
-
-import { I_User, I_CreateUser, I_UpdateUser } from '@/modules/user/types/user'
+import { HardDeleteModal } from '@/modules/user/components/organisms/Modal/ModalHardDelete'
+import { SoftDeleteModal } from '@/modules/user/components/organisms/Modal/ModalSoftDelete'
 
 interface UserModalsProps {
 	modalState: ModalState
@@ -13,6 +13,7 @@ interface UserModalsProps {
 		handleDialogClose: () => void
 		handleEdit: (record: I_User) => void
 		handleConfirmHardDelete: () => Promise<void>
+		handleConfirmSoftDelete: () => Promise<void>
 	}
 }
 
@@ -24,6 +25,14 @@ export function UserModals({ modalState, userHandlers }: UserModalsProps) {
 				currentRecord={modalState.currentRecord}
 				onClose={userHandlers.handleDialogClose}
 				onSubmit={userHandlers.handleFormSubmit}
+			/>
+
+			<SoftDeleteModal
+				isOpen={modalState.isSoftDeleteModalOpen}
+				currentRecord={modalState.recordToSoftDelete}
+				isAction={modalState.isSoftDeleting}
+				onClose={modalState.closeSoftDeleteModal}
+				onConfirm={userHandlers.handleConfirmSoftDelete}
 			/>
 
 			<HardDeleteModal

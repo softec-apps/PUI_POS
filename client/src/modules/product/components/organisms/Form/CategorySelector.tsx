@@ -35,16 +35,11 @@ export function CategorySelector({
 	categoryOpen,
 	setCategoryOpen,
 }: CategorySelectorProps) {
-	const watchedCategoryId = watch('categoryId')
-
 	const categoryOptions =
 		categories?.data?.items?.map(category => ({
 			value: category.id,
 			label: category.name,
 		})) || []
-
-	// Encontrar la categoría seleccionada
-	const selectedCategory = categories?.data?.items?.find(c => c.id === watchedCategoryId)
 
 	return (
 		<Card className='border-none bg-transparent p-0 shadow-none'>

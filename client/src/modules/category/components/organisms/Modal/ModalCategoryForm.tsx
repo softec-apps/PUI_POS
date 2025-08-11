@@ -140,7 +140,7 @@ export function CategoryFormModal({
 
 	return (
 		<Sheet open={isOpen} onOpenChange={handleClose}>
-			<SheetContent className='z-50 flex max-h-screen min-w-xl flex-col [&>button]:hidden'>
+			<SheetContent className='flex w-full flex-col sm:max-w-xl'>
 				<SheetHeader className='bg-background supports-[backdrop-filter]:bg-background/80 sticky top-0 z-10 border-b supports-[backdrop-filter]:backdrop-blur-sm'>
 					<div className='flex items-center justify-between'>
 						<SheetTitle>{currentCategory ? 'Editar Categoría' : 'Crear Categoría'}</SheetTitle>
@@ -149,7 +149,6 @@ export function CategoryFormModal({
 							<ActionButton
 								type='button'
 								variant='ghost'
-								onClick={onClose}
 								size='icon'
 								disabled={onsubmit}
 								icon={<Icons.x className='h-4 w-4' />}
@@ -167,15 +166,6 @@ export function CategoryFormModal({
 				<FormProvider {...methods}>
 					<form onSubmit={handleSubmit(handleFormSubmit)} className='flex-1 space-y-4 overflow-auto p-4'>
 						<Card className='border-none bg-transparent p-0 shadow-none'>
-							<AlertMessage
-								message={
-									currentCategory
-										? 'Modifica los campos necesarios y guarda los cambios para actualizar la categoría en el sistema.'
-										: 'Completa la información requerida para crear una nueva categoría. El nombre es obligatorio, mientras que la descripción e imagen son opcionales.'
-								}
-								variant='info'
-							/>
-
 							<CardHeader className='p-0'>
 								<CardTitle className='flex items-center gap-2 text-lg'>
 									<Icons.infoCircle className='h-4 w-4' />

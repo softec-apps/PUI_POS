@@ -6,7 +6,7 @@ import { I_Status } from '@/common/hooks/useStatus'
 import { UserFormData } from '@/modules/user/types/user-form'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { translateStatusName } from '@/modules/user/utils/traslate.util'
+import { translateStatusName } from '@/common/utils/traslate.util'
 
 interface StatusSectionProps {
 	control: Control<UserFormData>

@@ -12,12 +12,12 @@ import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
 import { UtilBanner } from '@/components/UtilBanner'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { ViewType } from '@/components/layout/organims/ViewSelector'
+import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { SupplierHeader } from '@/modules/supplier/components/templates/Header'
 import { ModalsSupplier } from '@/modules/supplier/components/templates/Modals'
 import { SupplierFilters } from '@/modules/supplier/components/templates/Filters'
-import { PaginationControls } from '@/modules/supplier/components/templates/Pagination'
 import { TableSupplier } from '@/modules/supplier/components/organisms/Table/TableSupplier'
-import { ViewType } from '@/modules/supplier/components/molecules/ViewSelector'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
 
 export function SupplierView() {
@@ -97,7 +97,12 @@ export function SupplierView() {
 		refetchRecords()
 	}, [refetchRecords])
 
-	if (errorSupplier && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
+	if (errorSupplier && retryCount < 3)
+		return (
+			<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
+				<RetryErrorState onRetry={handleRetry} />
+			</Card>
+		)
 
 	if (errorSupplier)
 		return (

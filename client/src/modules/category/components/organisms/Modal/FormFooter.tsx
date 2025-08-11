@@ -63,9 +63,7 @@ export function FormFooter({
 	}
 
 	const getButtonIcon = () => {
-		if (isUploading || isSubmitting) {
-			return <Icons.spinnerSimple className='h-4 w-4 animate-spin' />
-		}
+		if (isUploading || isSubmitting) return <Icons.spinnerSimple className='h-4 w-4 animate-spin' />
 		return <Icons.deviceFloppy className='h-4 w-4' />
 	}
 

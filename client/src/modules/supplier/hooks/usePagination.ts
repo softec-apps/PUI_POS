@@ -20,6 +20,13 @@ export function usePagination() {
 		}))
 	}, [])
 
+	const handlePageChange = useCallback((page: number) => {
+		setPagination(prev => ({
+			...prev,
+			page: page,
+		}))
+	}, [])
+
 	const handleLimitChange = useCallback((value: string) => {
 		setPagination(prev => ({ ...prev, limit: Number(value), page: 1 }))
 	}, [])
@@ -53,7 +60,6 @@ export function usePagination() {
 		}
 	}, [searchTerm, updatePaginationSearch])
 
-	// 🔧 FUNCIÓN COMPLETAMENTE CORREGIDA: handleSort
 	const handleSort = useCallback((sortKey: string) => {
 		if (!sortKey) {
 			setCurrentSort('')
@@ -83,18 +89,10 @@ export function usePagination() {
 		}))
 	}, [])
 
-	// 🆕 Nueva función para cambio directo de página
-	const handlePageChange = useCallback((page: number) => {
-		setPagination(prev => ({
-			...prev,
-			page: page,
-		}))
-	}, [])
-
 	const handleResetAll = useCallback(() => {
 		setSearchTerm('')
 		setCurrentSort('')
-		setCurrentStatus(undefined)
+		setCurrentStatus('')
 		setPagination(INITIAL_PAGINATION)
 	}, [])
 

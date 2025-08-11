@@ -6,23 +6,19 @@ import { Table as ReactTable, flexRender } from '@tanstack/react-table'
 import { animations } from '@/modules/product/components/atoms/animations'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-interface Props {
+interface TableViewProps {
 	recordsData: ReactTable<I_Product>
 }
 
-export const TableView = ({ recordsData }: Props) => (
-	<div className='space-y-4'>
-		<motion.div
-			initial='hidden'
-			animate='visible'
-			variants={animations.container}
-			className='border-border/50 rounded-xl border'>
-			<Table className='bg-card w-full rounded-xl'>
-				<TableHeader>
+export const TableView = ({ recordsData }: TableViewProps) => {
+	return (
+		<motion.div initial='hidden' animate='visible' variants={animations.container}>
+			<Table className='border-t border-b'>
+				<TableHeader className='bg-accent dark:bg-accent/30'>
 					{recordsData.getHeaderGroups().map(headerGroup => (
 						<TableRow key={headerGroup.id}>
 							{headerGroup.headers.map(header => (
-								<TableHead key={header.id} className='text-muted-foreground whitespace-nowrap'>
+								<TableHead key={header.id} className='text-muted-foreground'>
 									{flexRender(header.column.columnDef.header, header.getContext())}
 								</TableHead>
 							))}
@@ -43,7 +39,7 @@ export const TableView = ({ recordsData }: Props) => (
 								layout='position'
 								className='group'>
 								{row.getVisibleCells().map(cell => (
-									<TableCell key={cell.id} className='text-primary p-2'>
+									<TableCell key={cell.id} className='text-primary'>
 										{flexRender(cell.column.columnDef.cell, cell.getContext())}
 									</TableCell>
 								))}
@@ -53,5 +49,5 @@ export const TableView = ({ recordsData }: Props) => (
 				</TableBody>
 			</Table>
 		</motion.div>
-	</div>
-)
+	)
+}

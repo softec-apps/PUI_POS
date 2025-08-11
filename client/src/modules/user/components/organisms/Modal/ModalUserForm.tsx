@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react'
 import { Form } from '@/components/ui/form'
 
-import { I_User } from '@/common/types/user'
-import { useUser } from '@/common/hooks/useUser'
 import { useRole } from '@/common/hooks/useRole'
+import { I_User } from '@/common/types/modules/user'
 import { useStatus } from '@/common/hooks/useStatus'
 import { useUserForm } from '@/modules/user/hooks/useUserForm'
 
@@ -23,41 +22,16 @@ import { SecuritySection } from '@/modules/user/components/organisms/Form/Securi
 import { BasicInfoSection } from '@/modules/user/components/organisms/Form/BasicInfoSection'
 
 export function UserFormModal({ isOpen, currentRecord, onClose, onSubmit }: UserFormProps) {
-	const { getUserById } = useUser()
 	const { recordsData: rolesData, loading: loadingRoles } = useRole()
 	const { recordsData: statusesData, loading: loadingStatuses } = useStatus()
 	const [userData, setUserData] = useState<I_User | null>(null)
-	const [loadingUser, setLoadingUser] = useState(false)
 
 	const isEditing = !!currentRecord?.id
 	const { form, resetForm } = useUserForm({ isEditing })
 
-	// Fetch complete user data when modal opens with an existing user
-	useEffect(() => {
-		const fetchUserData = async () => {
-			if (isOpen && currentRecord?.id) {
-				setLoadingUser(true)
-				try {
-					const completeUser = await getUserById(currentRecord.id)
-					setUserData(completeUser)
-				} catch (error) {
-					console.error('Error al obtener datos completos del usuario:', error)
-					// Fallback to currentRecord if fetch fails
-					setUserData(currentRecord)
-				} finally {
-					setLoadingUser(false)
-				}
-			} else if (isOpen && !currentRecord?.id) {
-				setUserData(null)
-				setLoadingUser(false)
-			}
-		}
-		fetchUserData()
-	}, [isOpen, currentRecord, getUserById])
-
 	// Reset form with complete user data
 	useEffect(() => {
-		if (isOpen && !loadingUser) {
+		if (isOpen) {
 			const dataToUse = userData || currentRecord
 
 			form.reset({
@@ -70,7 +44,7 @@ export function UserFormModal({ isOpen, currentRecord, onClose, onSubmit }: User
 				removePhoto: false,
 			})
 		}
-	}, [isOpen, loadingUser, userData, currentRecord, form])
+	}, [isOpen, userData, currentRecord, form])
 
 	const handleFormSubmit = async (data: UserFormData) => {
 		try {

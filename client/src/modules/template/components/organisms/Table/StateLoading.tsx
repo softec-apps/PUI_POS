@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ViewType } from '@/modules/category/components/molecules/ViewSelector'
+import { ViewType } from '@/components/layout/organims/ViewSelector'
 import { TableSkeleton } from '@/modules/category/components/organisms/Table/TableSkeleton'
 
 interface LoadingStatesProps {

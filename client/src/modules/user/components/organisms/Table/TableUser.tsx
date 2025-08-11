@@ -8,7 +8,7 @@ import {
 	RowSelectionState,
 } from '@tanstack/react-table'
 import { useState } from 'react'
-import { I_User } from '@/modules/user/types/user'
+import { I_User } from '@/common/types/modules/user'
 import { motion, AnimatePresence } from 'framer-motion'
 import { animations } from '@/modules/user/components/atoms/animations'
 
@@ -25,15 +25,16 @@ interface TableUserProps {
 	recordsData: I_User[]
 	viewType: ViewType
 	onEdit: (recordsData: I_User) => void
+	onSoftDelete: (recordsData: I_User) => void
 	onHardDelete: (recordsData: I_User) => void
 }
 
-export function TableUser({ recordsData, loading, viewType, onEdit, onHardDelete }: TableUserProps) {
+export function TableUser({ recordsData, loading, viewType, onEdit, onSoftDelete, onHardDelete }: TableUserProps) {
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState('')
 
-	const columns = createTableColumns({ onEdit, onHardDelete })
+	const columns = createTableColumns({ onEdit, onSoftDelete, onHardDelete })
 
 	const table = useReactTable({
 		data: recordsData,
