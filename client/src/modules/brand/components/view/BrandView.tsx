@@ -1,21 +1,23 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
+
 import { useBrand } from '@/common/hooks/useBrand'
 import { useModalState } from '@/modules/brand/hooks/useModalState'
-import { usePagination } from '@/modules/brand/hooks/usePagination'
+import { usePagination } from '@/modules/category/hooks/usePagination'
 import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
 import { useBrandHandlers } from '@/modules/brand/hooks/useBrandHandlers'
 
 import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
 import { UtilBanner } from '@/components/UtilBanner'
+import { useDebounce } from '@/common/hooks/useDebounce'
+import { ViewType } from '@/components/layout/organims/ViewSelector'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { ViewType } from '@/modules/brand/components/molecules/ViewSelector'
+import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { BrandHeader } from '@/modules/brand/components/templates/Header'
 import { BrandModals } from '@/modules/brand/components/templates/Modals'
 import { BrandFilters } from '@/modules/brand/components/templates/Filters'
-import { PaginationControls } from '@/modules/brand/components/templates/Pagination'
 import { BrandTable } from '@/modules/brand/components/organisms/Table/TableBrand'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
 
@@ -23,35 +25,52 @@ export function BrandView() {
 	const [retryCount, setRetryCount] = useState(0)
 	const [viewType, setViewType] = useState<ViewType>('table')
 
-	// Hooks de paginación
+	const [localSearchTerm, setLocalSearchTerm] = useState<string>('')
+	const debouncedSearchTerm = useDebounce(localSearchTerm, 500)
+
 	const {
 		pagination,
-		searchTerm,
 		currentSort,
 		currentStatus,
 		handleNextPage,
 		handlePrevPage,
 		handleLimitChange,
-		handleSearchChange,
 		handleSort,
 		handleStatusChange,
 		handleResetAll,
 		handlePageChange,
+		setPagination,
 	} = usePagination()
 
-	// Memoizar parámetros de paginación
+	useEffect(() => {
+		setPagination(prev => ({
+			...prev,
+			search: debouncedSearchTerm,
+			page: 1,
+		}))
+	}, [debouncedSearchTerm, setPagination])
+
+	const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value
+		setLocalSearchTerm(value)
+	}, [])
+
+	const handleResetAllWithSearch = useCallback(() => {
+		setLocalSearchTerm('')
+		handleResetAll()
+	}, [handleResetAll])
+
 	const paginationParams = useMemo(
 		() => ({
-			search: searchTerm,
+			search: debouncedSearchTerm,
 			page: pagination.page,
 			limit: pagination.limit,
 			sort: currentSort ? [currentSort] : undefined,
 			filters: currentStatus ? { status: currentStatus } : undefined,
 		}),
-		[pagination.page, pagination.limit, searchTerm, currentStatus, currentSort]
+		[pagination.page, pagination.limit, debouncedSearchTerm, currentStatus, currentSort]
 	)
 
-	// Hook principal de marcas
 	const {
 		brands,
 		loading,
@@ -62,19 +81,15 @@ export function BrandView() {
 		refetchBrands,
 	} = useBrand(paginationParams)
 
-	// Función para reintentar la carga
 	const handleRetry = useCallback(() => {
 		setRetryCount(prev => prev + 1)
 		refetchBrands()
 	}, [refetchBrands])
 
-	// Hook de refresh
 	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchBrands)
 
-	// Hooks de formulario y modales
 	const modalState = useModalState()
 
-	// Handlers de marcas
 	const brandHandlers = useBrandHandlers({
 		modalState,
 		createBrand,
@@ -82,12 +97,10 @@ export function BrandView() {
 		hardDeleteBrand,
 	})
 
-	// Optimized next page handler
 	const handleNext = useCallback(() => {
 		handleNextPage(brands?.data?.pagination?.hasNextPage)
 	}, [handleNextPage, brands?.data?.pagination?.hasNextPage])
 
-	// Memoizar datos derivados
 	const brandData = useMemo(
 		() => ({
 			items: brands?.data?.items || [],
@@ -132,7 +145,7 @@ export function BrandView() {
 
 					{/* Filtros y búsqueda */}
 					<BrandFilters
-						searchValue={searchTerm}
+						searchValue={localSearchTerm}
 						currentSort={currentSort}
 						currentStatus={currentStatus}
 						isRefreshing={isRefreshing}
@@ -140,7 +153,7 @@ export function BrandView() {
 						onSort={handleSort}
 						onStatusChange={handleStatusChange}
 						onRefresh={handleRefresh}
-						onResetAll={handleResetAll}
+						onResetAll={handleResetAllWithSearch}
 						viewType={viewType}
 						onViewChange={setViewType}
 					/>
