@@ -12,10 +12,9 @@ import { Icons } from '@/components/icons'
 import { FormFooter } from '@/modules/product/components/organisms/Form/FormFooter'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet'
 
-import { AlertMessage } from '@/components/layout/atoms/Alert'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { BrandSelector } from '@/modules/product/components/organisms/Form/BrandSelector'
-import { Supplierlector } from '@/modules/product/components/organisms/Form/SupplierSelector'
+import { SupplierSelector } from '@/modules/product/components/organisms/Form/SupplierSelector'
 import { CategorySelector } from '@/modules/product/components/organisms/Form/CategorySelector'
 import { BasicInfoSection } from '@/modules/product/components/organisms/Form/BasicInfoSection'
 import { EconomicSection } from '@/modules/product/components/organisms/Form/EconomicSection'
@@ -59,7 +58,7 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 		setTemplateSearch,
 		templateOpen,
 		setTemplateOpen,
-	} = useProductForm(productData || currentRecord)
+	} = useProductForm(productData)
 
 	// Fetch complete product data when modal opens with an existing product
 	useEffect(() => {
@@ -145,7 +144,7 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 					</div>
 
 					<SheetDescription>
-						{currentRecord?.id ? 'Modifica los detalles de tu producto existente' : 'Crea un nuevo producto'}
+						{currentRecord?.id ? 'Actualiza los detalles de este producto' : 'Agrega un nuevo producto'}
 					</SheetDescription>
 				</SheetHeader>
 
@@ -157,15 +156,6 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 						</div>
 					) : (
 						<>
-							<AlertMessage
-								message={
-									currentRecord
-										? 'Modifica los campos necesarios y guarda los cambios para actualizar el producto en el sistema.'
-										: 'Completa la información requerida para crear un nuevo producto.'
-								}
-								variant='info'
-							/>
-
 							<Form {...form}>
 								<form onSubmit={form.handleSubmit(handleFormSubmit)}>
 									<div className='space-y-12'>
@@ -195,15 +185,15 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 											loadingBrand={loadingBrands}
 											brandSearch={brandSearch}
 											setBrandSearch={setBrandSearch}
-											brandsOpen={brandOpen}
+											brandOpen={brandOpen}
 											setBrandOpen={setBrandOpen}
 										/>
 
-										<Supplierlector
+										<SupplierSelector
 											control={form.control}
 											setValue={form.setValue}
 											watch={form.watch}
-											supplier={suppliersData}
+											suppliers={suppliersData}
 											loadingSupplier={loadingSuppliers}
 											supplierSearch={supplierSearch}
 											setSupplierSearch={setSupplierSearch}
