@@ -58,6 +58,10 @@ export const CardView = ({ table, onEdit, onHardDelete }: CardViewProps) => (
 
 								<CardContent className='flex-grow'>
 									<div className='flex h-full flex-col space-y-2'>
+										<Badge
+											variant={recordData.status === 'active' ? 'success' : 'warning'}
+											text={recordData.status === 'active' ? 'Activo' : 'Inactivo'}
+										/>
 										<Typography variant='h5' className='line-clamp-1'>
 											{recordData.name}
 										</Typography>
@@ -68,15 +72,7 @@ export const CardView = ({ table, onEdit, onHardDelete }: CardViewProps) => (
 								</CardContent>
 
 								<CardFooter className='flex flex-none items-center justify-between p-4 pt-0'>
-									<Badge
-										decord={false}
-										variant={recordData.status === 'active' ? 'success' : 'warning'}
-										text={recordData.status === 'active' ? 'Activo' : 'Inactivo'}
-									/>
-
-									<div className='text-muted-foreground text-xs'>
-										<TableInfoDate brandData={recordData} />
-									</div>
+									<TableInfoDate recordData={recordData} />
 								</CardFooter>
 							</Card>
 						</motion.div>

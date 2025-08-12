@@ -1,8 +1,8 @@
 'use client'
 
-import { formatDate } from '@/common/utils/dateFormater-util'
-import { I_Brand } from '@/common/types/modules/brand'
 import { Icons } from '@/components/icons'
+import { I_Brand } from '@/common/types/modules/brand'
+import { formatDate } from '@/common/utils/dateFormater-util'
 
 interface TableInfoDateProps {
 	recordData: I_Brand
@@ -18,12 +18,12 @@ export const TableInfoDate = ({ recordData }: TableInfoDateProps) => {
 				</div>
 			) : (
 				<div className='space-y-1.5'>
-					<div className='text-muted-foreground flex items-center gap-1'>
+					<div className='text-primary flex items-center gap-1'>
 						<Icons.calendar size={14} />
 						<span>{formatDate(recordData?.createdAt, true)}</span>
 					</div>
 
-					<div className='text-muted-foreground flex items-center gap-1'>
+					<div className='text-primary flex items-center gap-1'>
 						<Icons.edit size={14} />
 						<span>{formatDate(recordData?.updatedAt, true)}</span>
 					</div>
