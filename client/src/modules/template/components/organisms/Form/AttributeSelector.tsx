@@ -77,7 +77,7 @@ export function AttributeSelector({
 											</FormControl>
 										</PopoverTrigger>
 
-										<PopoverContent className='min-w-full p-0' align='start'>
+										<PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0' align='start'>
 											<Command shouldFilter={false}>
 												<CommandInput
 													placeholder='Buscar atributos...'

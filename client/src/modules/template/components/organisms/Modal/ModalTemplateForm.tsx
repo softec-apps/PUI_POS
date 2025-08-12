@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react'
 import { Form } from '@/components/ui/form'
-import { Separator } from '@/components/ui/separator'
 import { useTemplateForm } from '@/modules/template/hooks/useTemplateForm'
 import { FormFooter } from '@/modules/template/components/organisms/Form/FormFooter'
 import { TemplateFormProps, TemplateFormData } from '@/modules/template/types/template-form'
@@ -10,7 +9,6 @@ import { BasicInfoSection } from '@/modules/template/components/organisms/Form/B
 import { CategorySelector } from '@/modules/template/components/organisms/Form/CategorySelector'
 import { AttributeSelector } from '@/modules/template/components/organisms/Form/AttributeSelector'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet'
-import { AlertMessage } from '@/components/layout/atoms/Alert'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { Icons } from '@/components/icons'
 
@@ -89,15 +87,6 @@ export function TemplateFormModal({ isOpen, currentTemplate, onClose, onSubmit }
 
 				{/* Content */}
 				<div className='flex-1 space-y-4 overflow-auto p-4'>
-					<AlertMessage
-						message={
-							currentTemplate
-								? 'Modifica los campos necesarios y guarda los cambios para actualizar la plantilla en el sistema.'
-								: 'Completa la información requerida para crear una nueva plantilla.'
-						}
-						variant='info'
-					/>
-
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(handleFormSubmit)}>
 							<div className='space-y-12'>
