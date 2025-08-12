@@ -75,13 +75,12 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 
 													<div className='flex items-center justify-between gap-2'>
 														<Badge
-															decord={false}
 															variant={brandData.status === 'active' ? 'success' : 'warning'}
 															text={brandData.status === 'active' ? 'Activo' : 'Inactivo'}
 														/>
 
 														<div className='text-muted-foreground text-right text-xs'>
-															<TableInfoDate brandData={brandData} />
+															<TableInfoDate recordData={brandData} />
 														</div>
 													</div>
 												</div>

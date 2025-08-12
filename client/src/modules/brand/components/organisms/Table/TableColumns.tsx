@@ -99,7 +99,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: TableColumnsProps):
 	{
 		accessorKey: 'date',
 		header: 'Información',
-		cell: ({ row }) => <TableInfoDate brandData={row.original} />,
+		cell: ({ row }) => <TableInfoDate recordData={row.original} />,
 	},
 	{
 		id: 'actions',
