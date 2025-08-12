@@ -1,56 +1,76 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
-import { useAttribute } from '@/common/hooks/useAttribute'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 
+import { useAttribute } from '@/common/hooks/useAttribute'
 import { useModalState } from '@/modules/atribute/hooks/useModalState'
-import { usePagination } from '@/modules/atribute/hooks/usePagination'
+import { usePagination } from '@/modules/category/hooks/usePagination'
 import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
 import { useAttributeHandlers } from '@/modules/atribute/hooks/useHandlers'
 
 import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
 import { UtilBanner } from '@/components/UtilBanner'
+import { useDebounce } from '@/common/hooks/useDebounce'
+import { ViewType } from '@/components/layout/organims/ViewSelector'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { AtributeHeader } from '@/modules/atribute/components/templates/Header'
 import { AttributeModals } from '@/modules/atribute/components/templates/Modals'
 import { AttributeFilters } from '@/modules/atribute/components/templates/Filters'
-import { PaginationControls } from '@/modules/atribute/components/templates/Pagination'
 import { AtributeTable } from '@/modules/atribute/components/organisms/Table/TableAtribute'
-import { ViewType } from '@/modules/atribute/components/molecules/ViewSelector'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
 
 export function AttributesView() {
 	const [retryCount, setRetryCount] = useState(0)
 	const [viewType, setViewType] = useState<ViewType>('table')
+	const [localSearchTerm, setLocalSearchTerm] = useState<string>('')
+	const debouncedSearchTerm = useDebounce(localSearchTerm, 500)
 
-	// Hooks de paginación
 	const {
 		pagination,
-		searchTerm,
 		currentSort,
 		currentStatus,
 		handleNextPage,
 		handlePrevPage,
 		handleLimitChange,
-		handleSearchChange,
 		handleSort,
 		handleStatusChange,
 		handleResetAll,
 		handlePageChange,
+		setPagination,
 	} = usePagination()
 
-	// ✅ Memoizar parámetros de paginación para evitar recreaciones
-	const paginationParams = useMemo(
-		() => ({
-			search: searchTerm,
+	useEffect(() => {
+		setPagination(prev => ({
+			...prev,
+			search: debouncedSearchTerm,
+			page: 1,
+		}))
+	}, [debouncedSearchTerm, setPagination])
+
+	const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value
+		setLocalSearchTerm(value)
+	}, [])
+
+	const handleResetAllWithSearch = useCallback(() => {
+		setLocalSearchTerm('')
+		handleResetAll()
+	}, [handleResetAll])
+
+	const paginationParams = useMemo(() => {
+		const params: any = {
+			search: debouncedSearchTerm,
 			page: pagination.page,
 			limit: pagination.limit,
 			sort: currentSort ? [currentSort] : undefined,
-			filters: currentStatus ? { status: currentStatus } : undefined,
-		}),
-		[pagination.page, pagination.limit, searchTerm, currentStatus, currentSort]
-	)
+		}
+		if (currentStatus === 'true' || currentStatus === 'false') {
+			params.filters = { required: currentStatus === 'true' }
+		}
+		return params
+	}, [pagination.page, pagination.limit, debouncedSearchTerm, currentStatus, currentSort])
 
 	const {
 		attributes,
@@ -62,13 +82,10 @@ export function AttributesView() {
 		refetchAttributes,
 	} = useAttribute(paginationParams)
 
-	// Hook de refresh data
 	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchAttributes)
 
-	// Hooks de formulario y modales
 	const modalState = useModalState()
 
-	// Handlers
 	const atributesHandlers = useAttributeHandlers({
 		modalState,
 		createAttribute,
@@ -76,12 +93,10 @@ export function AttributesView() {
 		hardDeleteAttribute,
 	})
 
-	// ✅ Optimized next page handler
 	const handleNext = useCallback(() => {
 		handleNextPage(attributes?.data?.pagination?.hasNextPage)
 	}, [handleNextPage, attributes?.data?.pagination?.hasNextPage])
 
-	// ✅ Memoizar datos derivados
 	const atributeData = useMemo(
 		() => ({
 			items: attributes?.data?.items || [],
@@ -91,7 +106,6 @@ export function AttributesView() {
 		[attributes?.data]
 	)
 
-	// Función para reintentar la carga
 	const handleRetry = useCallback(() => {
 		setRetryCount(prev => prev + 1)
 		refetchAttributes()
@@ -132,15 +146,15 @@ export function AttributesView() {
 
 					{/* Filtros y búsqueda */}
 					<AttributeFilters
-						searchValue={searchTerm}
+						searchValue={localSearchTerm}
 						currentSort={currentSort}
-						currentStatus={currentStatus}
+						currentRequired={currentStatus as 'true' | 'false' | ''}
 						isRefreshing={isRefreshing}
 						onSearchChange={handleSearchChange}
 						onSort={handleSort}
-						onStatusChange={handleStatusChange}
+						onRequiredChange={handleStatusChange}
 						onRefresh={handleRefresh}
-						onResetAll={handleResetAll}
+						onResetAll={handleResetAllWithSearch}
 						viewType={viewType}
 						onViewChange={setViewType}
 					/>

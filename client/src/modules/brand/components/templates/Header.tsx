@@ -1,39 +1,125 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { Icons } from '@/components/icons'
-import { Typography } from '@/components/ui/typography'
-import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { useBrand } from '@/common/hooks/useBrand'
+import { formatDate } from '@/common/utils/dateFormater-util'
+import { ExportButton } from '@/components/layout/organims/ExportButton'
+import { CreateButton } from '@/components/layout/organims/CreateButton'
+import { ModuleHeader } from '@/components/layout/templates/ModuleHeader'
+import { useGenericExport } from '@/common/hooks/shared/useGenericExport'
 
-interface Props {
+interface BrandHeaderProps {
 	onCreateClick: () => void
 }
 
-export function BrandHeader({ onCreateClick }: Props) {
-	return (
-		<motion.section
-			initial={{ opacity: 0, y: -12, filter: 'blur(0px)' }}
-			animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-			transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-			className='flex items-center justify-between'>
-			<div className='flex flex-col gap-2'>
-				<div className='flex items-baseline gap-4'>
-					<Typography variant='h3' className='font-bold'>
-						Marcas
-					</Typography>
-				</div>
-				<Typography variant='span'>Gestiona las marcas de tus productos</Typography>
-			</div>
+const EXPORT_CONFIG = {
+	fileName: 'marcas',
+	reportTitle: 'Reporte de Marcas',
+	columnLabels: {
+		name: 'Nombre',
+		description: 'Descripción',
+		status: 'Estado',
+		createdAt: 'Fecha de Creación',
+		updatedAt: 'Última Actualización',
+		deletedAt: 'Fecha de Eliminación',
+	},
+	columnMappings: {
+		status: {
+			type: 'enum' as const,
+			valueMap: {
+				active: 'Activo',
+				inactive: 'Inactivo',
+			},
+		},
+		createdAt: {
+			type: 'date' as const,
+			format: (value: string) => formatDate(value, true),
+		},
+		updatedAt: {
+			type: 'date' as const,
+			format: (value: string) => formatDate(value, true),
+		},
+		deletedAt: {
+			type: 'date' as const,
+			format: (value: string) => formatDate(value, true),
+		},
+	},
+	pdfConfig: {
+		orientation: 'landscape' as const,
+		headerColor: [45, 45, 45] as const,
+		groupDateAtColumns: false,
+	},
+	excludeColumns: ['__typename', 'id'],
+	columnGroups: {
+		basic: ['name', 'description'],
+		status: ['status'],
+		dates: ['createdAt', 'updatedAt', 'deletedAt'],
+	},
+	customGroupConfig: {
+		basic: {
+			label: 'Información General',
+			icon: <Icons.infoCircle className='h-4 w-4' />,
+		},
+		status: {
+			label: 'Estado',
+			icon: <Icons.server className='h-4 w-4' />,
+		},
+		dates: {
+			label: 'Fechas y Auditoría',
+			icon: <Icons.calendar className='h-4 w-4' />,
+		},
+	},
+	columnTypes: {
+		name: 'text' as const,
+		description: 'text' as const,
+		status: 'text' as const,
+		createdAt: 'date' as const,
+		updatedAt: 'date' as const,
+		deletedAt: 'date' as const,
+	},
+}
 
-			<div className='flex gap-2'>
-				<ActionButton
-					size='lg'
-					variant='default'
-					icon={<Icons.plus />}
-					text='Nueva marca'
-					onClick={onCreateClick}
-				/>
-			</div>
-		</motion.section>
+export function BrandHeader({ onCreateClick }: BrandHeaderProps) {
+	const { brands: recordsData, loading } = useBrand()
+
+	const totalRecords = recordsData?.data?.pagination?.totalRecords || 0
+	const brandData = recordsData?.data?.items || []
+
+	const { exportData } = useGenericExport(EXPORT_CONFIG)
+
+	const handleExport = async (format: 'xlsx' | 'pdf', selectedColumns?: string[]) =>
+		await exportData(brandData, format, selectedColumns)
+
+	return (
+		<ModuleHeader
+			title='Marcas'
+			totalRecords={totalRecords}
+			loading={loading}
+			actionContent={
+				<>
+					<ExportButton
+						data={brandData}
+						totalRecords={totalRecords}
+						loading={loading}
+						onExport={handleExport}
+						exportConfig={{
+							columnLabels: EXPORT_CONFIG.columnLabels,
+							columnTypes: EXPORT_CONFIG.columnTypes,
+							excludeColumns: EXPORT_CONFIG.excludeColumns,
+							columnGroups: EXPORT_CONFIG.columnGroups,
+							customGroupConfig: EXPORT_CONFIG.customGroupConfig,
+						}}
+					/>
+					<CreateButton
+						onClick={onCreateClick}
+						config={{
+							text: 'Nueva marca',
+							icon: <Icons.plus />,
+							size: 'lg',
+						}}
+					/>
+				</>
+			}
+		/>
 	)
 }

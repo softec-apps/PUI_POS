@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 
 import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
@@ -9,47 +9,63 @@ import { UtilBanner } from '@/components/UtilBanner'
 import { useHandlers } from '@/modules/template/hooks/useHandlers'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { useModalState } from '@/modules/template/hooks/useModalState'
-import { usePagination } from '@/modules/template/hooks/usePagination'
+import { usePagination } from '@/modules/category/hooks/usePagination'
 import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
 import { TemplateModals } from '@/modules/template/components/templates/Modals'
 import { TemplateHeader } from '@/modules/template/components/templates/Header'
 import { TemplateFilters } from '@/modules/template/components/templates/Filters'
-import { PaginationControls } from '@/modules/template/components/templates/Pagination'
+import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { TemplateTable } from '@/modules/template/components/organisms/Table/TableTemplate'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
+import { useDebounce } from '@/common/hooks/useDebounce'
+import { ViewType } from '@/components/layout/organims/ViewSelector'
 
 export function TemplateView() {
 	const [retryCount, setRetryCount] = useState(0)
 	const [viewType, setViewType] = useState<ViewType>('table')
+	const [localSearchTerm, setLocalSearchTerm] = useState<string>('')
+	const debouncedSearchTerm = useDebounce(localSearchTerm, 500)
 
-	// ✅ URL-synced pagination hooks
 	const {
 		pagination,
-		searchTerm,
 		currentSort,
-		currentStatus,
 		handleNextPage,
 		handlePrevPage,
 		handleLimitChange,
-		handleSearchChange,
 		handleSort,
 		handleResetAll,
 		handlePageChange,
+		setPagination,
 	} = usePagination()
 
-	// ✅ Memoizar parámetros de paginación para evitar recreaciones
+	useEffect(() => {
+		setPagination(prev => ({
+			...prev,
+			search: debouncedSearchTerm,
+			page: 1,
+		}))
+	}, [debouncedSearchTerm, setPagination])
+
+	const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value
+		setLocalSearchTerm(value)
+	}, [])
+
+	const handleResetAllWithSearch = useCallback(() => {
+		setLocalSearchTerm('')
+		handleResetAll()
+	}, [handleResetAll])
+
 	const paginationParams = useMemo(
 		() => ({
+			search: debouncedSearchTerm,
 			page: pagination.page,
 			limit: pagination.limit,
-			search: searchTerm,
-			filters: currentStatus ? { status: currentStatus } : undefined,
 			sort: currentSort ? [currentSort] : undefined,
 		}),
-		[pagination.page, pagination.limit, searchTerm, currentStatus, currentSort]
+		[pagination.page, pagination.limit, debouncedSearchTerm, currentSort]
 	)
 
-	// ✅ Main template hook con parámetros memoizados
 	const {
 		template,
 		loading,
@@ -60,13 +76,10 @@ export function TemplateView() {
 		refetchTemplate,
 	} = useTemplate(paginationParams)
 
-	// ✅ Data refresh hook
 	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchTemplate)
 
-	// ✅ Form and modal hooks
 	const modalState = useModalState()
 
-	// ✅ Handlers optimizados
 	const templateHandlers = useHandlers({
 		modalState,
 		createTemplate,
@@ -74,12 +87,10 @@ export function TemplateView() {
 		hardDeleteTemplate,
 	})
 
-	// ✅ Optimized next page handler
 	const handleNext = useCallback(() => {
 		handleNextPage(template?.data?.pagination?.hasNextPage)
 	}, [handleNextPage, template?.data?.pagination?.hasNextPage])
 
-	// ✅ Memoizar datos derivados
 	const templateData = useMemo(
 		() => ({
 			items: template?.data?.items || [],
@@ -89,7 +100,6 @@ export function TemplateView() {
 		[template?.data]
 	)
 
-	// Función para reintentar la carga
 	const handleRetry = useCallback(() => {
 		setRetryCount(prev => prev + 1)
 		refetchTemplate()
@@ -130,14 +140,13 @@ export function TemplateView() {
 
 					{/* Filters and search */}
 					<TemplateFilters
-						searchValue={searchTerm}
+						searchValue={localSearchTerm}
 						currentSort={currentSort}
-						currentStatus={currentStatus}
 						isRefreshing={isRefreshing}
 						onSearchChange={handleSearchChange}
 						onSort={handleSort}
 						onRefresh={handleRefresh}
-						onResetAll={handleResetAll}
+						onResetAll={handleResetAllWithSearch}
 						viewType={viewType}
 						onViewChange={setViewType}
 					/>

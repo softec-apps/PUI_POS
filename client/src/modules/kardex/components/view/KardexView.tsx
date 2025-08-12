@@ -1,70 +1,89 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 
 import { Icons } from '@/components/icons'
 import { Card } from '@/components/ui/card'
 import { useKardex } from '@/common/hooks/useKardex'
 import { UtilBanner } from '@/components/UtilBanner'
-import { usePagination } from '@/modules/kardex/hooks/usePagination'
+import { usePagination } from '@/modules/category/hooks/usePagination'
 import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
 import { KardexHeader } from '@/modules/kardex/components/templates/Header'
 import { KardexFilters } from '@/modules/kardex/components/templates/Filters'
 import { TableKardex } from '@/modules/kardex/components/organisms/Table/TableKardex'
-import { PaginationControls } from '@/modules/kardex/components/templates/Pagination'
+import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
-import { ViewType } from '@/modules/kardex/components/molecules/ViewSelector'
+import { ViewType } from '@/components/layout/organims/ViewSelector'
+import { useDebounce } from '@/common/hooks/useDebounce'
+import { I_Kardex } from '@/common/types/modules/kardex'
 
 export function KardexView() {
 	const [retryCount, setRetryCount] = useState(0)
 	const [viewType, setViewType] = useState<ViewType>('table')
+	const [localSearchTerm, setLocalSearchTerm] = useState<string>('')
+	const debouncedSearchTerm = useDebounce(localSearchTerm, 500)
 
-	// ✅ URL-synced pagination hooks
 	const {
 		pagination,
-		searchTerm,
 		currentSort,
-		currentMovementType,
-		handleMovementTypeChange,
+		currentStatus,
 		handleNextPage,
 		handlePrevPage,
 		handleLimitChange,
-		handleSearchChange,
 		handleSort,
+		handleStatusChange,
 		handleResetAll,
 		handlePageChange,
+		setPagination,
 	} = usePagination()
 
-	// ✅ Memoizar parámetros de paginación para evitar recreaciones
+	useEffect(() => {
+		setPagination(prev => ({
+			...prev,
+			search: debouncedSearchTerm,
+			page: 1,
+		}))
+	}, [debouncedSearchTerm, setPagination])
+
+	const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value
+		setLocalSearchTerm(value)
+	}, [])
+
+	const handleResetAllWithSearch = useCallback(() => {
+		setLocalSearchTerm('')
+		handleResetAll()
+	}, [handleResetAll])
+
 	const paginationParams = useMemo(
 		() => ({
+			search: debouncedSearchTerm,
 			page: pagination.page,
 			limit: pagination.limit,
-			search: searchTerm,
-			filters: currentMovementType ? { movementType: currentMovementType } : undefined,
 			sort: currentSort ? [currentSort] : undefined,
+			filters: currentStatus ? { movementType: currentStatus } : undefined,
 		}),
-
-		[pagination.page, pagination.limit, searchTerm, currentMovementType, currentSort]
+		[pagination.page, pagination.limit, debouncedSearchTerm, currentStatus, currentSort]
 	)
 
-	// ✅ Main kardex hook con parámetros memoizados
 	const {
-		lastedRecords: records,
-		loadingLasted: loading,
-		errorLasted: error,
-		refetchLasted,
+		records,
+		loading,
+		error,
+		refetchRecords,
 	} = useKardex(paginationParams)
 
-	// ✅ Data refresh hook
-	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchLasted)
+	const handleRetry = useCallback(() => {
+		setRetryCount(prev => prev + 1)
+		refetchRecords()
+	}, [refetchRecords])
 
-	// ✅ Optimized next page handler
+	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchRecords)
+
 	const handleNext = useCallback(() => {
 		handleNextPage(records?.data?.pagination?.hasNextPage)
 	}, [handleNextPage, records?.data?.pagination?.hasNextPage])
 
-	// ✅ Memoizar datos derivados
 	const kardexData = useMemo(
 		() => ({
 			items: records?.data?.items || [],
@@ -73,12 +92,6 @@ export function KardexView() {
 		}),
 		[records?.data]
 	)
-
-	// Función para reintentar la carga
-	const handleRetry = useCallback(() => {
-		setRetryCount(prev => prev + 1)
-		refetchLasted()
-	}, [refetchLasted])
 
 	if (error && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
 
@@ -96,26 +109,25 @@ export function KardexView() {
 					<UtilBanner
 						icon={<Icons.dataBase />}
 						title='Sin registros'
-						description='No hay datos disponibles.
-						'
+						description='No hay datos disponibles.'
 					/>
 				</Card>
 			) : (
 				<>
 					{/* Header */}
-					<KardexHeader title='Kardex' subtitle='Gestiona los movimientos de tus productos' />
+					<KardexHeader />
 
 					{/* Filters and search */}
 					<KardexFilters
-						searchValue={searchTerm}
+						searchValue={localSearchTerm}
 						currentSort={currentSort}
-						currentMovementType={currentMovementType}
-						onMovementTypeChange={handleMovementTypeChange}
+						currentMovementType={currentStatus as I_Kardex['movementType'] | ''}
+						onMovementTypeChange={handleStatusChange}
 						isRefreshing={isRefreshing}
 						onSearchChange={handleSearchChange}
 						onSort={handleSort}
 						onRefresh={handleRefresh}
-						onResetAll={handleResetAll}
+						onResetAll={handleResetAllWithSearch}
 						viewType={viewType}
 						onViewChange={setViewType}
 					/>
