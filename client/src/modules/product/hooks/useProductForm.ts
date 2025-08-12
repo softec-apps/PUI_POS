@@ -6,8 +6,8 @@ import { useBrand } from '@/common/hooks/useBrand'
 import { useCategory } from '@/common/hooks/useCategory'
 import { useSupplier } from '@/common/hooks/useSupplier'
 
-import { ProductSchema, ProductFormData } from '@/modules/product/types/product-form'
 import { useTemplate } from '@/common/hooks/useTemplate'
+import { ProductSchema, ProductFormData } from '@/modules/product/types/product-form'
 
 export function useProductForm() {
 	const [categoryPage, setCategoryPage] = useState(1)
@@ -29,7 +29,7 @@ export function useProductForm() {
 	// Hook get all categories
 	const { categories: categoriesData, loading: loadingCategories } = useCategory({
 		page: categoryPage,
-		limit: 10,
+		limit: 25,
 		search: categorySearch,
 		filters: { status: 'active' },
 	})
@@ -37,7 +37,7 @@ export function useProductForm() {
 	// Hook get all brand
 	const { brands: brandsData, loading: loadingBrands } = useBrand({
 		page: brandPage,
-		limit: 10,
+		limit: 25,
 		search: brandSearch,
 		filters: { status: 'active' },
 	})
@@ -45,7 +45,7 @@ export function useProductForm() {
 	// Hook get all supplier
 	const { supplierData: suppliersData, loading: loadingSuppliers } = useSupplier({
 		page: supplierPage,
-		limit: 10,
+		limit: 25,
 		search: supplierSearch,
 		filters: { status: 'active' },
 	})
@@ -53,7 +53,7 @@ export function useProductForm() {
 	// Hook get all template
 	const { template: templatesData, loading: loadingTemplates } = useTemplate({
 		page: templatePage,
-		limit: 10,
+		limit: 25,
 		search: templateSearch,
 	})
 

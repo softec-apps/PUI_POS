@@ -43,6 +43,7 @@ export function EconomicSection({ control }: EconomicSectionProps) {
 					description='Stock inicial del producto'
 				/>
 
+				{/* 
 				<UniversalFormField
 					control={control}
 					name='sku'
@@ -52,6 +53,7 @@ export function EconomicSection({ control }: EconomicSectionProps) {
 					max={20}
 					description='SKU del producto'
 				/>
+				*/}
 
 				<UniversalFormField
 					control={control}

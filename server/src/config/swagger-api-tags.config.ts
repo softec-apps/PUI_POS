@@ -86,4 +86,12 @@ export const API_TAGS_CONFIG = [
       url: '',
     },
   },
+  {
+    name: PATH_SOURCE.CUSTOMER,
+    description: 'clientes',
+    externalDocs: {
+      description: '',
+      url: '',
+    },
+  },
 ]

@@ -5,7 +5,6 @@ import React, { ReactNode } from 'react'
 import { Icons } from '@/components/icons'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -44,8 +43,14 @@ type UniversalFormFieldProps<T extends FieldValues> = {
 	switchContainerClass?: string
 	showValidationIcons?: boolean
 	showIconsInSelect?: boolean
-	commandEmptyMessage?: string
+	commandEmptyMessage?: React.ReactNode
 	groupByCategory?: boolean
+	// Props específicos para command con búsqueda externa
+	commandOpen?: boolean
+	setCommandOpen?: (open: boolean) => void
+	commandSearchValue?: string
+	setCommandSearchValue?: (search: string) => void
+	shouldFilter?: boolean
 }
 
 export function UniversalFormField<T extends FieldValues>({
@@ -56,7 +61,7 @@ export function UniversalFormField<T extends FieldValues>({
 	description,
 	type = 'text',
 	required = false,
-	className = 'transition-all duration-200 focus:ring-2',
+	className = 'transition-all duration-500 focus:ring-2 placeholder:text-muted-foreground/70',
 	options,
 	min,
 	max,
@@ -68,9 +73,21 @@ export function UniversalFormField<T extends FieldValues>({
 	showIconsInSelect = false,
 	commandEmptyMessage = 'No se encontraron resultados.',
 	groupByCategory = false,
+	commandOpen,
+	setCommandOpen,
+	commandSearchValue,
+	setCommandSearchValue,
+	shouldFilter = true,
 }: UniversalFormFieldProps<T>) {
-	const [commandOpen, setCommandOpen] = React.useState(false)
+	const [internalCommandOpen, setInternalCommandOpen] = React.useState(false)
+	const [internalSearchValue, setInternalSearchValue] = React.useState('')
 	const [showPassword, setShowPassword] = React.useState(false)
+
+	// Usar estados externos si se proporcionan, sino usar internos
+	const isCommandOpen = commandOpen !== undefined ? commandOpen : internalCommandOpen
+	const handleSetCommandOpen = setCommandOpen || setInternalCommandOpen
+	const searchValue = commandSearchValue !== undefined ? commandSearchValue : internalSearchValue
+	const handleSetSearchValue = setCommandSearchValue || setInternalSearchValue
 
 	// Para campos hidden, no mostrar ningún UI
 	if (type === 'hidden') {
@@ -170,7 +187,7 @@ export function UniversalFormField<T extends FieldValues>({
 
 					if (type === 'select') {
 						return (
-							<div className='flex items-center gap-2'>
+							<div className='text-primary flex items-center gap-2'>
 								<SelectValue placeholder={placeholder} />
 							</div>
 						)
@@ -178,43 +195,17 @@ export function UniversalFormField<T extends FieldValues>({
 
 					// Para command
 					return (
-						<div className='flex items-center gap-2'>
+						<div className='text-primary flex items-center gap-2'>
 							{IconComponent && <IconComponent className='h-4 w-4' />}
 							{selectedOption?.label || placeholder}
 						</div>
 					)
 				}
 
-				// Renderizar el badge del valor seleccionado para command
-				const renderSelectedBadge = () => {
-					if (type !== 'command') return null
-
-					const selectedOption = options?.find(opt => opt.value === field.value)
-					if (!selectedOption) return null
-
-					const IconComponent = selectedOption.icon
-
-					return (
-						<Badge variant='outline' className='flex items-center gap-1'>
-							{IconComponent && <IconComponent className='h-3 w-3' />}
-							{selectedOption.label}
-							<button
-								type='button'
-								onClick={e => {
-									e.stopPropagation()
-									field.onChange('')
-								}}
-								className='hover:bg-muted ml-1 rounded-full p-0.5'>
-								<Icons.x className='h-3 w-3' />
-							</button>
-						</Badge>
-					)
-				}
-
 				return type === 'switch' ? (
 					<FormItem
 						className={`bg-muted/20 flex flex-row items-center justify-between rounded-lg border p-4 ${switchContainerClass}`}>
-						<div className='space-y-0.5'>
+						<div className='text-primary space-y-0.5'>
 							<FormLabel>{label}</FormLabel>
 							{description && <FormDescription>{description}</FormDescription>}
 						</div>
@@ -235,37 +226,47 @@ export function UniversalFormField<T extends FieldValues>({
 					</FormItem>
 				) : type === 'command' ? (
 					<FormItem>
+						<div className='text-primary flex items-center gap-1'>
+							<FormLabel>{label}</FormLabel>
+							{required && <span className='text-destructive'>*</span>}
+						</div>
+
 						<FormControl>
 							<div className='relative'>
-								<Popover open={commandOpen} onOpenChange={setCommandOpen}>
+								<Popover open={isCommandOpen} onOpenChange={handleSetCommandOpen}>
 									<PopoverTrigger asChild>
 										<Button
 											variant='outline'
 											role='combobox'
-											aria-expanded={commandOpen}
+											aria-expanded={isCommandOpen}
 											className={cn('w-full justify-between', inputClasses, !field.value && 'text-muted-foreground')}
 											disabled={disabled}>
-											{field.value ? renderSelectedBadge() : renderSelectedValue()}
+											{field.value
+												? options?.find(option => option.value === field.value)?.label || '---'
+												: placeholder}
 											<Icons.chevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
 										</Button>
 									</PopoverTrigger>
 
-									<PopoverContent className='w-full p-0'>
-										<Command>
-											<CommandInput placeholder={placeholder} />
-											<CommandEmpty>{commandEmptyMessage}</CommandEmpty>
-
-											{groupByCategory && groupedOptions ? (
-												Object.entries(groupedOptions).map(([category, categoryOptions]) => (
-													<CommandGroup key={category} heading={category}>
-														<CommandList>
+									<PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0' align='start'>
+										<Command shouldFilter={shouldFilter}>
+											<CommandInput
+												placeholder={placeholder}
+												value={searchValue}
+												onValueChange={handleSetSearchValue}
+											/>
+											<CommandList>
+												<CommandEmpty>{commandEmptyMessage}</CommandEmpty>
+												{groupByCategory && groupedOptions ? (
+													Object.entries(groupedOptions).map(([category, categoryOptions]) => (
+														<CommandGroup key={category} heading={category}>
 															{categoryOptions.map(option => (
 																<CommandItem
 																	key={option.value}
 																	value={option.value}
 																	onSelect={() => {
 																		field.onChange(option.value)
-																		setCommandOpen(false)
+																		handleSetCommandOpen(false)
 																		onChange?.(option.value)
 																	}}
 																	className='flex cursor-pointer items-center gap-2'>
@@ -276,19 +277,17 @@ export function UniversalFormField<T extends FieldValues>({
 																	)}
 																</CommandItem>
 															))}
-														</CommandList>
-													</CommandGroup>
-												))
-											) : (
-												<CommandGroup>
-													<CommandList>
+														</CommandGroup>
+													))
+												) : (
+													<CommandGroup>
 														{options?.map(option => (
 															<CommandItem
 																key={option.value}
 																value={option.value}
 																onSelect={() => {
 																	field.onChange(option.value)
-																	setCommandOpen(false)
+																	handleSetCommandOpen(false)
 																	onChange?.(option.value)
 																}}
 																className='flex cursor-pointer items-center gap-2'>
@@ -299,19 +298,21 @@ export function UniversalFormField<T extends FieldValues>({
 																)}
 															</CommandItem>
 														))}
-													</CommandList>
-												</CommandGroup>
-											)}
+													</CommandGroup>
+												)}
+											</CommandList>
 										</Command>
 									</PopoverContent>
 								</Popover>
 								{renderValidationIcon()}
 							</div>
 						</FormControl>
+						{description && <FormDescription>{description}</FormDescription>}
+						<FormMessage />
 					</FormItem>
 				) : (
 					<FormItem>
-						<div className='flex items-center gap-1'>
+						<div className='text-primary flex items-center gap-1'>
 							<FormLabel>{label}</FormLabel>
 							{required && <span className='text-destructive'>*</span>}
 						</div>

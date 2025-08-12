@@ -1,5 +1,5 @@
-import { I_Product } from '@/common/types/modules/product'
 import { I_User } from '@/common/types/modules/user'
+import { I_Product } from '@/common/types/modules/product'
 import { MetaDataPagination, MetaResponse } from '@/common/types/pagination'
 
 /** Propiedades base del Kardex */

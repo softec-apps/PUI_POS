@@ -3,45 +3,6 @@
 import React from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, FormProvider } from 'react-hook-form'
-import {
-	IconBuilding,
-	IconBriefcase,
-	IconStar,
-	IconHeart,
-	IconDiamond,
-	IconCrown,
-	IconRocket,
-	IconTarget,
-	IconShield,
-	IconFlame,
-	IconLeaf,
-	IconWorld,
-	IconBulb,
-	IconCoffee,
-	IconCar,
-	IconHome,
-	IconMusic,
-	IconCamera,
-	IconPalette,
-	IconGift,
-	IconShoppingBag,
-	IconUsers,
-	IconChartLine,
-	IconSettings,
-	IconLock,
-	IconShoe,
-	IconShirt,
-	IconHanger,
-	IconEyeglass,
-	IconBottle,
-	IconGlass,
-	IconMeat,
-	IconBread,
-	IconTag,
-	IconBrandApple,
-	IconTruckDelivery,
-	IconCreditCard,
-} from '@tabler/icons-react'
 
 import { Icons } from '@/components/icons'
 import { I_Brand } from '@/common/types/modules/brand'
@@ -152,15 +113,6 @@ export function BrandFormModal({ isOpen, currentBrand, isUploading, onClose, onS
 				<FormProvider {...methods}>
 					<form onSubmit={handleSubmit(handleFormSubmit)} className='flex-1 space-y-4 overflow-auto p-4'>
 						<Card className='border-none bg-transparent p-0 shadow-none'>
-							<AlertMessage
-								message={
-									currentBrand
-										? 'Modifica los campos necesarios y guarda los cambios para actualizar la marca en el sistema.'
-										: 'Completa la información requerida para crear una nueva marca. El nombre es obligatorio, mientras que la descripción es opcional.'
-								}
-								variant='info'
-							/>
-
 							<CardHeader className='p-0'>
 								<CardTitle className='flex items-center gap-2 text-lg'>
 									<Icons.infoCircle className='h-4 w-4' />
