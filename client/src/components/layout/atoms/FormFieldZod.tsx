@@ -61,7 +61,7 @@ export function UniversalFormField<T extends FieldValues>({
 	description,
 	type = 'text',
 	required = false,
-	className = 'transition-all duration-200 focus:ring-2',
+	className = 'transition-all duration-500 focus:ring-2 placeholder:text-muted-foreground/70',
 	options,
 	min,
 	max,
@@ -187,7 +187,7 @@ export function UniversalFormField<T extends FieldValues>({
 
 					if (type === 'select') {
 						return (
-							<div className='flex items-center gap-2'>
+							<div className='text-primary flex items-center gap-2'>
 								<SelectValue placeholder={placeholder} />
 							</div>
 						)
@@ -195,7 +195,7 @@ export function UniversalFormField<T extends FieldValues>({
 
 					// Para command
 					return (
-						<div className='flex items-center gap-2'>
+						<div className='text-primary flex items-center gap-2'>
 							{IconComponent && <IconComponent className='h-4 w-4' />}
 							{selectedOption?.label || placeholder}
 						</div>
@@ -205,7 +205,7 @@ export function UniversalFormField<T extends FieldValues>({
 				return type === 'switch' ? (
 					<FormItem
 						className={`bg-muted/20 flex flex-row items-center justify-between rounded-lg border p-4 ${switchContainerClass}`}>
-						<div className='space-y-0.5'>
+						<div className='text-primary space-y-0.5'>
 							<FormLabel>{label}</FormLabel>
 							{description && <FormDescription>{description}</FormDescription>}
 						</div>
@@ -226,7 +226,7 @@ export function UniversalFormField<T extends FieldValues>({
 					</FormItem>
 				) : type === 'command' ? (
 					<FormItem>
-						<div className='flex items-center gap-1'>
+						<div className='text-primary flex items-center gap-1'>
 							<FormLabel>{label}</FormLabel>
 							{required && <span className='text-destructive'>*</span>}
 						</div>
@@ -312,7 +312,7 @@ export function UniversalFormField<T extends FieldValues>({
 					</FormItem>
 				) : (
 					<FormItem>
-						<div className='flex items-center gap-1'>
+						<div className='text-primary flex items-center gap-1'>
 							<FormLabel>{label}</FormLabel>
 							{required && <span className='text-destructive'>*</span>}
 						</div>
