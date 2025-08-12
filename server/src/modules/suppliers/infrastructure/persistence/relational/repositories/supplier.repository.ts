@@ -73,11 +73,15 @@ export class SupplierRelationalRepository implements SupplierRepository {
         whereClause = [
           {
             ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
-            name: ILike(searchTerm),
+            ruc: ILike(searchTerm),
           },
           {
             ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
-            description: ILike(searchTerm),
+            legalName: ILike(searchTerm),
+          },
+          {
+            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
+            commercialName: ILike(searchTerm),
           },
         ]
       } else {
