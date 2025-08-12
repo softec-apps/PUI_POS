@@ -6,7 +6,6 @@ export function usePagination() {
 	const [pagination, setPagination] = useState<Pagination>(INITIAL_PAGINATION)
 	const [searchTerm, setSearchTerm] = useState<string>('')
 	const [currentSort, setCurrentSort] = useState<string>('')
-	const [currentStatus, setCurrentStatus] = useState<'active' | 'inactive' | ''>('')
 	const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 
 	const handleNextPage = useCallback((hasNextPage: boolean) => {
@@ -80,19 +79,9 @@ export function usePagination() {
 		}))
 	}, [])
 
-	const handleStatusChange = useCallback((status: 'active' | 'inactive' | '') => {
-		setCurrentStatus(status)
-		setPagination(prev => ({
-			...prev,
-			filters: status ? { status } : {},
-			page: 1,
-		}))
-	}, [])
-
 	const handleResetAll = useCallback(() => {
 		setSearchTerm('')
 		setCurrentSort('')
-		setCurrentStatus('')
 		setPagination(INITIAL_PAGINATION)
 	}, [])
 
@@ -107,7 +96,6 @@ export function usePagination() {
 		pagination,
 		searchTerm,
 		currentSort,
-		currentStatus,
 		setPagination,
 		handleNextPage,
 		handlePrevPage,
@@ -115,7 +103,6 @@ export function usePagination() {
 		handleLimitChange,
 		handleSearchChange,
 		handleSort,
-		handleStatusChange,
 		handleResetAll,
 		getCurrentSortInfo,
 	}

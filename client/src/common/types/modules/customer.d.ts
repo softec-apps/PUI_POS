@@ -38,9 +38,9 @@ export interface I_CustomerId {
 	id: string
 }
 
-export interface I_CreateCustomer extends I_Customer {}
+export type I_CreateCustomer = I_Customer
 
-export interface I_UpdateCustomer extends I_Customer {}
+export type I_UpdateCustomer = I_Customer
 
 export interface I_CustomerResponse {
 	success: boolean

@@ -3,7 +3,7 @@
 import { Icons } from '@/components/icons'
 import { SheetFooter } from '@/components/ui/sheet'
 import { FieldErrors, FormState } from 'react-hook-form'
-import { I_CategoryId } from '@/common/types/modules/category'
+import { I_CustomerId } from '@/common/types/modules/customer'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 
 interface FormFooterProps {
@@ -13,8 +13,7 @@ interface FormFooterProps {
 	errors: FieldErrors<any>
 	isValid: boolean
 	isDirty: boolean
-	isUploading?: boolean
-	currentTemplate?: I_CategoryId
+	currentTemplate?: I_CustomerId
 	onClose: () => void
 	onSubmit: () => void
 }
@@ -24,7 +23,6 @@ export function FormFooter({
 	errors,
 	isValid,
 	isDirty,
-	isUploading = false,
 	currentTemplate,
 	onClose,
 	onSubmit,
@@ -54,16 +52,15 @@ export function FormFooter({
 		return <Icons.infoCircle className='h-4 w-4' />
 	}
 
-	const isDisabled = isSubmitting || isUploading || !isValid || (!isDirty && currentTemplate?.id)
+	const isDisabled = isSubmitting || !isValid || (!isDirty && currentTemplate?.id)
 
 	const getButtonText = () => {
-		if (isUploading) return 'Procesando...'
 		if (isSubmitting) return 'Guardando...'
-		return currentTemplate?.id ? 'Actualizar' : 'Crear Plantilla'
+		return currentTemplate?.id ? 'Actualizar Cliente' : 'Crear Cliente'
 	}
 
 	const getButtonIcon = () => {
-		if (isUploading || isSubmitting) return <Icons.spinnerSimple className='h-4 w-4 animate-spin' />
+		if (isSubmitting) return <Icons.spinnerSimple className='h-4 w-4 animate-spin' />
 		return <Icons.deviceFloppy className='h-4 w-4' />
 	}
 
@@ -80,7 +77,7 @@ export function FormFooter({
 						type='button'
 						variant='ghost'
 						onClick={onClose}
-						disabled={isSubmitting || isUploading}
+						disabled={isSubmitting}
 						text='Cancelar'
 						icon={<Icons.x className='h-4 w-4' />}
 					/>

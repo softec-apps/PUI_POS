@@ -1,7 +1,7 @@
 'use client'
 
 import { Icons } from '@/components/icons'
-import { useCategory } from '@/common/hooks/useCategory'
+import { useCustomer } from '@/common/hooks/useCustomer'
 import { formatDate } from '@/common/utils/dateFormater-util'
 import { ExportButton } from '@/components/layout/organims/ExportButton'
 import { CreateButton } from '@/components/layout/organims/CreateButton'
@@ -12,43 +12,38 @@ interface CustomerHeaderProps {
 	onCreateClick: () => void
 }
 
-// Función helper para formatear imágenes
-const formatImageValue = (value: any): string => {
-	if (!value) return 'Sin imagen'
-
-	// Si es un objeto, intentar extraer la URL
-	if (typeof value === 'object' && value !== null) {
-		const imageUrl = value.url || value.src || value.path || value.href
-		return imageUrl && typeof imageUrl === 'string' ? imageUrl : 'Imagen disponible'
-	}
-
-	// Si ya es una string (URL), devolverla tal como está
-	if (typeof value === 'string') return value
-
-	return 'Formato de imagen no válido'
-}
-
-// Configuración de exportación separada para mejor mantenibilidad
 const EXPORT_CONFIG = {
-	fileName: 'categorias',
-	reportTitle: 'Reporte de Categorías',
+	fileName: 'clientes',
+	reportTitle: 'Reporte de Clientes',
 	columnLabels: {
-		name: 'Nombre',
-		description: 'Descripción',
-		status: 'Estado',
-		photo: 'Imagen',
+		firstName: 'Nombres',
+		lastName: 'Apellidos',
+        email: 'Email',
+        phone: 'Teléfono',
+        address: 'Dirección',
+        identificationType: 'Tipo ID',
+        identificationNumber: 'No. ID',
+        customerType: 'Tipo Cliente',
 		createdAt: 'Fecha de Creación',
 		updatedAt: 'Última Actualización',
-		deletedAt: 'Fecha de Eliminación',
 	},
 	columnMappings: {
-		status: {
+        identificationType: {
 			type: 'enum' as const,
 			valueMap: {
-				active: 'Activo',
-				inactive: 'Inactivo',
+				'04': 'RUC',
+				'05': 'Cédula',
+                '06': 'Pasaporte',
+                '07': 'Consumidor Final',
 			},
 		},
+        customerType: {
+            type: 'enum' as const,
+            valueMap: {
+                'regular': 'Regular',
+                'final_consumer': 'Consumidor Final',
+            },
+        },
 		createdAt: {
 			type: 'date' as const,
 			format: (value: string) => formatDate(value, true),
@@ -57,40 +52,25 @@ const EXPORT_CONFIG = {
 			type: 'date' as const,
 			format: (value: string) => formatDate(value, true),
 		},
-		deletedAt: {
-			type: 'date' as const,
-			format: (value: string) => formatDate(value, true),
-		},
-		photo: {
-			type: 'image' as const,
-			format: formatImageValue,
-		},
 	},
 	pdfConfig: {
 		orientation: 'landscape' as const,
 		headerColor: [45, 45, 45] as const,
-		groupDateAtColumns: false,
 	},
-	excludeColumns: ['__typename', 'id'],
-	// Configuración de grupos de columnas
+	excludeColumns: ['__typename', 'id', 'deletedAt'],
 	columnGroups: {
-		basic: ['name', 'description'],
-		status: ['status'],
-		media: ['photo'],
-		dates: ['createdAt', 'updatedAt', 'deletedAt'],
+		basic: ['firstName', 'lastName', 'email', 'phone', 'address'],
+		identification: ['identificationType', 'identificationNumber', 'customerType'],
+		dates: ['createdAt', 'updatedAt'],
 	},
 	customGroupConfig: {
 		basic: {
-			label: 'Información General',
+			label: 'Información Personal',
+			icon: <Icons.user className='h-4 w-4' />,
+		},
+		identification: {
+			label: 'Identificación',
 			icon: <Icons.infoCircle className='h-4 w-4' />,
-		},
-		status: {
-			label: 'Estado',
-			icon: <Icons.server className='h-4 w-4' />,
-		},
-		media: {
-			label: 'Multimedia',
-			icon: <Icons.media className='h-4 w-4' />,
 		},
 		dates: {
 			label: 'Fechas y Auditoría',
@@ -98,29 +78,29 @@ const EXPORT_CONFIG = {
 		},
 	},
 	columnTypes: {
-		name: 'text' as const,
-		description: 'text' as const,
-		status: 'text' as const,
-		photo: 'image' as const,
+		firstName: 'text' as const,
+		lastName: 'text' as const,
+        email: 'text' as const,
+        phone: 'text' as const,
+        address: 'text' as const,
+        identificationType: 'text' as const,
+        identificationNumber: 'text' as const,
+        customerType: 'text' as const,
 		createdAt: 'date' as const,
 		updatedAt: 'date' as const,
-		deletedAt: 'date' as const,
 	},
 }
 
 export function CustomerHeader({ onCreateClick }: CustomerHeaderProps) {
-	const { categories: recordsData, loading } = useCategory()
+	const { recordsData, loading } = useCustomer()
 
-	// Datos derivados
 	const totalRecords = recordsData?.data?.pagination?.totalRecords || 0
-	const categoryData = recordsData?.data?.items || []
+	const customerData = recordsData?.data?.items || []
 
-	// Hook de exportación con configuración separada
 	const { exportData } = useGenericExport(EXPORT_CONFIG)
 
-	// Handler de exportación simplificado
 	const handleExport = async (format: 'xlsx' | 'pdf', selectedColumns?: string[]) =>
-		await exportData(categoryData, format, selectedColumns)
+		await exportData(customerData, format, selectedColumns)
 
 	return (
 		<ModuleHeader
@@ -130,7 +110,7 @@ export function CustomerHeader({ onCreateClick }: CustomerHeaderProps) {
 			actionContent={
 				<>
 					<ExportButton
-						data={categoryData}
+						data={customerData}
 						totalRecords={totalRecords}
 						loading={loading}
 						onExport={handleExport}
