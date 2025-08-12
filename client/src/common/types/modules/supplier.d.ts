@@ -1,4 +1,4 @@
-import { I_MetaPagination } from '@/common/types/pagination'
+import { MetaDataPagination, MetaResponse } from '@/common/types/pagination'
 
 export interface I_Supplier {
 	id: string
@@ -30,6 +30,12 @@ export interface I_IdSupplier {
 }
 
 export interface I_SupplierResponse {
-	items: I_Supplier[]
-	pagination: I_MetaPagination
+	success: boolean
+	statusCode: number
+	message: string
+	data: {
+		items: I_Supplier[]
+		pagination: MetaDataPagination
+	}
+	meta: MetaResponse
 }

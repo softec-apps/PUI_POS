@@ -19,7 +19,6 @@ export interface I_Brand extends I_BaseBrand {
 export interface I_CreateBrand {
 	name: string
 	description?: string | null
-
 }
 
 /** DTO para actualización de marca */
