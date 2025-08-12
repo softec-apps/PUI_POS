@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 import { ModalState } from '@/modules/brand/types/modalState'
-import { BrandFormData } from '@/modules/brand/components/organisms/Modal/ModalBrandForm'
+import { BrandFormData } from '@/modules/brand/types/template-form'
 import { I_Brand, I_CreateBrand, I_UpdateBrand } from '@/common/types/modules/brand'
 
-interface UsebrandHandlersProps {
+interface UseBrandHandlersProps {
 	modalState: ModalState
 	createBrand: (data: I_CreateBrand) => Promise<void>
 	updateBrand: (id: string, data: I_UpdateBrand) => Promise<void>
@@ -19,7 +19,7 @@ export function useBrandHandlers({
 	softDeleteBrand,
 	restoreBrand,
 	hardDeleteBrand,
-}: UsebrandHandlersProps) {
+}: UseBrandHandlersProps) {
 	// Form handlers para el nuevo modal con react-hook-form
 	const handleFormSubmit = useCallback(
 		async (data: BrandFormData) => {

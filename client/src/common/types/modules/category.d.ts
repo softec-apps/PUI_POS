@@ -1,5 +1,5 @@
 import { I_Photo } from '@/common/types/photo'
-import { I_MetaPagination } from '@/common/types/pagination'
+import { MetaDataPagination, MetaResponse } from '@/common/types/pagination'
 
 /** Propiedades base de categoría */
 interface I_BaseCategory {
@@ -39,6 +39,12 @@ export interface I_CategoryId {
 
 /** Respuesta paginada de categorías */
 export interface I_CategoriesResponse {
-	categories: I_Category[]
-	metadata?: I_MetaPagination
+	success: boolean
+	statusCode: number
+	message: string
+	data: {
+		items: I_Category[]
+		pagination: MetaDataPagination
+	}
+	meta: MetaResponse
 }

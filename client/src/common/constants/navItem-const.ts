@@ -69,9 +69,16 @@ export const ALL_NAV_ITEMS: NavConfig = [
 		permission: GROUP_PERMISSIONS.ECONOMIC,
 		items: [
 			{
+				title: 'Clientes',
+				url: ROUTE_PATH.ADMIN.CUSTOMERS,
+				icon: 'userGroup',
+				isActive: false,
+				permission: PERMISSIONS.CUSTOMERS,
+			},
+			{
 				title: 'Ventas',
 				url: ROUTE_PATH.ADMIN.SALES,
-				icon: 'sortAscendingLetters',
+				icon: 'shoppingCart',
 				isActive: false,
 				permission: PERMISSIONS.SALES,
 			},

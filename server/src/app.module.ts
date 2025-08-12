@@ -22,6 +22,7 @@ import { MailerModule } from '@/modules/mailer/mailer.module'
 import databaseConfig from '@/database/config/database.config'
 import { SessionModule } from '@/modules/session/session.module'
 import { KardexModule } from '@/modules/kardex/kardex.module'
+import { CustomerModule } from '@/modules/customer/customer.module'
 import googleConfig from '@/modules/auth-google/config/google.config'
 import { TypeOrmConfigService } from '@/database/typeorm-config.service'
 import { AttributesModule } from '@/modules/atributes/atributes.module'
@@ -111,6 +112,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     EstablishmentModule,
     KardexModule,
     TemplateProductModule,
+    CustomerModule,
   ],
 })
 export class AppModule {}
