@@ -128,7 +128,9 @@ export function KardexFilters({
 						</AnimatePresence>
 					</div>
 
+					{/*
 					<ViewSelector currentView={viewType} onViewChange={onViewChange} />
+					*/}
 				</motion.div>
 
 				<motion.div
@@ -224,10 +226,7 @@ export function KardexFilters({
 														whileHover={{ scale: 1.3 }}
 														transition={{ type: 'spring', stiffness: 400 }}
 													/>
-													<span
-														className={
-															currentMovementType === option.key ? 'text-primary font-medium' : ''
-														}>
+													<span className={currentMovementType === option.key ? 'text-primary font-medium' : ''}>
 														{option.label}
 													</span>
 												</div>
