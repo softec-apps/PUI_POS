@@ -1,16 +1,18 @@
 'use client'
 
 import { Icons } from '@/components/icons'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { I_Category } from '@/common/types/modules/category'
 import { AlertMessage } from '@/components/layout/atoms/Alert'
 import { Control, UseFormSetValue, UseFormWatch } from 'react-hook-form'
-import { TemplateFormData } from '@/modules/template/types/template-form'
+import { ProductFormData } from '@/modules/product/types/product-form'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
+import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
 
 interface CategorySelectorProps {
-	control: Control<TemplateFormData>
-	setValue: UseFormSetValue<TemplateFormData>
-	watch: UseFormWatch<TemplateFormData>
+	control: Control<ProductFormData>
+	setValue: UseFormSetValue<ProductFormData>
+	watch: UseFormWatch<ProductFormData>
 	categories: I_Category[]
 	loadingCategories: boolean
 	categorySearch: string
@@ -26,22 +28,22 @@ export function CategorySelector({
 	watch,
 	categories,
 	loadingCategories,
+	categorySearch,
 	setCategorySearch,
+	categoryOpen,
+	setCategoryOpen,
 }: CategorySelectorProps) {
-	const watchedCategoryId = watch('categoryId')
-
 	const categoryOptions =
 		categories?.data?.items?.map(category => ({
 			value: category.id,
 			label: category.name,
-			icon: Icons.folder, // opcional, si quieres un icono
 		})) || []
 
 	return (
 		<Card className='border-none bg-transparent p-0 shadow-none'>
 			<CardHeader className='p-0'>
 				<CardTitle className='flex items-center gap-2 text-lg'>
-					<Icons.infoCircle className='h-4 w-4' />
+					<Icons.listDetails className='h-4 w-4' />
 					Categoría
 				</CardTitle>
 				<CardDescription>Organiza tu plantilla en una categoría específica</CardDescription>
@@ -52,20 +54,28 @@ export function CategorySelector({
 					<AlertMessage
 						variant='warning'
 						title='No hay categorías disponibles'
-						message='Por favor, crea una categoría antes de continuar.'
+						message='Por favor, crea una categoría primero antes de continuar.'
 					/>
 				) : (
 					<UniversalFormField
+						required
 						control={control}
 						name='categoryId'
-						label='Selecciona una categoría'
-						placeholder={loadingCategories ? 'Cargando...' : 'Buscar categoría...'}
 						type='command'
+						label='Selecciona una categoría'
+						placeholder='Buscar categoría...'
 						options={categoryOptions}
+						commandEmptyMessage={
+							loadingCategories ? <SpinnerLoader text='Buscando...' inline /> : 'No se encontrarón coincidencias'
+						}
+						shouldFilter={false} // Desactivar filtrado interno ya que se maneja externamente
+						commandOpen={categoryOpen}
+						setCommandOpen={setCategoryOpen}
+						commandSearchValue={categorySearch}
+						setCommandSearchValue={setCategorySearch}
 						onChange={value => {
 							setValue('categoryId', value, { shouldValidate: true })
 						}}
-						commandEmptyMessage={loadingCategories ? 'Buscando...' : 'No se encontraron categorías'}
 					/>
 				)}
 			</CardContent>
