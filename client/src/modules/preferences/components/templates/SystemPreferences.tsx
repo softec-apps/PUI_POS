@@ -181,8 +181,6 @@ export function SystemPreferences() {
 				photo: data.photo || null,
 			}
 
-			console.log('Submitting data:', submitData)
-
 			let result
 			if (currentPreferences?.id) {
 				console.log('Updating record with ID:', currentPreferences.id)
