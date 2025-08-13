@@ -13,7 +13,7 @@ export const CartEmptyState: React.FC = () => (
 		className='flex flex-col items-center justify-center py-20 text-center'>
 		<UtilBanner
 			icon={<ShoppingBag className='h-8 w-8' />}
-			title='Carrito vacío'
+			title='Sin productos'
 			description='Agrega productos para comenzar tu venta'
 		/>
 	</motion.div>

@@ -5,18 +5,11 @@ import React, { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, FormProvider } from 'react-hook-form'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
-import {
-	Sheet,
-	SheetClose,
-	SheetContent,
-	SheetDescription,
-	SheetFooter,
-	SheetHeader,
-	SheetTitle,
-} from '@/components/ui/sheet'
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { Icons } from '@/components/icons'
 import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { FormFooter } from '@/modules/customer/components/organisms/Modal/FormFooter'
 import {
 	validateCedula,
 	validateEcuadorianRUC,
@@ -60,17 +53,17 @@ const customerSchema = z
 		}
 	)
 
-// 2. Inferimos tipo
 type CustomerFormData = z.infer<typeof customerSchema>
 
 interface Props {
 	isOpen: boolean
 	defaultValues?: Partial<CustomerFormData>
+	currentCustomer?: any // Para compatibilidad con FormFooter
 	onClose: () => void
 	onSubmit: (data: CustomerFormData) => Promise<void>
 }
 
-export function CustomerFormModal({ isOpen, defaultValues, onClose, onSubmit }: Props) {
+export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onClose, onSubmit }: Props) {
 	const methods = useForm<CustomerFormData>({
 		resolver: zodResolver(customerSchema),
 		mode: 'onChange',
@@ -90,7 +83,9 @@ export function CustomerFormModal({ isOpen, defaultValues, onClose, onSubmit }: 
 	const {
 		handleSubmit,
 		reset,
-		formState: { errors, isValid, isDirty, isSubmitting },
+		control,
+		formState,
+		formState: { errors, isValid, isDirty },
 	} = methods
 
 	useEffect(() => {
@@ -112,9 +107,12 @@ export function CustomerFormModal({ isOpen, defaultValues, onClose, onSubmit }: 
 	const handleFormSubmit = async (data: CustomerFormData) => {
 		try {
 			await onSubmit(data)
-			reset() // Reset form después de envío exitoso
+			// Solo resetear si la operación fue exitosa
+			reset()
 		} catch (error) {
 			console.error('Error al enviar formulario:', error)
+			// NO resetear el formulario en caso de error
+			// Los datos del usuario se mantienen para que pueda corregir
 		}
 	}
 
@@ -133,14 +131,14 @@ export function CustomerFormModal({ isOpen, defaultValues, onClose, onSubmit }: 
 			<SheetContent className='z-50 flex max-h-screen min-w-xl flex-col [&>button]:hidden'>
 				<SheetHeader className='bg-background supports-[backdrop-filter]:bg-background/80 sticky top-0 z-10 border-b supports-[backdrop-filter]:backdrop-blur-sm'>
 					<div className='flex items-center justify-between'>
-						<SheetTitle>{defaultValues?.identificationNumber ? 'Editar Cliente' : 'Crear Cliente'}</SheetTitle>
+						<SheetTitle>{currentCustomer?.id ? 'Editar Cliente' : 'Crear Cliente'}</SheetTitle>
 
 						<SheetClose>
 							<ActionButton
 								type='button'
 								variant='ghost'
 								size='icon'
-								disabled={onsubmit}
+								disabled={formState.isSubmitting}
 								icon={<Icons.x className='h-4 w-4' />}
 							/>
 						</SheetClose>
@@ -153,19 +151,19 @@ export function CustomerFormModal({ isOpen, defaultValues, onClose, onSubmit }: 
 					<FormProvider {...methods}>
 						<form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-4'>
 							<div className='space-y-8'>
-								{/* type customer */}
+								{/* Información de identificación */}
 								<div className='space-y-4'>
 									<CardHeader className='p-0'>
 										<CardTitle className='flex items-center gap-2 text-lg'>
-											<Icons.infoCircle className='h-4 w-4' />
-											Información 1
+											<Icons.id className='h-4 w-4' />
+											Información de Identificación
 										</CardTitle>
-										<CardDescription>Datos 1</CardDescription>
+										<CardDescription>Datos de identificación del cliente</CardDescription>
 									</CardHeader>
 
 									<div className='grid grid-cols-2 gap-4'>
 										<UniversalFormField
-											control={methods.control}
+											control={control}
 											name='identificationType'
 											label='Tipo de identificación'
 											type='select'
@@ -179,7 +177,7 @@ export function CustomerFormModal({ isOpen, defaultValues, onClose, onSubmit }: 
 										/>
 
 										<UniversalFormField
-											control={methods.control}
+											control={control}
 											name='identificationNumber'
 											label='Número de identificación'
 											placeholder='Ej: 1234567890'
@@ -190,18 +188,19 @@ export function CustomerFormModal({ isOpen, defaultValues, onClose, onSubmit }: 
 									</div>
 								</div>
 
+								{/* Información personal */}
 								<div className='space-y-4'>
 									<CardHeader className='p-0'>
 										<CardTitle className='flex items-center gap-2 text-lg'>
-											<Icons.infoCircle className='h-4 w-4' />
-											Información 2
+											<Icons.user className='h-4 w-4' />
+											Información Personal
 										</CardTitle>
-										<CardDescription>Datos 2</CardDescription>
+										<CardDescription>Datos personales del cliente</CardDescription>
 									</CardHeader>
 
 									<div className='grid grid-cols-2 gap-4'>
 										<UniversalFormField
-											control={methods.control}
+											control={control}
 											name='firstName'
 											label='Nombres'
 											placeholder='Ingresa el nombre'
@@ -211,7 +210,7 @@ export function CustomerFormModal({ isOpen, defaultValues, onClose, onSubmit }: 
 										/>
 
 										<UniversalFormField
-											control={methods.control}
+											control={control}
 											name='lastName'
 											label='Apellidos'
 											placeholder='Ingresa el apellido'
@@ -222,7 +221,7 @@ export function CustomerFormModal({ isOpen, defaultValues, onClose, onSubmit }: 
 									</div>
 
 									<UniversalFormField
-										control={methods.control}
+										control={control}
 										name='address'
 										label='Dirección'
 										placeholder='Ingresa la dirección'
@@ -233,7 +232,7 @@ export function CustomerFormModal({ isOpen, defaultValues, onClose, onSubmit }: 
 
 									<div className='grid grid-cols-2 gap-4'>
 										<UniversalFormField
-											control={methods.control}
+											control={control}
 											name='email'
 											label='Email'
 											placeholder='email@ejemplo.com'
@@ -243,7 +242,7 @@ export function CustomerFormModal({ isOpen, defaultValues, onClose, onSubmit }: 
 										/>
 
 										<UniversalFormField
-											control={methods.control}
+											control={control}
 											name='phone'
 											label='Teléfono'
 											placeholder='099 123 4567'
@@ -258,25 +257,15 @@ export function CustomerFormModal({ isOpen, defaultValues, onClose, onSubmit }: 
 					</FormProvider>
 				</div>
 
-				<SheetFooter className='bg-background border-t'>
-					<div className='flex gap-3'>
-						<ActionButton
-							type='button'
-							variant='ghost'
-							onClick={onClose}
-							disabled={isSubmitting}
-							text='Cancelar'
-							icon={<Icons.x className='h-4 w-4' />}
-						/>
-
-						<ActionButton
-							type='submit'
-							onClick={onSubmit}
-							disabled={!isValid || isSubmitting}
-							text={isSubmitting ? 'Guardando...' : 'Guardar'}
-						/>
-					</div>
-				</SheetFooter>
+				<FormFooter
+					formState={formState}
+					errors={errors}
+					isValid={isValid}
+					isDirty={isDirty}
+					currentTemplate={currentCustomer}
+					onClose={handleClose}
+					onSubmit={handleSubmit(handleFormSubmit)}
+				/>
 			</SheetContent>
 		</Sheet>
 	)

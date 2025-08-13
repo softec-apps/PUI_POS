@@ -13,18 +13,22 @@ interface SelectedCustomerProps {
 }
 
 export const SelectedCustomer: React.FC<SelectedCustomerProps> = ({ customer, onDeselect }) => (
-	<Card className='bg-accent/50 border-primary/20 border-none p-4 shadow-none'>
+	<Card className='bg-card border-none p-4 shadow-none'>
 		<div className='flex items-center justify-between'>
-			<div className='space-y-1'>
-				<Typography variant='small' className='text-primary'>
-					{`${customer.firstName} `}
-					{customer.lastName}
-				</Typography>
+			<div>
+				<div className='flex items-center gap-2'>
+					<Typography variant='p' className='font-semibold'>
+						{customer.firstName}
+						{customer.lastName}
+					</Typography>
+				</div>
 
-				<Typography variant='small'>
-					{`${customer.email} • `}
-					{customer.identificationNumber}
-				</Typography>
+				<div className='space-y-1'>
+					<Typography variant='small' className='flex items-center gap-1'>
+						<Icons.id className='h-4 w-4' />
+						{customer.identificationNumber}
+					</Typography>
+				</div>
 			</div>
 
 			<ActionButton
