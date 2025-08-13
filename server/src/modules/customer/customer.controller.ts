@@ -51,6 +51,7 @@ export class CustomerController {
   async create(
     @Body() createCustomerDto: CreateCustomerDto,
   ): Promise<ApiResponse<Customer>> {
+    console.log('RES', createCustomerDto)
     return await this.customerService.create(createCustomerDto)
   }
 
@@ -61,8 +62,8 @@ export class CustomerController {
    */
   @Get()
   @CustomerApiDocs.findAll
-  @Roles(RoleEnum.Admin, RoleEnum.Manager)
-  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
   @HttpCode(HttpStatus.OK)
   async findAll(
     @Query() query: QueryCustomerDto,
