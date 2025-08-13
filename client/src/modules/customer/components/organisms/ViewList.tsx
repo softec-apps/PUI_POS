@@ -1,23 +1,20 @@
 'use client'
 
-import Image from 'next/image'
 import { Icons } from '@/components/icons'
 import { Separator } from '@/components/ui/separator'
 import { Typography } from '@/components/ui/typography'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Badge } from '@/components/layout/atoms/Badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table as ReactTable } from '@tanstack/react-table'
-import { I_Category } from '@/common/types/modules/category'
-import { animations } from '@/modules/category/components/atoms/animations'
-import { TableActions } from '@/modules/category/components/organisms/Table/TableActions'
-import { TableInfoDate } from '@/modules/category/components/organisms/Table/TableInfoDate'
-import { ImageControl } from '@/components/layout/organims/ImageControl'
+import { I_Customer } from '@/common/types/modules/customer'
+import { animations } from '@/modules/customer/components/atoms/animations'
+import { TableActions } from '@/modules/customer/components/organisms/Table/TableActions'
+import { TableInfoDate } from '@/modules/customer/components/organisms/Table/TableInfoDate'
 
 interface ListViewProps {
-	table: ReactTable<I_Category>
-	onEdit: (categoryData: I_Category) => void
-	onHardDelete: (categoryData: I_Category) => void
+	table: ReactTable<I_Customer>
+	onEdit: (customerData: I_Customer) => void
+	onHardDelete: (customerData: I_Customer) => void
 }
 
 export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
@@ -26,11 +23,11 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 			initial='hidden'
 			animate='visible'
 			variants={animations.container}
-			className='grid grid-cols-1 gap-4 space-y-4'
+			className='grid grid-cols-1 gap-4'
 			layout>
 			<AnimatePresence mode='sync'>
 				{table.getRowModel().rows.map(row => {
-					const categoryData = row.original
+					const customerData = row.original
 					return (
 						<motion.div
 							key={row.id}
@@ -42,48 +39,39 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 							layout
 							className='group'>
 							<Card className='dark:border-border/50 border px-4 shadow-none transition-all duration-500'>
-								<CardContent className='p-0'>
-									<div className='flex items-start space-x-4'>
-										<ImageControl
-											recordData={categoryData}
-											imageWidth={150}
-											imageHeight={150}
-											enableHover={false}
-											enableClick={false}
-										/>
-
+								<CardContent className='p-0 py-4'>
+									<div className='flex items-center space-x-4'>
+                                        <div className='bg-muted flex h-10 w-10 items-center justify-center rounded-full'>
+                                            <Icons.user className='h-5 w-5 text-muted-foreground' />
+                                        </div>
 										<div className='min-w-0 flex-1'>
 											<div className='flex items-start justify-between gap-2'>
-												<div className='min-w-0 flex-1 space-y-3'>
+												<div className='min-w-0 flex-1 space-y-2'>
 													<div className='mb-1 flex items-start justify-between gap-2'>
 														<Typography variant='h6' className='line-clamp-1 break-words'>
-															{categoryData.name}
+															{customerData.firstName} {customerData.lastName}
 														</Typography>
-
 														<div className='flex-shrink-0'>
-															<TableActions categoryData={categoryData} onEdit={onEdit} onHardDelete={onHardDelete} />
+															<TableActions customerData={customerData} onEdit={onEdit} onHardDelete={onHardDelete} />
 														</div>
 													</div>
 
 													<div className='flex items-center justify-between'>
 														<Typography
 															variant='span'
-															className='text-muted-foreground mb-2 line-clamp-2 text-sm break-words'>
-															{categoryData.description || 'Sin descripción'}
+															className='text-muted-foreground line-clamp-1 text-sm break-words'>
+															{customerData.email || 'Sin email'}
 														</Typography>
 													</div>
 
 													<Separator />
 
 													<div className='flex items-center justify-between gap-2'>
-														<Badge
-															decord={false}
-															variant={categoryData.status === 'active' ? 'success' : 'warning'}
-															text={categoryData.status === 'active' ? 'Activo' : 'Inactivo'}
-														/>
-
+                                                        <Typography variant='span' className='text-muted-foreground text-sm'>
+                                                            ID: {customerData.identificationNumber}
+                                                        </Typography>
 														<div className='text-muted-foreground text-right text-xs'>
-															<TableInfoDate recordData={categoryData} />
+															<TableInfoDate recordData={customerData} />
 														</div>
 													</div>
 												</div>

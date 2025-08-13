@@ -31,12 +31,10 @@ export function CustomerView() {
 	const {
 		pagination,
 		currentSort,
-		currentStatus,
 		handleNextPage,
 		handlePrevPage,
 		handleLimitChange,
 		handleSort,
-		handleStatusChange,
 		handleResetAll,
 		handlePageChange,
 		setPagination,
@@ -67,9 +65,8 @@ export function CustomerView() {
 			page: pagination.page,
 			limit: pagination.limit,
 			sort: currentSort ? [currentSort] : undefined,
-			filters: currentStatus ? { status: currentStatus } : undefined,
 		}),
-		[pagination.page, pagination.limit, debouncedSearchTerm, currentStatus, currentSort]
+		[pagination.page, pagination.limit, debouncedSearchTerm, currentSort]
 	)
 
 	const {
@@ -153,11 +150,9 @@ export function CustomerView() {
 					<CustomerFilters
 						searchValue={localSearchTerm}
 						currentSort={currentSort}
-						currentStatus={currentStatus}
 						isRefreshing={isRefreshing}
 						onSearchChange={handleSearchChange}
 						onSort={handleSort}
-						onStatusChange={handleStatusChange}
 						onRefresh={handleRefresh}
 						onResetAll={handleResetAllWithSearch}
 						viewType={viewType}

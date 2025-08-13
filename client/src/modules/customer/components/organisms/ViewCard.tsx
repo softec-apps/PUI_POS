@@ -1,38 +1,23 @@
 'use client'
 
-import React, { useState } from 'react'
-import Image from 'next/image'
+import React from 'react'
 import { Icons } from '@/components/icons'
 import { Typography } from '@/components/ui/typography'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Badge } from '@/components/layout/atoms/Badge'
 import { Table as ReactTable } from '@tanstack/react-table'
-import { I_Category } from '@/common/types/modules/category'
-import { animations } from '@/modules/category/components/atoms/animations'
+import { I_Customer } from '@/common/types/modules/customer'
+import { animations } from '@/modules/customer/components/atoms/animations'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { TableActions } from '@/modules/category/components/organisms/Table/TableActions'
-import { TableInfoDate } from '@/modules/category/components/organisms/Table/TableInfoDate'
-import { Separator } from '@/components/ui/separator'
+import { TableActions } from '@/modules/customer/components/organisms/Table/TableActions'
+import { TableInfoDate } from '@/modules/customer/components/organisms/Table/TableInfoDate'
 
 interface CardViewProps {
-	table: ReactTable<I_Category>
-	onEdit: (categoryData: I_Category) => void
-	onHardDelete: (categoryData: I_Category) => void
+	table: ReactTable<I_Customer>
+	onEdit: (customerData: I_Customer) => void
+	onHardDelete: (customerData: I_Customer) => void
 }
 
 export const CardView = ({ table, onEdit, onHardDelete }: CardViewProps) => {
-	// Estado para controlar cuáles descripciones están expandidas
-	const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
-
-	const toggleExpand = (id: string) => {
-		setExpandedIds(prev => {
-			const newSet = new Set(prev)
-			if (newSet.has(id)) newSet.delete(id)
-			else newSet.add(id)
-			return newSet
-		})
-	}
-
 	return (
 		<div className='space-y-4'>
 			<motion.div
@@ -43,9 +28,7 @@ export const CardView = ({ table, onEdit, onHardDelete }: CardViewProps) => {
 				layout>
 				<AnimatePresence mode='sync'>
 					{table.getRowModel().rows.map(row => {
-						const categoryData = row.original
-						const isExpanded = expandedIds.has(row.id)
-						const description = categoryData.description || 'Sin descripción'
+						const customerData = row.original
 						return (
 							<motion.div
 								key={row.id}
@@ -56,62 +39,45 @@ export const CardView = ({ table, onEdit, onHardDelete }: CardViewProps) => {
 								whileHover='hover'
 								layout
 								className='group relative'>
-								<Card className='dark:border-border/50 h-full border p-0 shadow-none transition-all duration-500'>
-									<CardHeader className='flex-none p-0'>
-										<div className='relative h-48 w-full'>
-											<div className='bg-card/50 shadow- absolute top-2 right-2 z-10 rounded-full backdrop-blur-sm'>
-												<TableActions categoryData={categoryData} onEdit={onEdit} onHardDelete={onHardDelete} />
-											</div>
-
-											{categoryData?.photo ? (
-												<Image
-													src={categoryData.photo.path}
-													alt={categoryData.name}
-													fill
-													unoptimized
-													className='bg-muted rounded-t-xl object-cover'
-												/>
-											) : (
-												<div className='bg-muted/50 flex h-full items-center justify-center'>
-													<div className='text-muted-foreground flex flex-col items-center space-y-2'>
-														<Icons.media className='h-12 w-12' />
-													</div>
-												</div>
-											)}
-										</div>
+								<Card className='dark:border-border/50 flex h-full flex-col border p-0 shadow-none transition-all duration-500'>
+									<CardHeader className='flex-none p-4'>
+                                        <div className='flex items-start justify-between'>
+                                            <div className='flex items-center gap-3'>
+                                                <div className='bg-muted flex h-10 w-10 items-center justify-center rounded-full'>
+                                                    <Icons.user className='h-5 w-5 text-muted-foreground' />
+                                                </div>
+                                                <div>
+                                                    <Typography variant='h5' className='line-clamp-1'>
+                                                        {customerData.firstName} {customerData.lastName}
+                                                    </Typography>
+                                                    <Typography variant='span' className='text-muted-foreground text-sm'>
+                                                        {customerData.identificationNumber}
+                                                    </Typography>
+                                                </div>
+                                            </div>
+                                            <div className='bg-card/50 shadow- absolute top-2 right-2 z-10 rounded-full backdrop-blur-sm'>
+										        <TableActions recordData={customerData} onEdit={onEdit} onHardDelete={onHardDelete} />
+									        </div>
+                                        </div>
 									</CardHeader>
 
-									<CardContent className='flex-grow px-4'>
-										<div className='flex h-full flex-col space-y-2'>
-											<Badge
-												variant={categoryData.status === 'active' ? 'success' : 'warning'}
-												text={categoryData.status === 'active' ? 'Activo' : 'Inactivo'}
-											/>
-
-											<Typography variant='h5' className='line-clamp-1'>
-												{categoryData.name}
-											</Typography>
-
-											<Typography
-												variant='span'
-												className={`text-muted-foreground flex-grow text-sm ${isExpanded ? '' : 'line-clamp-4'}`}>
-												{description}
-											</Typography>
-
-											{/* Botón para expandir/contraer descripción */}
-											{description.length > 100 && (
-												<button
-													type='button'
-													onClick={() => toggleExpand(row.id)}
-													className='text-primary mt-1 self-start text-xs hover:underline'>
-													{isExpanded ? 'Ver menos' : 'Ver más'}
-												</button>
-											)}
-										</div>
+									<CardContent className='flex-grow px-4 space-y-2'>
+                                        <div className='flex items-center gap-2'>
+                                            <Icons.mail className='h-4 w-4 text-muted-foreground' />
+                                            <Typography variant='span' className='text-muted-foreground text-sm'>
+                                                {customerData.email || 'No registrado'}
+                                            </Typography>
+                                        </div>
+                                        <div className='flex items-center gap-2'>
+                                            <Icons.infoCircle className='h-4 w-4 text-muted-foreground' />
+                                            <Typography variant='span' className='text-muted-foreground text-sm'>
+                                                {customerData.phone || 'No registrado'}
+                                            </Typography>
+                                        </div>
 									</CardContent>
 
 									<CardFooter className='flex flex-none items-center p-4 pt-0'>
-										<TableInfoDate recordData={categoryData} />
+										<TableInfoDate recordData={customerData} />
 									</CardFooter>
 								</Card>
 							</motion.div>

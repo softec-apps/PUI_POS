@@ -10,7 +10,7 @@ export const useModalState = () => {
 
 	// Hard delete modal state
 	const [isHardDeleteModalOpen, setIsHardDeleteModalOpen] = useState(false)
-	const [categoryToHardDelete, setCategoryToHardDelete] = useState<I_Customer | null>(null)
+	const [recordToHardDelete, setRecordToHardDelete] = useState<I_Customer | null>(null)
 	const [isHardDeleting, setIsHardDeleting] = useState(false)
 
 	// Dialog handlers
@@ -19,8 +19,8 @@ export const useModalState = () => {
 		setIsDialogOpen(true)
 	}, [])
 
-	const openEditDialog = useCallback((category: I_Customer) => {
-		setCurrentRecord(category)
+	const openEditDialog = useCallback((customer: I_Customer) => {
+		setCurrentRecord(customer)
 		setIsDialogOpen(true)
 	}, [])
 
@@ -31,19 +31,19 @@ export const useModalState = () => {
 
 	// Hard delete modal handlers
 	const openHardDeleteModal = useCallback(
-		(category: I_Customer) => {
-			setCategoryToHardDelete(category)
+		(customer: I_Customer) => {
+			setRecordToHardDelete(customer)
 			setIsHardDeleteModalOpen(true)
 		},
-		[setCategoryToHardDelete]
+		[setRecordToHardDelete]
 	)
 
 	const closeHardDeleteModal = useCallback(() => {
 		if (!isHardDeleting) {
 			setIsHardDeleteModalOpen(false)
-			setCategoryToHardDelete(null)
+			setRecordToHardDelete(null)
 		}
-	}, [isHardDeleting, setCategoryToHardDelete])
+	}, [isHardDeleting, setRecordToHardDelete])
 
 	return {
 		// Dialog state
@@ -55,7 +55,7 @@ export const useModalState = () => {
 
 		// Hard delete modal state
 		isHardDeleteModalOpen,
-		categoryToHardDelete,
+		recordToHardDelete,
 		isHardDeleting,
 		setIsHardDeleting,
 		openHardDeleteModal,

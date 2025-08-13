@@ -6,129 +6,95 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, FormProvider } from 'react-hook-form'
 
 import { Icons } from '@/components/icons'
-import { I_Category } from '@/common/types/modules/category'
-import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { FileUploadSection } from '@/components/layout/organims/FileUpload'
+import { I_Customer } from '@/common/types/modules/customer'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { FormFooter } from '@/modules/category/components/organisms/Modal/FormFooter'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet'
+import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { FormFooter } from '@/modules/customer/components/organisms/Modal/FormFooter'
 
 // Schema de validación
-const categorySchema = z.object({
-	name: z
-		.string()
-		.min(1, 'El nombre es requerido')
-		.min(3, 'El nombre debe tener al menos 3 caracteres')
-		.max(100, 'El nombre no puede exceder 100 caracteres'),
-	description: z
-		.string()
-		.min(3, 'El nombre debe tener al menos 3 caracteres')
-		.max(255, 'La descripción no puede exceder 255 caracteres')
-		.optional()
-		.or(z.literal('')),
-	photo: z.string().optional(),
-	removePhoto: z.boolean().optional(),
+const customerSchema = z.object({
+	firstName: z.string().min(1, 'El nombre es requerido'),
+	lastName: z.string().min(1, 'El apellido es requerido'),
+	email: z.string().email('Email inválido').optional().or(z.literal('')),
+	phone: z.string().optional(),
+	address: z.string().optional(),
+    identificationType: z.enum(['04', '05', '06', '07']),
+    identificationNumber: z.string().min(1, 'El número de identificación es requerido'),
+    customerType: z.enum(['regular', 'final_consumer']),
 })
 
-export type CategoryFormData = z.infer<typeof categorySchema>
+export type CustomerFormData = z.infer<typeof customerSchema>
 
-interface CustomerFormModalProps {
+interface Props {
 	isOpen: boolean
-	currentRecord: I_Category | null
-	previewImage: string | null
-	isUploading: boolean
-	fileInputRef: React.RefObject<HTMLInputElement>
+	currentCustomer: I_Customer | null
 	onClose: () => void
-	onSubmit: (data: CategoryFormData) => Promise<void>
-	onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => Promise<string | null>
-	onTriggerFileInput: () => void
-	onClearPreview: () => void
+	onSubmit: (data: CustomerFormData) => Promise<void>
 }
 
-export function CustomerFormModal({
-	isOpen,
-	currentRecord,
-	previewImage,
-	isUploading,
-	fileInputRef,
-	onClose,
-	onSubmit,
-	onFileChange,
-	onTriggerFileInput,
-	onClearPreview,
-}: CustomerFormModalProps) {
-	const methods = useForm<CategoryFormData>({
-		resolver: zodResolver(categorySchema),
+const identificationTypeOptions = [
+    { value: '04', label: 'RUC' },
+    { value: '05', label: 'Cédula' },
+    { value: '06', label: 'Pasaporte' },
+    { value: '07', label: 'Consumidor Final' },
+]
+
+const customerTypeOptions = [
+    { value: 'regular', label: 'Persona natural' },
+    { value: 'final_consumer', label: 'Consumidor final' },
+]
+
+
+export function CustomerFormModal({ isOpen, currentCustomer, onClose, onSubmit }: Props) {
+	const methods = useForm<CustomerFormData>({
+		resolver: zodResolver(customerSchema),
 		mode: 'onChange',
-		defaultValues: {
-			name: '',
-			description: '',
-			photo: '',
-			removePhoto: false,
-		},
 	})
 
 	const {
 		handleSubmit,
 		reset,
-		setValue,
-		watch,
 		control,
 		formState: { errors, isValid, isDirty },
 		formState,
 	} = methods
 
-	// Efecto para cargar datos cuando se abre para editar
 	React.useEffect(() => {
-		if (isOpen && currentRecord) {
-			reset({
-				name: currentRecord.name || '',
-				description: currentRecord.description || '',
-				photo: currentRecord.photo?.id || '',
-				removePhoto: false,
-			})
-		} else if (isOpen && !currentRecord) {
-			reset({
-				name: '',
-				description: '',
-				photo: '',
-				removePhoto: false,
-			})
+		if (isOpen) {
+			if (currentCustomer) {
+				reset({
+					firstName: currentCustomer.firstName || '',
+					lastName: currentCustomer.lastName || '',
+					email: currentCustomer.email || '',
+					phone: currentCustomer.phone || '',
+					address: currentCustomer.address || '',
+					identificationType: currentCustomer.identificationType,
+					identificationNumber: currentCustomer.identificationNumber,
+					customerType: currentCustomer.customerType,
+				})
+			} else {
+				reset({
+					firstName: '',
+					lastName: '',
+					email: '',
+					phone: '',
+					address: '',
+					identificationType: '05', // Default to Cédula
+					identificationNumber: '',
+					customerType: 'regular', // Default to regular
+				})
+			}
 		}
-	}, [isOpen, currentRecord, reset])
+	}, [isOpen, currentCustomer, reset])
 
-	const removePhoto = watch('removePhoto')
-
-	const handleFormSubmit = async (data: CategoryFormData) => {
+	const handleFormSubmit = async (data: CustomerFormData) => {
 		try {
 			await onSubmit(data)
 			reset()
 		} catch (error) {
 			console.error('Error al enviar formulario:', error)
-		}
-	}
-
-	const handleClearPreviewWithForm = () => {
-		const currentPhoto = currentRecord?.photo?.id
-
-		// Marcar explícitamente los campos como "dirty"
-		if (currentPhoto) {
-			setValue('removePhoto', true, { shouldDirty: true }) // <-- Añadir shouldDirty
-			setValue('photo', '', { shouldDirty: true }) // <-- Añadir shouldDirty
-		} else {
-			setValue('photo', '', { shouldDirty: true }) // <-- Añadir shouldDirty
-			setValue('removePhoto', false, { shouldDirty: true }) // <-- Añadir shouldDirty
-		}
-
-		onClearPreview()
-	}
-
-	const handleFileChangeWithForm = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const fileId = await onFileChange(e)
-		if (fileId) {
-			setValue('photo', fileId, { shouldDirty: true }) // <-- Añadir shouldDirty
-			setValue('removePhoto', false, { shouldDirty: true }) // <-- Añadir shouldDirty
 		}
 	}
 
@@ -142,23 +108,20 @@ export function CustomerFormModal({
 			<SheetContent className='flex w-full flex-col sm:max-w-xl'>
 				<SheetHeader className='bg-background supports-[backdrop-filter]:bg-background/80 sticky top-0 z-10 border-b supports-[backdrop-filter]:backdrop-blur-sm'>
 					<div className='flex items-center justify-between'>
-						<SheetTitle>{currentRecord ? 'Editar Categoría' : 'Crear Categoría'}</SheetTitle>
-
+						<SheetTitle>{currentCustomer ? 'Editar Cliente' : 'Crear Cliente'}</SheetTitle>
 						<SheetClose>
 							<ActionButton
 								type='button'
 								variant='ghost'
 								size='icon'
-								disabled={onsubmit}
 								icon={<Icons.x className='h-4 w-4' />}
 							/>
 						</SheetClose>
 					</div>
-
 					<SheetDescription>
-						{currentRecord
-							? 'Modifica los detalles de la categoría existente'
-							: 'Completa los campos para crear una nueva categoría'}
+						{currentCustomer
+							? 'Modifica los detalles del cliente existente'
+							: 'Completa los campos para crear una nueva cliente'}
 					</SheetDescription>
 				</SheetHeader>
 
@@ -168,63 +131,41 @@ export function CustomerFormModal({
 							<CardHeader className='p-0'>
 								<CardTitle className='flex items-center gap-2 text-lg'>
 									<Icons.infoCircle className='h-4 w-4' />
-									Información básica
+									Información Personal
 								</CardTitle>
-								<CardDescription>Datos básicos de la categoría</CardDescription>
 							</CardHeader>
-
-							<UniversalFormField
-								control={control}
-								name='name'
-								label='Nombre'
-								placeholder='Ingresa el nombre de la categoría'
-								type='text'
-								required={true}
-								showValidationIcons={true}
-							/>
-
-							<UniversalFormField
-								control={control}
-								name='description'
-								label='Descripción'
-								placeholder='Descripción opcional'
-								type='textarea'
-								required={false}
-								showValidationIcons={true}
-							/>
-
-							<CardHeader className='mt-4 p-0'>
-								<CardTitle className='flex items-center gap-2 text-lg'>
-									<Icons.media className='h-4 w-4' />
-									Imagen
-								</CardTitle>
-								<CardDescription>Sube una imagen representativa de la categoría</CardDescription>
-							</CardHeader>
-
-							<div className='grid gap-2'>
-								<FileUploadSection
-									fileInputRef={fileInputRef}
-									previewImage={previewImage}
-									isUploading={isUploading}
-									onFileChange={handleFileChangeWithForm}
-									onTriggerFileInput={onTriggerFileInput}
-									onClearPreview={handleClearPreviewWithForm}
-									currentImage={currentRecord?.photo}
-									shouldHideCurrentImage={removePhoto}
-								/>
+							<div className='grid grid-cols-2 gap-4'>
+								<UniversalFormField control={control} name='firstName' label='Nombres' placeholder='Ingresa los nombres' type='text' required />
+								<UniversalFormField control={control} name='lastName' label='Apellidos' placeholder='Ingresa los apellidos' type='text' required />
 							</div>
+							<UniversalFormField control={control} name='email' label='Correo Electrónico' placeholder='ejemplo@correo.com' type='email' />
+							<UniversalFormField control={control} name='phone' label='Teléfono' placeholder='+593987654321' type='text' />
+							<UniversalFormField control={control} name='address' label='Dirección' placeholder='Av. Principal 123' type='textarea' />
 						</Card>
+
+						<Card className='border-none bg-transparent p-0 shadow-none'>
+							<CardHeader className='p-0'>
+								<CardTitle className='flex items-center gap-2 text-lg'>
+									<Icons.clipboardData className='h-4 w-4' />
+									Información de Identificación
+								</CardTitle>
+							</CardHeader>
+							<div className='grid grid-cols-2 gap-4'>
+								<UniversalFormField control={control} name='customerType' label='Tipo de Cliente' type='select' options={customerTypeOptions} required />
+								<UniversalFormField control={control} name='identificationType' label='Tipo de Identificación' type='select' options={identificationTypeOptions} required />
+							</div>
+							<UniversalFormField control={control} name='identificationNumber' label='Número de Identificación' placeholder='1234567890' type='text' required />
+						</Card>
+
 					</form>
 				</FormProvider>
 
-				{/* Usar el nuevo FormFooter */}
 				<FormFooter
 					formState={formState}
 					errors={errors}
 					isValid={isValid}
 					isDirty={isDirty}
-					isUploading={isUploading}
-					currentTemplate={currentRecord}
+					currentTemplate={currentCustomer}
 					onClose={handleClose}
 					onSubmit={handleSubmit(handleFormSubmit)}
 				/>

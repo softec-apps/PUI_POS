@@ -38,6 +38,7 @@ export interface I_CustomerId {
 	id: string
 }
 
+<<<<<<< HEAD
 export interface I_CreateCustomer {
 	customerType: CustomerType
 	identificationType: IdentificationType
@@ -59,6 +60,11 @@ export interface I_UpdateCustomer {
 	phone?: string
 	email?: string
 }
+=======
+export type I_CreateCustomer = I_Customer
+
+export type I_UpdateCustomer = I_Customer
+>>>>>>> origin/alex
 
 export interface I_CustomerResponse {
 	success: boolean
