@@ -33,7 +33,7 @@ export function FormFooter({
 
 	const getStatusMessage = () => {
 		if (hasErrors) return `${errorCount} error${errorCount > 1 ? 'es' : ''} por corregir`
-		if (isValid && isDirty) return 'Formulario válido y listo para guardar'
+		if (isValid && isDirty) return 'Formulario válido'
 		if (isValid && !isDirty && currentTemplate?.id) return 'Sin cambios para guardar'
 		return 'Completa los campos requeridos'
 	}
@@ -56,7 +56,7 @@ export function FormFooter({
 
 	const getButtonText = () => {
 		if (isSubmitting) return 'Guardando...'
-		return currentTemplate?.id ? 'Actualizar Cliente' : 'Crear Cliente'
+		return currentTemplate?.id ? 'Guardar' : 'Crear Cliente'
 	}
 
 	const getButtonIcon = () => {

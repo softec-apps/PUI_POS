@@ -66,8 +66,8 @@ export function TableCustomer({ customerData, loading, viewType, onEdit, onHardD
 				layout>
 				<motion.div variants={animations.container} layout>
 					{viewType === 'table' && <TableView recordsData={recordsData} />}
-					{viewType === 'card' && <CardView table={recordsData} onEdit={onEdit} onHardDelete={onHardDelete} />}
-					{viewType === 'list' && <ListView table={recordsData} onEdit={onEdit} onHardDelete={onHardDelete} />}
+					{viewType === 'card' && <CardView recordsData={recordsData} onEdit={onEdit} onHardDelete={onHardDelete} />}
+					{viewType === 'list' && <ListView recordsData={recordsData} onEdit={onEdit} onHardDelete={onHardDelete} />}
 				</motion.div>
 			</motion.div>
 		</AnimatePresence>

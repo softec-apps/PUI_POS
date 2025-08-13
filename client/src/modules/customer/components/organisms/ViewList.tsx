@@ -10,14 +10,15 @@ import { I_Customer } from '@/common/types/modules/customer'
 import { animations } from '@/modules/customer/components/atoms/animations'
 import { TableActions } from '@/modules/customer/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/customer/components/organisms/Table/TableInfoDate'
+import { generateBackgroundColor } from '@/common/utils/generateColor-util'
 
 interface ListViewProps {
-	table: ReactTable<I_Customer>
-	onEdit: (customerData: I_Customer) => void
-	onHardDelete: (customerData: I_Customer) => void
+	recordsData: ReactTable<I_Customer>
+	onEdit: (record: I_Customer) => void
+	onHardDelete: (record: I_Customer) => void
 }
 
-export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
+export const ListView = ({ recordsData, onEdit, onHardDelete }: ListViewProps) => (
 	<div className='space-y-4'>
 		<motion.div
 			initial='hidden'
@@ -26,8 +27,10 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 			className='grid grid-cols-1 gap-4'
 			layout>
 			<AnimatePresence mode='sync'>
-				{table.getRowModel().rows.map(row => {
+				{recordsData.getRowModel().rows.map(row => {
 					const customerData = row.original
+					const backgroundColor = generateBackgroundColor(customerData.firstName)
+
 					return (
 						<motion.div
 							key={row.id}
@@ -38,12 +41,13 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 							whileHover='hover'
 							layout
 							className='group'>
-							<Card className='dark:border-border/50 border px-4 shadow-none transition-all duration-500'>
+							<Card className='dark:border-border/50 border p-0 px-4 shadow-none transition-all duration-500'>
 								<CardContent className='p-0 py-4'>
 									<div className='flex items-center space-x-4'>
-                                        <div className='bg-muted flex h-10 w-10 items-center justify-center rounded-full'>
-                                            <Icons.user className='h-5 w-5 text-muted-foreground' />
-                                        </div>
+										<div className='flex h-32 w-32 items-center justify-center rounded-xl' style={{ backgroundColor }}>
+											<Icons.user2 className='text-primary-foreground h-12 w-12' />
+										</div>
+
 										<div className='min-w-0 flex-1'>
 											<div className='flex items-start justify-between gap-2'>
 												<div className='min-w-0 flex-1 space-y-2'>
@@ -52,7 +56,7 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 															{customerData.firstName} {customerData.lastName}
 														</Typography>
 														<div className='flex-shrink-0'>
-															<TableActions customerData={customerData} onEdit={onEdit} onHardDelete={onHardDelete} />
+															<TableActions recordData={customerData} onEdit={onEdit} onHardDelete={onHardDelete} />
 														</div>
 													</div>
 
@@ -67,9 +71,9 @@ export const ListView = ({ table, onEdit, onHardDelete }: ListViewProps) => (
 													<Separator />
 
 													<div className='flex items-center justify-between gap-2'>
-                                                        <Typography variant='span' className='text-muted-foreground text-sm'>
-                                                            ID: {customerData.identificationNumber}
-                                                        </Typography>
+														<Typography variant='span' className='text-muted-foreground text-sm'>
+															ID: {customerData.identificationNumber}
+														</Typography>
 														<div className='text-muted-foreground text-right text-xs'>
 															<TableInfoDate recordData={customerData} />
 														</div>
