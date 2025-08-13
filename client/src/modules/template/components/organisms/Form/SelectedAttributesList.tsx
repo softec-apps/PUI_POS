@@ -31,7 +31,7 @@ export function SelectedAttributesList({ attributes, onRemoveAll, onRemoveAttrib
 							className='border-border/50 dark:bg-card/40 bg-accent/30 flex items-center justify-between rounded-xl border p-3'>
 							<div className='flex items-center gap-3'>
 								<div className='space-y-1'>
-									<Typography variant='overline'>{attr.name} </Typography>
+									<Typography variant='overline'>{attr.name}</Typography>
 									<div className='space-x-2'>
 										<Badge
 											variant={attr.required ? 'success' : 'warning'}
