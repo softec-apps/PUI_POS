@@ -38,9 +38,27 @@ export interface I_CustomerId {
 	id: string
 }
 
-export interface I_CreateCustomer extends I_Customer {}
+export interface I_CreateCustomer {
+	customerType: CustomerType
+	identificationType: IdentificationType
+	identificationNumber: string
+	firstName?: string
+	lastName?: string
+	address?: string
+	phone?: string
+	email?: string
+}
 
-export interface I_UpdateCustomer extends I_Customer {}
+export interface I_UpdateCustomer {
+	customerType: CustomerType
+	identificationType: IdentificationType
+	identificationNumber: string
+	firstName?: string
+	lastName?: string
+	address?: string
+	phone?: string
+	email?: string
+}
 
 export interface I_CustomerResponse {
 	success: boolean
