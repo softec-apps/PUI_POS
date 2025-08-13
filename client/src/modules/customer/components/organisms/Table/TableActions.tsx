@@ -1,44 +1,64 @@
 'use client'
 
 import { Icons } from '@/components/icons'
+import { useRouter } from 'next/navigation'
 import { I_Customer } from '@/common/types/modules/customer'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { ROUTE_PATH } from '@/common/constants/routes-const'
+import { useCallback } from 'react'
 
-interface TableActionsProps {
-	recordData: I_Customer
-	onEdit: (recordData: I_Customer) => void
-	onHardDelete: (recordData: I_Customer) => void
-	onViewDetails?: () => void
+interface Props {
+	customerData: I_Customer
+	onEdit: (customerData: I_Customer) => void
+	onHardDelete: (customerData: I_Customer) => void
 }
 
-export const TableActions = ({ recordData, onEdit, onHardDelete, onViewDetails }: TableActionsProps) => (
-	<DropdownMenu>
-		<DropdownMenuTrigger asChild>
-			<ActionButton
-				icon={<Icons.dotsVertical />}
-				variant='ghost'
-				tooltip='Ver Acciones'
-				size='icon'
-				className='rounded-full'
-			/>
-		</DropdownMenuTrigger>
+export const TableActions = ({ customerData, onEdit, onHardDelete }: Props) => {
+	const router = useRouter()
 
-		<DropdownMenuContent align='end' className='dark:border-border/50 rounded-2xl border shadow-none'>
-			<DropdownMenuItem
-				onClick={() => onEdit(recordData)}
-				className='text-muted-foreground flex cursor-pointer items-center gap-2 rounded-xl'>
-				<Icons.pencilMinus />
-				<span>Editar</span>
-			</DropdownMenuItem>
+	const handleViewDetails = useCallback(() => {
+		router.push(`${ROUTE_PATH.ADMIN.CUSTOMERS}/${customerData.id}`)
+	}, [router, customerData.id])
 
-			<DropdownMenuItem
-				variant='destructive'
-				onClick={() => onHardDelete(recordData)}
-				className='flex cursor-pointer items-center rounded-xl'>
-				<Icons.trash />
-				<span>Eliminar</span>
-			</DropdownMenuItem>
-		</DropdownMenuContent>
-	</DropdownMenu>
-)
+	const handleEdit = useCallback(() => {
+		onEdit(customerData)
+	}, [onEdit, customerData])
+
+	const handleDelete = useCallback(() => {
+		onHardDelete(customerData)
+	}, [onHardDelete, customerData])
+
+	return (
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<ActionButton
+					icon={<Icons.dotsVertical />}
+					variant='ghost'
+					tooltip='Ver Acciones'
+					size='icon'
+					className='rounded-full'
+				/>
+			</DropdownMenuTrigger>
+
+			<DropdownMenuContent align='end' className='border-border/50 rounded-2xl border'>
+				<DropdownMenuItem onClick={handleEdit} className='flex cursor-pointer items-center gap-2 rounded-xl'>
+					<Icons.pencilMinus />
+					<span>Editar</span>
+				</DropdownMenuItem>
+
+				<DropdownMenuItem onClick={handleViewDetails} className='flex cursor-pointer items-center gap-2 rounded-xl'>
+					<Icons.eye />
+					<span>Detalles</span>
+				</DropdownMenuItem>
+
+				<DropdownMenuItem
+					onClick={handleDelete}
+					className='text-destructive hover:text-destructive flex cursor-pointer items-center gap-2 rounded-xl'>
+					<Icons.trash />
+					<span>Eliminar</span>
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
+	)
+}

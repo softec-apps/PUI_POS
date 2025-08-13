@@ -88,7 +88,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: TableColumnsProps):
 		id: 'actions',
 		cell: ({ row }) => (
 			<div className='flex justify-end'>
-				<TableActions recordData={row.original} onEdit={onEdit} onHardDelete={onHardDelete} />
+				<TableActions customerData={row.original} onEdit={onEdit} onHardDelete={onHardDelete} />
 			</div>
 		),
 	},
