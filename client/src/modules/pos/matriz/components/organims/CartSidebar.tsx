@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { Icons } from '@/components/icons'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 
