@@ -8,15 +8,12 @@ import { useProduct } from '@/common/hooks/useProduct'
 import { useCategory } from '@/common/hooks/useCategory'
 import { useDebounce } from '@/common/hooks/useDebounce'
 
-import { Star, Search, ImageIcon, Filter, Plus } from 'lucide-react'
-import { Typography } from '@/components/ui/typography'
+import { Search, Plus } from 'lucide-react'
 import { EmptyState } from '@/components/layout/organims/EmptyState'
 
 import { useCartStore } from '@/common/stores/useCartStore'
 
 import { Icons } from '@/components/icons'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { CartSidebar } from '@/modules/pos/matriz/components/organims/CartSidebar'
@@ -102,46 +99,6 @@ export function MatrizView() {
 		}
 	}
 
-	// Función para añadir producto seleccionado con Enter
-	const handleAddSelectedProduct = () => {
-		if (selectedProductIndex >= 0 && selectedProductIndex < allProducts.length) {
-			const selectedProduct = allProducts[selectedProductIndex]
-			if (selectedProduct.stock > 0) {
-				handleAddToCart(selectedProduct)
-			}
-		}
-	}
-
-	// Manejo de teclas para navegación y selección rápida
-	const handleKeyDown = e => {
-		if (!isSearchFocused || allProducts.length === 0) return
-
-		switch (e.key) {
-			case 'ArrowDown':
-				e.preventDefault()
-				setSelectedProductIndex(prev => (prev < allProducts.length - 1 ? prev + 1 : 0))
-				break
-			case 'ArrowUp':
-				e.preventDefault()
-				setSelectedProductIndex(prev => (prev > 0 ? prev - 1 : allProducts.length - 1))
-				break
-			case 'Enter':
-				e.preventDefault()
-				if (allProducts.length === 1) {
-					// Si hay solo un producto, añadirlo directamente
-					handleAddToCart(allProducts[0])
-				} else if (selectedProductIndex >= 0) {
-					// Si hay uno seleccionado, añadirlo
-					handleAddSelectedProduct()
-				}
-				break
-			case 'Escape':
-				setSearchTerm('')
-				setSelectedProductIndex(-1)
-				break
-		}
-	}
-
 	// Auto-seleccionar primer producto cuando hay resultados
 	useEffect(() => {
 		if (allProducts.length > 0 && searchTerm.length > 0) {
@@ -160,7 +117,7 @@ export function MatrizView() {
 		<div className='flex h-[calc(100vh-4rem)] min-h-[calc(100vh-4rem)] w-full gap-4'>
 			<div className='flex flex-1 flex-col'>
 				<ScrollArea className='overflow-auto pr-2'>
-					<div className='space-y-6 pb-4' onKeyDown={handleKeyDown}>
+					<div className='space-y-6 pb-4'>
 						{/* Categorías */}
 						<motion.div
 							variants={sectionVariants}
@@ -278,7 +235,7 @@ export function MatrizView() {
 			</div>
 
 			{/* Sidebar del carrito */}
-			<CartSidebar isOpen={true} onClose={() => {}} onPlaceOrder={handlePlaceOrder} />
+			<CartSidebar onPlaceOrder={handlePlaceOrder} />
 		</div>
 	)
 }

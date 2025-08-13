@@ -39,8 +39,8 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 		getTotalItems,
 	} = useCartStore()
 
-	const { selectedCustomer, clearCustomer } = useCustomerStore()
 	const { cartState, setCartState } = useCheckoutStore()
+	const { selectedCustomer, clearCustomer } = useCustomerStore()
 
 	// Calculations
 	const subtotal = getSubtotal()
@@ -184,7 +184,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 								{/* Start Sale Button */}
 								<ActionButton
 									size='pos'
-									className='w-full'
+									className='w-full text-xl font-semibold'
 									text='Comenzar venta'
 									onClick={handleStartSale}
 									disabled={orderItems.length === 0}
@@ -199,10 +199,9 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 								<ActionButton
 									size='pos'
 									disabled={!selectedCustomer || !selectedPayment}
-									icon={<Icons.cashRegister />}
 									onClick={handleFinalizeOrder}
 									text='Finalizar compra'
-									className='w-full'
+									className='w-full text-xl font-semibold'
 								/>
 							</>
 						)}

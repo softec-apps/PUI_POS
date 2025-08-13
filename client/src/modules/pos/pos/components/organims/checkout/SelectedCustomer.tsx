@@ -1,30 +1,29 @@
 'use client'
 
 import React from 'react'
-import { X } from 'lucide-react'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Typography } from '@/components/ui/typography'
-import { Customer } from '@/common/stores/useCustomerStore'
+import { I_Customer } from '@/common/types/modules/customer'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { Icons } from '@/components/icons'
 
 interface SelectedCustomerProps {
-	customer: Customer
+	customer: I_Customer
 	onDeselect: () => void
 }
 
 export const SelectedCustomer: React.FC<SelectedCustomerProps> = ({ customer, onDeselect }) => (
-	<Card className='bg-accent border-primary/20 border-none p-4 shadow-none'>
+	<Card className='bg-accent/50 border-primary/20 border-none p-4 shadow-none'>
 		<div className='flex items-center justify-between'>
 			<div className='space-y-1'>
 				<Typography variant='small' className='text-primary'>
-					{customer.name}
+					{`${customer.firstName} `}
+					{customer.lastName}
 				</Typography>
 
 				<Typography variant='small'>
-					{customer.email && `${customer.email} • `}
-					{customer.phone}
+					{`${customer.email} • `}
+					{customer.identificationNumber}
 				</Typography>
 			</div>
 

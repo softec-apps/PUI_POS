@@ -19,9 +19,9 @@ export const CartHeader: React.FC<CartHeaderProps> = ({ cartState, totalItems, o
 				size='lg'
 				icon={<ArrowLeft className='h-4 w-4' />}
 				onClick={onBackToCart}
-				tooltip='Volver al carrito'
+				tooltip='Volver atrás'
 			/>
 		)}
-		<Typography variant='lead'>{cartState === 'cart' ? `Carrito (${totalItems})` : ''}</Typography>
+		<Typography variant='lead'>{cartState === 'cart' ? `Productos (${totalItems})` : ''}</Typography>
 	</div>
 )

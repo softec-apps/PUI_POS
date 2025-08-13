@@ -68,18 +68,6 @@ export class TemplateProductService {
       }
 
       category = categoryResult.data
-
-      // 2.2. Validar si ya existe plantilla con esta categoría
-      if (category) {
-        const existingTemplateByCategory =
-          await this.templateRepository.findByField('category', category.id)
-
-        if (existingTemplateByCategory) {
-          throw new ConflictException({
-            message: 'Ya existe una plantilla con esta categoría',
-          })
-        }
-      }
     } else if (createTemplateDto.categoryId === null) {
       category = null
     }
@@ -221,20 +209,6 @@ export class TemplateProductService {
           })
         }
         category = categoryResult.data
-
-        // Validar si ya existe otra plantilla con esta categoría
-        if (category) {
-          const existingTemplateByCategory =
-            await this.templateRepository.findByField('category', category.id)
-          if (
-            existingTemplateByCategory &&
-            existingTemplateByCategory.id !== id
-          ) {
-            throw new ConflictException({
-              message: 'Ya existe una plantilla con esta categoría',
-            })
-          }
-        }
       } else if (updateTemplateDto.categoryId === null) {
         category = null
       }
