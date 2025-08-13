@@ -45,8 +45,8 @@ export class CustomerController {
    */
   @Post()
   @CustomerApiDocs.create
-  @Roles(RoleEnum.Cashier)
-  @SerializeOptions({ groups: [ROLES.CASHIER] })
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createCustomerDto: CreateCustomerDto,
@@ -79,8 +79,8 @@ export class CustomerController {
    */
   @Get(':id')
   @CustomerApiDocs.findOne
-  @Roles(RoleEnum.Admin, RoleEnum.Manager)
-  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
   @HttpCode(HttpStatus.OK)
   async findOne(
     @Param() param: ParamCustomerDto,
@@ -95,8 +95,8 @@ export class CustomerController {
    */
   @Put(':id')
   @CustomerApiDocs.update
-  @Roles(RoleEnum.Admin, RoleEnum.Manager)
-  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
   @HttpCode(HttpStatus.OK)
   async update(
     @Param() param: ParamCustomerDto,
@@ -113,8 +113,8 @@ export class CustomerController {
    */
   @Delete(':id/hard-delete')
   @CustomerApiDocs.update
-  @Roles(RoleEnum.Admin, RoleEnum.Manager)
-  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
   @HttpCode(HttpStatus.OK)
   hardDelete(@Param() param: ParamCustomerDto): Promise<ApiResponse> {
     return this.customerService.hardDelete(param.id)
