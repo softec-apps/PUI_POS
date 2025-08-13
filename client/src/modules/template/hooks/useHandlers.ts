@@ -29,19 +29,17 @@ export function useHandlers({ modalState, clearPreview, createTemplate, updateTe
 				}
 
 				modalState.closeDialog()
-				clearPreview()
 			} catch (error) {
 				console.error('Save error:', error)
 				throw error // Re-throw para que el form maneje el error
 			}
 		},
-		[modalState, updateTemplate, createTemplate, clearPreview]
+		[modalState, updateTemplate, createTemplate]
 	)
 
 	const handleDialogClose = useCallback(() => {
 		modalState.closeDialog()
-		clearPreview()
-	}, [modalState, clearPreview])
+	}, [modalState])
 
 	const handleClearPreview = useCallback(() => clearPreview(), [clearPreview])
 
