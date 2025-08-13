@@ -10,8 +10,7 @@ import { animations } from '@/modules/customer/components/atoms/animations'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { TableActions } from '@/modules/customer/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/customer/components/organisms/Table/TableInfoDate'
-import { ImageControl } from '@/components/layout/organims/ImageControl'
-import { generateBackgroundColor } from '@/common/utils/generateColor-util'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface CardViewProps {
 	recordsData: ReactTable<I_Customer>
@@ -31,8 +30,7 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: CardViewProps) =
 				<AnimatePresence mode='sync'>
 					{recordsData.getRowModel().rows.map(row => {
 						const recordData = row.original
-
-						const backgroundColor = generateBackgroundColor(recordData?.firstName)
+						const initials = `${recordData?.firstName?.charAt(0)}${recordData?.lastName?.charAt(0)}`
 
 						return (
 							<motion.div
@@ -48,11 +46,10 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: CardViewProps) =
 									<CardHeader className='p-4'>
 										<div className='flex flex-col items-center justify-center'>
 											<div className='flex flex-col items-center justify-center space-y-4'>
-												<div
-													className='flex h-20 w-20 items-center justify-center rounded-full'
-													style={{ backgroundColor }}>
-													<Icons.user2 className='text-primary-foreground h-12 w-12' />
-												</div>
+												<Avatar className='h-24 w-24'>
+													<AvatarImage src={recordData.firstName} />
+													<AvatarFallback className='bg-primary text-primary-foreground'>{initials}</AvatarFallback>
+												</Avatar>
 
 												<Typography variant='h5' className='line-clamp-1 break-words'>
 													{recordData.firstName} {recordData.lastName}
@@ -75,7 +72,7 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: CardViewProps) =
 
 										<div className='flex items-center gap-2'>
 											<Icons.mail className='text-muted-foreground h-4 w-4' />
-											<Typography variant='span' className='text-muted-foreground text-sm'>
+											<Typography variant='span' className='text-muted-foreground truncate text-sm'>
 												{recordData.email || 'No registrado'}
 											</Typography>
 										</div>

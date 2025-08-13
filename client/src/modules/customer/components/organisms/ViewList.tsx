@@ -11,6 +11,7 @@ import { animations } from '@/modules/customer/components/atoms/animations'
 import { TableActions } from '@/modules/customer/components/organisms/Table/TableActions'
 import { TableInfoDate } from '@/modules/customer/components/organisms/Table/TableInfoDate'
 import { generateBackgroundColor } from '@/common/utils/generateColor-util'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface ListViewProps {
 	recordsData: ReactTable<I_Customer>
@@ -29,7 +30,7 @@ export const ListView = ({ recordsData, onEdit, onHardDelete }: ListViewProps) =
 			<AnimatePresence mode='sync'>
 				{recordsData.getRowModel().rows.map(row => {
 					const customerData = row.original
-					const backgroundColor = generateBackgroundColor(customerData.firstName)
+					const initials = `${customerData?.firstName?.charAt(0)}${customerData?.lastName?.charAt(0)}`
 
 					return (
 						<motion.div
@@ -44,9 +45,10 @@ export const ListView = ({ recordsData, onEdit, onHardDelete }: ListViewProps) =
 							<Card className='dark:border-border/50 border p-0 px-4 shadow-none transition-all duration-500'>
 								<CardContent className='p-0 py-4'>
 									<div className='flex items-center space-x-4'>
-										<div className='flex h-32 w-32 items-center justify-center rounded-xl' style={{ backgroundColor }}>
-											<Icons.user2 className='text-primary-foreground h-12 w-12' />
-										</div>
+										<Avatar className='h-28 w-28'>
+											<AvatarImage src={customerData.firstName} />
+											<AvatarFallback className='bg-primary text-primary-foreground'>{initials}</AvatarFallback>
+										</Avatar>
 
 										<div className='min-w-0 flex-1'>
 											<div className='flex items-start justify-between gap-2'>
@@ -60,20 +62,22 @@ export const ListView = ({ recordsData, onEdit, onHardDelete }: ListViewProps) =
 														</div>
 													</div>
 
-													<div className='flex items-center justify-between'>
-														<Typography
-															variant='span'
-															className='text-muted-foreground line-clamp-1 text-sm break-words'>
-															{customerData.email || 'Sin email'}
+													<div className='flex items-center gap-2'>
+														<Icons.id className='text-muted-foreground h-4 w-4' />
+														<Typography variant='span' className='text-muted-foreground truncate text-sm'>
+															{customerData.identificationNumber || 'No registrado'}
 														</Typography>
 													</div>
 
 													<Separator />
 
 													<div className='flex items-center justify-between gap-2'>
-														<Typography variant='span' className='text-muted-foreground text-sm'>
-															ID: {customerData.identificationNumber}
-														</Typography>
+														<div className='flex items-center gap-2'>
+															<Icons.mail className='text-muted-foreground h-4 w-4' />
+															<Typography variant='span' className='text-muted-foreground truncate text-sm'>
+																{customerData.email || 'No registrado'}
+															</Typography>
+														</div>
 														<div className='text-muted-foreground text-right text-xs'>
 															<TableInfoDate recordData={customerData} />
 														</div>

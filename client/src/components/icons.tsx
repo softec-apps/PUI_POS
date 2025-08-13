@@ -66,6 +66,7 @@ import {
 	IconClick,
 	IconClipboardCopy,
 	IconClipboardData,
+	IconClock,
 	IconCodeDots,
 	IconCommand,
 	IconCopy,
@@ -142,6 +143,7 @@ import {
 	IconTag,
 	IconTrademark,
 	IconTrash,
+	IconTrendingUp,
 	IconTruck,
 	IconTruckLoading,
 	IconUpload,
@@ -174,7 +176,10 @@ import {
 
 export const Icons = {
 	dashboard: IconLayoutDashboard,
+	clock: IconClock,
+	fileText: IconFileText,
 	barCode: IconBarcode,
+	trendingUp: IconTrendingUp,
 	moneyBag: IconMoneybag,
 	phone: IconPhone,
 	id: IconId,

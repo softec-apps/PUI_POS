@@ -107,7 +107,7 @@ export const customerTypeOptions = Object.values(CustomerType).map(type => ({
 export function CustomerFormModal({ isOpen, currentCustomer, onClose, onSubmit }: Props) {
 	const methods = useForm<CustomerFormData>({
 		resolver: zodResolver(customerSchema),
-		mode: 'all',
+		mode: 'onChange',
 	})
 
 	const {
@@ -151,32 +151,30 @@ export function CustomerFormModal({ isOpen, currentCustomer, onClose, onSubmit }
 	}, [customerType, setValue, trigger])
 
 	React.useEffect(() => {
-		if (isOpen) {
-			if (currentCustomer) {
-				reset({
-					firstName: currentCustomer.firstName || '',
-					lastName: currentCustomer.lastName || '',
-					email: currentCustomer.email || '',
-					phone: currentCustomer.phone || '',
-					address: currentCustomer.address || '',
-					identificationType: currentCustomer.identificationType,
-					identificationNumber: currentCustomer.identificationNumber,
-					customerType: currentCustomer.customerType,
-				})
-			} else {
-				reset({
-					firstName: '',
-					lastName: '',
-					email: '',
-					phone: '',
-					address: '',
-					identificationType: IdentificationType.IDENTIFICATION_CARD,
-					identificationNumber: '',
-					customerType: CustomerType.REGULAR,
-				})
-			}
+		if (currentCustomer) {
+			reset({
+				firstName: currentCustomer.firstName || '',
+				lastName: currentCustomer.lastName || '',
+				email: currentCustomer.email || '',
+				phone: currentCustomer.phone || '',
+				address: currentCustomer.address || '',
+				identificationType: currentCustomer.identificationType,
+				identificationNumber: currentCustomer.identificationNumber,
+				customerType: currentCustomer.customerType,
+			})
+		} else {
+			reset({
+				firstName: '',
+				lastName: '',
+				email: '',
+				phone: '',
+				address: '',
+				identificationType: IdentificationType.IDENTIFICATION_CARD,
+				identificationNumber: '',
+				customerType: CustomerType.REGULAR,
+			})
 		}
-	}, [isOpen, currentCustomer, reset])
+	}, [currentCustomer, reset])
 
 	const handleFormSubmit = async (data: CustomerFormData) => {
 		try {

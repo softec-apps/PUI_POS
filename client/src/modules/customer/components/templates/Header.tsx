@@ -18,32 +18,32 @@ const EXPORT_CONFIG = {
 	columnLabels: {
 		firstName: 'Nombres',
 		lastName: 'Apellidos',
-        email: 'Email',
-        phone: 'Teléfono',
-        address: 'Dirección',
-        identificationType: 'Tipo ID',
-        identificationNumber: 'No. ID',
-        customerType: 'Tipo Cliente',
+		email: 'Email',
+		phone: 'Teléfono',
+		address: 'Dirección',
+		identificationType: 'Tipo ID',
+		identificationNumber: 'No. ID',
+		customerType: 'Tipo Cliente',
 		createdAt: 'Fecha de Creación',
 		updatedAt: 'Última Actualización',
 	},
 	columnMappings: {
-        identificationType: {
+		identificationType: {
 			type: 'enum' as const,
 			valueMap: {
 				'04': 'RUC',
 				'05': 'Cédula',
-                '06': 'Pasaporte',
-                '07': 'Consumidor Final',
+				'06': 'Pasaporte',
+				'07': 'Consumidor Final',
 			},
 		},
-        customerType: {
-            type: 'enum' as const,
-            valueMap: {
-                'regular': 'Regular',
-                'final_consumer': 'Consumidor Final',
-            },
-        },
+		customerType: {
+			type: 'enum' as const,
+			valueMap: {
+				regular: 'Regular',
+				final_consumer: 'Consumidor Final',
+			},
+		},
 		createdAt: {
 			type: 'date' as const,
 			format: (value: string) => formatDate(value, true),
@@ -80,12 +80,12 @@ const EXPORT_CONFIG = {
 	columnTypes: {
 		firstName: 'text' as const,
 		lastName: 'text' as const,
-        email: 'text' as const,
-        phone: 'text' as const,
-        address: 'text' as const,
-        identificationType: 'text' as const,
-        identificationNumber: 'text' as const,
-        customerType: 'text' as const,
+		email: 'text' as const,
+		phone: 'text' as const,
+		address: 'text' as const,
+		identificationType: 'text' as const,
+		identificationNumber: 'text' as const,
+		customerType: 'text' as const,
 		createdAt: 'date' as const,
 		updatedAt: 'date' as const,
 	},
