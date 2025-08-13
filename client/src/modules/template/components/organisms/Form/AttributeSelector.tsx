@@ -1,13 +1,13 @@
-import { Button } from '@/components/ui/button'
+'use client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Control, UseFormSetValue, UseFormWatch } from 'react-hook-form'
 import { TemplateFormData } from '@/modules/template/types/template-form'
 import { Icons } from '@/components/icons'
 import { SelectedAttributesList } from './SelectedAttributesList'
 import { AlertMessage } from '@/components/layout/atoms/Alert'
+import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
+import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
+import { useMemo } from 'react'
 
 interface AttributeSelectorProps {
 	control: Control<TemplateFormData>
@@ -42,6 +42,18 @@ export function AttributeSelector({
 			label: attribute.name,
 		})) || []
 
+	// Obtener los IDs seleccionados del formulario
+	const selectedAttributeIds = watch('atributeIds') || []
+
+	// Mapear los IDs seleccionados a los objetos completos de atributos
+	const selectedAttributesForDisplay = useMemo(() => {
+		if (!attributes?.data?.items || selectedAttributeIds.length === 0) {
+			return []
+		}
+
+		return selectedAttributeIds.map(id => attributes.data.items.find(attr => attr.id === id)).filter(Boolean) // Filtrar valores undefined
+	}, [selectedAttributeIds, attributes?.data?.items])
+
 	return (
 		<Card className='border-none bg-transparent p-0 shadow-none'>
 			<CardHeader className='p-0'>
@@ -51,9 +63,12 @@ export function AttributeSelector({
 				</CardTitle>
 				<CardDescription>Selecciona los atributos que tendrá esta plantilla</CardDescription>
 			</CardHeader>
-
 			<CardContent className='space-y-4 p-0'>
-				{attributes?.data?.pagination?.totalRecords === 0 ? (
+				{loadingAttributes ? (
+					<div className='flex items-center justify-center py-8'>
+						<SpinnerLoader />
+					</div>
+				) : attributes?.data?.pagination?.totalRecords === 0 ? (
 					<AlertMessage
 						variant='warning'
 						title='No hay atributos disponibles'
@@ -61,72 +76,40 @@ export function AttributeSelector({
 					/>
 				) : (
 					<>
-						<FormField
+						<UniversalFormField
 							control={control}
 							name='atributeIds'
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Buscar y seleccionar atributos</FormLabel>
-									<Popover open={attributeOpen} onOpenChange={setAttributeOpen}>
-										<PopoverTrigger asChild>
-											<FormControl>
-												<Button variant='outline' role='combobox' className='w-full justify-between'>
-													Buscar atributos
-													<Icons.chevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
-												</Button>
-											</FormControl>
-										</PopoverTrigger>
-
-										<PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0' align='start'>
-											<Command shouldFilter={false}>
-												<CommandInput
-													placeholder='Buscar atributos...'
-													value={attributeSearch}
-													onValueChange={setAttributeSearch}
-												/>
-												<CommandList>
-													<CommandEmpty>
-														{loadingAttributes ? 'Buscando...' : 'No se encontraron atributos'}
-													</CommandEmpty>
-													<CommandGroup>
-														{selectedAttributes.map(attr => (
-															<CommandItem
-																key={attr.id}
-																value={attr.id}
-																onSelect={() => {
-																	setValue(
-																		'atributeIds',
-																		field.value.filter(id => id !== attr.id),
-																		{ shouldValidate: true }
-																	)
-																}}>
-																<Icons.check className='mr-2 h-4 w-4 opacity-100' />
-																{attr.name}
-															</CommandItem>
-														))}
-
-														{attributeOptions
-															.filter(attr => !selectedAttributes.some(selected => selected.id === attr.value))
-															.map(attribute => (
-																<CommandItem
-																	key={attribute.value}
-																	value={attribute.value}
-																	onSelect={() => handleAddAttribute(attribute.value)}>
-																	{attribute.label}
-																</CommandItem>
-															))}
-													</CommandGroup>
-												</CommandList>
-											</Command>
-										</PopoverContent>
-									</Popover>
-									<FormMessage />
-								</FormItem>
-							)}
+							label='Seleccionar Atributos'
+							placeholder='Buscar atributos...'
+							type='multi-command'
+							required={true}
+							options={attributeOptions}
+							maxSelections={20}
+							showSelectedCount={true}
+							allowClearAll={true}
+							groupByCategory={false}
+							commandOpen={attributeOpen}
+							setCommandOpen={setAttributeOpen}
+							commandSearchValue={attributeSearch}
+							setCommandSearchValue={setAttributeSearch}
+							shouldFilter={false}
+							commandEmptyMessage={
+								loadingAttributes ? (
+									<div className='flex items-center justify-center py-4'>
+										<SpinnerLoader />
+										<span className='ml-2'>Buscando...</span>
+									</div>
+								) : (
+									'No se encontraron atributos.'
+								)
+							}
+							onChange={(selectedIds: string[]) => {
+								console.log('Atributos seleccionados:', selectedIds)
+							}}
 						/>
-						{selectedAttributes.length > 0 && (
+						{selectedAttributesForDisplay.length > 0 && (
 							<SelectedAttributesList
-								attributes={selectedAttributes}
+								attributes={selectedAttributesForDisplay}
 								onRemoveAll={() => setValue('atributeIds', [], { shouldValidate: true })}
 								onRemoveAttribute={(id: string) => {
 									setValue(
