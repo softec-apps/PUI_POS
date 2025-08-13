@@ -56,7 +56,7 @@ export const CardView = ({ table, onEdit, onHardDelete }: CardViewProps) => {
                                                 </div>
                                             </div>
                                             <div className='bg-card/50 shadow- absolute top-2 right-2 z-10 rounded-full backdrop-blur-sm'>
-										        <TableActions recordData={customerData} onEdit={onEdit} onHardDelete={onHardDelete} />
+										<TableActions customerData={customerData} onEdit={onEdit} onHardDelete={onHardDelete} />
 									        </div>
                                         </div>
 									</CardHeader>
