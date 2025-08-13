@@ -16,6 +16,7 @@ import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessa
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
 
 type IconOption = {
 	value: string
@@ -30,7 +31,18 @@ type UniversalFormFieldProps<T extends FieldValues> = {
 	label?: string
 	placeholder?: string
 	description?: string | ReactNode
-	type?: 'text' | 'number' | 'email' | 'password' | 'textarea' | 'switch' | 'checkbox' | 'select' | 'command' | 'hidden'
+	type?:
+		| 'text'
+		| 'number'
+		| 'email'
+		| 'password'
+		| 'textarea'
+		| 'switch'
+		| 'checkbox'
+		| 'select'
+		| 'command'
+		| 'multi-command'
+		| 'hidden'
 	required?: boolean
 	className?: string
 	options?: IconOption[]
@@ -51,6 +63,10 @@ type UniversalFormFieldProps<T extends FieldValues> = {
 	commandSearchValue?: string
 	setCommandSearchValue?: (search: string) => void
 	shouldFilter?: boolean
+	// Props específicos para multi-command
+	maxSelections?: number
+	showSelectedCount?: boolean
+	allowClearAll?: boolean
 }
 
 export function UniversalFormField<T extends FieldValues>({
@@ -78,6 +94,9 @@ export function UniversalFormField<T extends FieldValues>({
 	commandSearchValue,
 	setCommandSearchValue,
 	shouldFilter = true,
+	maxSelections = 20,
+	showSelectedCount = true,
+	allowClearAll = true,
 }: UniversalFormFieldProps<T>) {
 	const [internalCommandOpen, setInternalCommandOpen] = React.useState(false)
 	const [internalSearchValue, setInternalSearchValue] = React.useState('')
@@ -135,7 +154,10 @@ export function UniversalFormField<T extends FieldValues>({
 			name={name}
 			render={({ field, fieldState }) => {
 				const hasError = !!fieldState.error
-				const hasValue = field.value !== undefined && field.value !== null && field.value !== ''
+				const hasValue =
+					field.value !== undefined &&
+					field.value !== null &&
+					(Array.isArray(field.value) ? field.value.length > 0 : field.value !== '')
 				const isValid = !hasError && hasValue
 				const isDirty = fieldState.isDirty
 
@@ -202,6 +224,31 @@ export function UniversalFormField<T extends FieldValues>({
 					)
 				}
 
+				// Renderizar valores múltiples seleccionados para multi-command
+				const renderMultiSelectedValues = () => {
+					const selectedValues = Array.isArray(field.value) ? field.value : []
+
+					if (selectedValues.length === 0) {
+						return <span className='text-muted-foreground'>{placeholder}</span>
+					}
+
+					if (selectedValues.length === 1) {
+						const selectedOption = options?.find(opt => opt.value === selectedValues[0])
+						return selectedOption?.label || selectedValues[0]
+					}
+
+					return (
+						<div className='flex items-center gap-1'>
+							<span>{selectedValues.length} elementos seleccionados</span>
+							{showSelectedCount && (
+								<Badge variant='secondary' className='ml-1'>
+									{selectedValues.length}
+								</Badge>
+							)}
+						</div>
+					)
+				}
+
 				return type === 'switch' ? (
 					<FormItem
 						className={`bg-muted/20 flex flex-row items-center justify-between rounded-lg border p-4 ${switchContainerClass}`}>
@@ -223,6 +270,177 @@ export function UniversalFormField<T extends FieldValues>({
 								/>
 							</div>
 						</FormControl>
+					</FormItem>
+				) : type === 'multi-command' ? (
+					<FormItem>
+						<div className='text-primary flex items-center gap-1'>
+							<FormLabel>{label}</FormLabel>
+							{required && <span className='text-destructive'>*</span>}
+						</div>
+
+						<FormControl>
+							<div className='relative'>
+								<Popover open={isCommandOpen} onOpenChange={handleSetCommandOpen}>
+									<PopoverTrigger asChild>
+										<Button
+											variant='outline'
+											role='combobox'
+											aria-expanded={isCommandOpen}
+											className={cn('w-full justify-between', inputClasses, !hasValue && 'text-muted-foreground')}
+											disabled={disabled}>
+											{renderMultiSelectedValues()}
+											<Icons.chevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+										</Button>
+									</PopoverTrigger>
+
+									<PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0' align='start'>
+										<Command shouldFilter={shouldFilter}>
+											<div className='flex items-center justify-between border-b p-2'>
+												<CommandInput
+													placeholder={placeholder}
+													value={searchValue}
+													onValueChange={handleSetSearchValue}
+													className='flex-1'
+												/>
+												{allowClearAll && hasValue && (
+													<Button
+														variant='ghost'
+														size='sm'
+														onClick={() => {
+															field.onChange([])
+															onChange?.([])
+														}}
+														className='ml-2 h-8 px-2'>
+														<Icons.x className='h-4 w-4' />
+													</Button>
+												)}
+											</div>
+
+											<CommandList>
+												<CommandEmpty>{commandEmptyMessage}</CommandEmpty>
+												{groupByCategory && groupedOptions ? (
+													Object.entries(groupedOptions).map(([category, categoryOptions]) => (
+														<CommandGroup key={category} heading={category}>
+															{categoryOptions.map(option => {
+																const isSelected = Array.isArray(field.value) && field.value.includes(option.value)
+																const canSelect =
+																	!isSelected && (!Array.isArray(field.value) || field.value.length < maxSelections)
+
+																return (
+																	<CommandItem
+																		key={option.value}
+																		value={option.value}
+																		onSelect={() => {
+																			const currentValue = Array.isArray(field.value) ? field.value : []
+																			let newValue: string[]
+
+																			if (isSelected) {
+																				// Remover elemento
+																				newValue = currentValue.filter(v => v !== option.value)
+																			} else if (canSelect) {
+																				// Agregar elemento
+																				newValue = [...currentValue, option.value]
+																			} else {
+																				return // No hacer nada si no se puede seleccionar
+																			}
+
+																			field.onChange(newValue)
+																			onChange?.(newValue)
+																		}}
+																		className={cn(
+																			'flex cursor-pointer items-center gap-2',
+																			!canSelect && !isSelected && 'cursor-not-allowed opacity-50'
+																		)}
+																		disabled={!canSelect && !isSelected}>
+																		{option.icon && <option.icon className='h-4 w-4' />}
+																		{option.label}
+																		{isSelected && <Icons.check className='text-primary ml-auto h-4 w-4' />}
+																	</CommandItem>
+																)
+															})}
+														</CommandGroup>
+													))
+												) : (
+													<CommandGroup>
+														{options?.map(option => {
+															const isSelected = Array.isArray(field.value) && field.value.includes(option.value)
+															const canSelect =
+																!isSelected && (!Array.isArray(field.value) || field.value.length < maxSelections)
+
+															return (
+																<CommandItem
+																	key={option.value}
+																	value={option.value}
+																	onSelect={() => {
+																		const currentValue = Array.isArray(field.value) ? field.value : []
+																		let newValue: string[]
+
+																		if (isSelected) {
+																			// Remover elemento
+																			newValue = currentValue.filter(v => v !== option.value)
+																		} else if (canSelect) {
+																			// Agregar elemento
+																			newValue = [...currentValue, option.value]
+																		} else {
+																			return // No hacer nada si no se puede seleccionar
+																		}
+
+																		field.onChange(newValue)
+																		onChange?.(newValue)
+																	}}
+																	className={cn(
+																		'flex cursor-pointer items-center gap-2',
+																		!canSelect && !isSelected && 'cursor-not-allowed opacity-50'
+																	)}
+																	disabled={!canSelect && !isSelected}>
+																	{option.icon && <option.icon className='h-4 w-4' />}
+																	{option.label}
+																	{isSelected && <Icons.check className='text-primary ml-auto h-4 w-4' />}
+																</CommandItem>
+															)
+														})}
+													</CommandGroup>
+												)}
+											</CommandList>
+										</Command>
+
+										{/* Mostrar elementos seleccionados */}
+										{hasValue && (
+											<div className='border-t p-2'>
+												<div className='text-muted-foreground mb-2 text-sm'>
+													Seleccionados ({Array.isArray(field.value) ? field.value.length : 0}/{maxSelections})
+												</div>
+												<div className='flex max-h-20 flex-wrap gap-1 overflow-y-auto'>
+													{Array.isArray(field.value) &&
+														field.value.map(value => {
+															const option = options?.find(opt => opt.value === value)
+															return (
+																<Badge key={value} variant='secondary' className='flex items-center gap-1 text-xs'>
+																	{option?.label || value}
+																	<button
+																		onClick={e => {
+																			e.preventDefault()
+																			e.stopPropagation()
+																			const newValue = field.value.filter((v: string) => v !== value)
+																			field.onChange(newValue)
+																			onChange?.(newValue)
+																		}}
+																		className='hover:bg-destructive hover:text-destructive-foreground ml-1 rounded-full'>
+																		<Icons.x className='h-3 w-3' />
+																	</button>
+																</Badge>
+															)
+														})}
+												</div>
+											</div>
+										)}
+									</PopoverContent>
+								</Popover>
+								{renderValidationIcon()}
+							</div>
+						</FormControl>
+						{description && <FormDescription>{description}</FormDescription>}
+						<FormMessage />
 					</FormItem>
 				) : type === 'command' ? (
 					<FormItem>
