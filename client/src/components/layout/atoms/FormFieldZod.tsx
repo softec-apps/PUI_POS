@@ -5,18 +5,18 @@ import React, { ReactNode } from 'react'
 import { Icons } from '@/components/icons'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Separator } from '@/components/ui/separator'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Control, FieldPath, FieldValues } from 'react-hook-form'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
 
 type IconOption = {
 	value: string
@@ -67,6 +67,8 @@ type UniversalFormFieldProps<T extends FieldValues> = {
 	maxSelections?: number
 	showSelectedCount?: boolean
 	allowClearAll?: boolean
+	// Nueva prop para controlar el layout estable
+	stableLayout?: boolean
 }
 
 export function UniversalFormField<T extends FieldValues>({
@@ -77,7 +79,7 @@ export function UniversalFormField<T extends FieldValues>({
 	description,
 	type = 'text',
 	required = false,
-	className = 'transition-all duration-500 focus:ring-2 placeholder:text-muted-foreground/70',
+	className = 'transition-all duration-500 focus:ring-2 placeholder:text-muted-foreground/50 dark:bg-popover bg-accent/80 border-none shadow-none',
 	options,
 	min,
 	max,
@@ -97,6 +99,7 @@ export function UniversalFormField<T extends FieldValues>({
 	maxSelections = 20,
 	showSelectedCount = true,
 	allowClearAll = true,
+	stableLayout = true, // Por defecto activamos el layout estable
 }: UniversalFormFieldProps<T>) {
 	const [internalCommandOpen, setInternalCommandOpen] = React.useState(false)
 	const [internalSearchValue, setInternalSearchValue] = React.useState('')
@@ -160,6 +163,30 @@ export function UniversalFormField<T extends FieldValues>({
 					(Array.isArray(field.value) ? field.value.length > 0 : field.value !== '')
 				const isValid = !hasError && hasValue
 				const isDirty = fieldState.isDirty
+
+				// Componente personalizado para FormMessage con altura fija
+				const StableFormMessage = () => {
+					if (!stableLayout) {
+						return <FormMessage />
+					}
+
+					return (
+						<div className='min-h-[20px]'>
+							<FormMessage />
+						</div>
+					)
+				}
+
+				// Contenedor de descripción con layout estable
+				const StableFormDescription = ({ children }: { children?: string | ReactNode }) => {
+					if (!children) return null
+
+					return (
+						<FormDescription className={cn(hasError && 'text-muted-foreground', isValid && 'text-muted-foreground')}>
+							{children}
+						</FormDescription>
+					)
+				}
 
 				// Función para renderizar el icono de validación
 				const renderValidationIcon = () => {
@@ -439,8 +466,8 @@ export function UniversalFormField<T extends FieldValues>({
 								{renderValidationIcon()}
 							</div>
 						</FormControl>
-						{description && <FormDescription>{description}</FormDescription>}
-						<FormMessage />
+						<StableFormDescription>{description}</StableFormDescription>
+						<StableFormMessage />
 					</FormItem>
 				) : type === 'command' ? (
 					<FormItem>
@@ -525,8 +552,8 @@ export function UniversalFormField<T extends FieldValues>({
 								{renderValidationIcon()}
 							</div>
 						</FormControl>
-						{description && <FormDescription>{description}</FormDescription>}
-						<FormMessage />
+						<StableFormDescription>{description}</StableFormDescription>
+						<StableFormMessage />
 					</FormItem>
 				) : (
 					<FormItem>
@@ -621,6 +648,7 @@ export function UniversalFormField<T extends FieldValues>({
 												)}
 											</SelectContent>
 										</Select>
+
 										{renderValidationIcon()}
 									</>
 								) : (
@@ -661,15 +689,10 @@ export function UniversalFormField<T extends FieldValues>({
 
 						{/* Solo mostrar descripción y mensaje de error para campos visibles */}
 						{type !== 'hidden' && (
-							<div className='flex items-center justify-between'>
-								{description && (
-									<FormDescription
-										className={cn(hasError && 'text-muted-foreground', isValid && 'text-muted-foreground')}>
-										{description}
-									</FormDescription>
-								)}
-								<FormMessage />
-							</div>
+							<>
+								<StableFormDescription>{description}</StableFormDescription>
+								<StableFormMessage />
+							</>
 						)}
 					</FormItem>
 				)
