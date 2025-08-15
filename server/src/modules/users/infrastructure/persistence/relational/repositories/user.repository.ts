@@ -229,6 +229,7 @@ export class UsersRelationalRepository implements UserRepository {
 
     // Copiar propiedades simples
     if (payload.email !== undefined) entityPayload.email = payload.email
+    if (payload.dni !== undefined) entityPayload.dni = payload.dni
     if (payload.password !== undefined)
       entityPayload.password = payload.password
     if (payload.provider !== undefined)

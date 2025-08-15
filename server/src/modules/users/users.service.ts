@@ -63,6 +63,20 @@ export class UsersService {
         email = createUserDto.email
       }
 
+      let dni: string | null = null
+      if (createUserDto.dni) {
+        const userObject = await this.usersRepository.findByField(
+          'dni',
+          createUserDto.dni,
+        )
+        if (userObject) {
+          throw new ConflictException({
+            message: MESSAGE_RESPONSE.CONFLIC.DNI,
+          })
+        }
+        dni = createUserDto.dni
+      }
+
       let photo: FileType | null | undefined = undefined
 
       if (createUserDto.photo?.id) {
@@ -113,6 +127,7 @@ export class UsersService {
           firstName: createUserDto.firstName,
           lastName: createUserDto.lastName,
           email: email,
+          dni: dni,
           password: password,
           photo: photo,
           role: role,
@@ -227,6 +242,22 @@ export class UsersService {
         email = null
       }
 
+      let dni: string | null | undefined = undefined
+      if (updateUserDto.dni) {
+        const userObject = await this.usersRepository.findByField(
+          'dni',
+          updateUserDto.dni,
+        )
+        if (userObject && userObject.id !== id) {
+          throw new NotFoundException({
+            message: MESSAGE_RESPONSE.NOT_FOUND.DNI,
+          })
+        }
+        dni = updateUserDto.dni
+      } else if (updateUserDto.dni === null) {
+        dni = null
+      }
+
       let photo: FileType | null | undefined = undefined
 
       if (
@@ -283,6 +314,7 @@ export class UsersService {
           firstName: updateUserDto.firstName,
           lastName: updateUserDto.lastName,
           email,
+          dni: updateUserDto.dni,
           password,
           photo,
           role,

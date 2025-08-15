@@ -2,7 +2,14 @@ import { Transform, Type } from 'class-transformer'
 import { StatusDto } from '@/statuses/dto/status.dto'
 import { FileDto } from '@/modules/files/dto/file.dto'
 import { RoleDto } from '@/modules/roles/dto/role.dto'
-import { IsEmail, IsOptional, MaxLength, MinLength } from 'class-validator'
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator'
 import { PartialType, ApiPropertyOptional } from '@nestjs/swagger'
 import { CreateUserDto } from '@/modules/users/dto/create-user.dto'
 import { lowerCaseTransformer } from '@/utils/transformers/lower-case.transformer'
@@ -17,6 +24,23 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   @IsEmail()
   email?: string | null
+
+  @ApiPropertyOptional({
+    type: 'string',
+    example: '1234567890001',
+    description: 'Número de cédula',
+    maxLength: 10,
+    minLength: 10,
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'Se requiere número de cédula' })
+  @MinLength(10, {
+    message: 'El número de cédula debe tener al menos 10 dígitos',
+  })
+  @MaxLength(10, {
+    message: 'El número de cédula debe tener como máximo 10 dígitos',
+  })
+  dni?: string | null
 
   @ApiPropertyOptional({
     type: 'string',
