@@ -264,9 +264,7 @@ export function ProductDetailView({ productId }: Props) {
 												<div className='space-y-2'>
 													<div className='flex items-center justify-between'>
 														<h4 className='text-foreground font-medium'>{attribute.name}</h4>
-														<Badge variant='outline' className='text-xs'>
-															{attribute.type}
-														</Badge>
+														<Badge variant='outline' className='text-xs' text={attribute.type} />
 													</div>
 													{attribute.description && (
 														<p className='text-muted-foreground text-sm'>{attribute.description}</p>
@@ -274,9 +272,7 @@ export function ProductDetailView({ productId }: Props) {
 													{attribute.options && attribute.options.length > 0 && (
 														<div className='flex flex-wrap gap-1'>
 															{attribute.options.map((option: string, optIndex: number) => (
-																<Badge key={optIndex} variant='secondary' className='text-xs'>
-																	{option}
-																</Badge>
+																<Badge key={optIndex} variant='secondary' className='text-xs' text={option} />
 															))}
 														</div>
 													)}

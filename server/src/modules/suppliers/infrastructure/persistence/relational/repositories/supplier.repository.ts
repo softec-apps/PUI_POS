@@ -7,10 +7,20 @@ import {
 import { NullableType } from '@/utils/types/nullable.type'
 import { Supplier } from '@/modules/suppliers/domain/supplier'
 import { IPaginationOptions } from '@/utils/types/pagination-options'
-import { FindOptionsWhere, Repository, In, EntityManager, ILike } from 'typeorm'
+import {
+  FindOptionsWhere,
+  Repository,
+  In,
+  EntityManager,
+  ILike,
+  Between,
+  MoreThanOrEqual,
+  LessThanOrEqual,
+} from 'typeorm'
 import { SupplierRepository } from '@/modules/suppliers/infrastructure/persistence/supplier.repository'
 import { SupplierMapper } from '@/modules/suppliers/infrastructure/persistence/relational/mappers/supplier.mapper'
 import { SupplierEntity } from '@/modules/suppliers/infrastructure/persistence/relational/entities/supplier.entity'
+import { DateRangeDto } from '@/utils/dto/DateRangeDto'
 
 @Injectable()
 export class SupplierRelationalRepository implements SupplierRepository {
@@ -53,43 +63,78 @@ export class SupplierRelationalRepository implements SupplierRepository {
       | FindOptionsWhere<SupplierEntity>
       | FindOptionsWhere<SupplierEntity>[] = {}
 
+    const buildDateFilter = (dateRange: DateRangeDto | null | undefined) => {
+      if (!dateRange) return undefined
+
+      const { startDate, endDate } = dateRange
+
+      // Si ambas fechas están presentes
+      if (startDate && endDate)
+        return Between(new Date(startDate), new Date(endDate))
+
+      // Solo fecha de inicio
+      if (startDate) return MoreThanOrEqual(new Date(startDate))
+
+      // Solo fecha de fin
+      if (endDate) return LessThanOrEqual(new Date(endDate))
+
+      return undefined
+    }
+
     // Aplicar filtros
     if (filterOptions) {
       const filteredEntries = Object.entries(filterOptions).filter(
         ([_, value]) => value !== undefined && value !== null,
       )
+
       if (filteredEntries.length > 0) {
         whereClause = filteredEntries.reduce((acc, [key, value]) => {
-          acc[key as keyof SupplierEntity] = value as any
+          if (['createdAt', 'updatedAt', 'deletedAt'].includes(key)) {
+            const dateFilter = buildDateFilter(value as DateRangeDto)
+            if (dateFilter) acc[key as keyof SupplierEntity] = dateFilter as any
+          } else {
+            // Filtros normales (statusId, etc.)
+            acc[key as keyof SupplierEntity] = value as any
+          }
           return acc
         }, {} as FindOptionsWhere<SupplierEntity>)
       }
     }
 
-    // Aplicar búsqueda
+    // Aplicar búsqueda (mantener lógica existente)
     if (searchOptions?.trim()) {
       const searchTerm = `%${searchOptions.trim().toLowerCase()}%`
+
+      const baseSearchConditions = [
+        { ruc: ILike(searchTerm) },
+        { legalName: ILike(searchTerm) },
+      ]
+
       if (Array.isArray(whereClause) || Object.keys(whereClause).length > 0) {
-        whereClause = [
-          {
-            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
-            ruc: ILike(searchTerm),
-          },
-          {
-            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
-            legalName: ILike(searchTerm),
-          },
-          {
-            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
-            commercialName: ILike(searchTerm),
-          },
-        ]
+        const baseWhere = Array.isArray(whereClause)
+          ? whereClause[0]
+          : whereClause
+        whereClause = baseSearchConditions.map((condition) => ({
+          ...baseWhere,
+          ...condition,
+        }))
       } else {
-        whereClause = [
-          { ruc: ILike(searchTerm) },
-          { legalName: ILike(searchTerm) },
-          { commercialName: ILike(searchTerm) },
-        ]
+        whereClause = baseSearchConditions.map((condition) => ({
+          ...condition,
+        }))
+      }
+    } else {
+      // Si no hay búsqueda, agregar la condición de exclusión del roleId = 1
+      if (Array.isArray(whereClause)) {
+        whereClause = whereClause.map((clause) => ({
+          ...clause,
+        }))
+      } else if (Object.keys(whereClause).length > 0) {
+        whereClause = {
+          ...whereClause,
+        }
+      } else {
+        whereClause = {}
       }
     }
 
@@ -105,7 +150,7 @@ export class SupplierRelationalRepository implements SupplierRepository {
 
     // Consultas en paralelo para mejor rendimiento
     const [entities, totalCount, totalRecords] = await Promise.all([
-      // 1. Datos paginados (con filtros)
+      // 1. Datos paginados (con filtros y excluir roleId = 1)
       this.supplierRepository.find({
         skip: (paginationOptions.page - 1) * paginationOptions.limit,
         take: paginationOptions.limit,
@@ -113,12 +158,12 @@ export class SupplierRelationalRepository implements SupplierRepository {
         order: orderClause,
         withDeleted: true,
       }),
-      // 2. Total CON filtros (para paginación)
+      // 2. Total CON filtros (para paginación, excluir roleId = 1)
       this.supplierRepository.count({
         where: whereClause,
         withDeleted: true,
       }),
-      // 3. Total SIN filtros (estadísticas brutas)
+      // 3. Total SIN filtros (estadísticas brutas, excluir roleId = 1)
       this.supplierRepository.count({
         withDeleted: true,
       }),
@@ -127,7 +172,7 @@ export class SupplierRelationalRepository implements SupplierRepository {
     return {
       data: entities.map(SupplierMapper.toDomain),
       totalCount, // Total filtrado
-      totalRecords, // Total absoluto
+      totalRecords, // Total absoluto (sin roleId = 1)
     }
   }
 

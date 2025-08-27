@@ -11,6 +11,7 @@ export const MESSAGE_RESPONSE = {
   CONFLICT: {
     IDENTIFICATION: 'Ya existe un cliente con este número de identificación',
     EMAIL: 'Ya existe un cliente con este correo electrónico',
+    IS_SALES: 'No pudes elmininar clientes con ventas',
   },
   VALIDATION: {
     FINAL_CONSUMER: '',

@@ -11,7 +11,7 @@ interface CreateButtonProps {
 		text?: string
 		icon?: ReactNode
 		disabled?: boolean
-		size?: 'xs' | 'sm' | 'lg' | 'pos'
+		size?: 'xs' | 'sm' | 'lg' | 'pos' | 'icon'
 		variant?: 'default' | 'ghost' | 'secondary' | 'outline'
 	}
 }

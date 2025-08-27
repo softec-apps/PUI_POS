@@ -11,3 +11,8 @@ export enum ProductVariantStatus {
   INACTIVE = 'inactive',
   OUT_OF_STOCK = 'out_of_stock',
 }
+
+export enum ALLOW_TAX {
+  WITH_TAX = 0,
+  EXEMPT_IVA = 15,
+}

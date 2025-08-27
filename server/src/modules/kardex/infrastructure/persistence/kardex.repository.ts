@@ -45,4 +45,9 @@ export abstract class KardexRepository {
     data: Omit<Kardex, 'id' | 'createdAt' | 'updatedAt'>,
     entityManager: EntityManager,
   ): Promise<Kardex>
+
+  abstract bulkCreate(
+    data: Partial<Kardex>[],
+    entityManager: EntityManager,
+  ): Promise<Kardex[]>
 }

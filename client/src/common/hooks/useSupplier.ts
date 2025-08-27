@@ -2,7 +2,7 @@ import { useGenericApi } from '@/common/hooks/useGenericApi'
 import { SUPPLIER_ENDPOINTS_CONFIG } from '@/common/configs/api/supplier-endpoints.config'
 import { I_CreateSupplier, I_Supplier, I_UpdateSupplier, I_SupplierResponse } from '@/common/types/modules/supplier'
 
-interface Props {
+export interface useSupplierProps {
 	page?: number
 	limit?: number
 	search?: string
@@ -10,7 +10,7 @@ interface Props {
 	sort?: Array<{ orderBy: keyof I_Supplier; order: 'asc' | 'desc' }>
 }
 
-export const useSupplier = (paginationParams: Props = {}) => {
+export const useSupplier = (paginationParams: useSupplierProps = {}) => {
 	const api = useGenericApi<I_SupplierResponse, I_CreateSupplier, I_UpdateSupplier>(SUPPLIER_ENDPOINTS_CONFIG)
 
 	// ✅ Construir queryParams correctamente
@@ -44,22 +44,22 @@ export const useSupplier = (paginationParams: Props = {}) => {
 	const query = api.buildQuery(queryParams)
 
 	return {
-		// Datos del query - manteniendo los mismos nombres
-		supplierData: query.data,
+		// Datos del query
+		recordsData: query.data,
 		loading: query.isLoading,
 		error: query.error?.message,
 
-		// Funciones - manteniendo los mismos nombres
+		// Funciones
 		refetchRecords: query.refetch,
 
-		// Funciones CRUD - manteniendo los mismos nombres
+		// Funciones CRUD
 		createRecord: api.create,
 		updateRecord: api.update,
 		restoreRecord: api.restore,
 		softDeleteRecord: api.delete,
 		hardDeleteRecord: api.hardDelete,
 
-		// Estados granulares de loading - manteniendo los mismos nombres
+		// Estados granulares de loading
 		isCreating: api.isCreating,
 		isUpdating: api.isUpdating,
 		isRestoring: api.isRestoring,
@@ -69,7 +69,7 @@ export const useSupplier = (paginationParams: Props = {}) => {
 		// Mutations para control avanzado - ahora completamente dinámicas
 		mutations: api.mutations, // Contiene todas las mutations configuradas
 
-		// Funciones adicionales del API genérico - manteniendo los mismos nombres
+		// Funciones adicionales del API genérico
 		executeCustomEndpoint: api.executeCustomEndpoint,
 		apiService: api.apiService,
 	}

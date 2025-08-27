@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 import { Typography } from '@/components/ui/typography'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CustomerSearch } from './CustomerSearch'
 import { CustomerList } from './CustomerList'
 import { CustomerFormModal } from './CustomerFormModal'
@@ -9,6 +11,8 @@ import { SelectedCustomer } from './SelectedCustomer'
 import { useCustomer } from '@/common/hooks/useCustomer'
 import { useCustomerStore } from '@/common/stores/useCustomerStore'
 import { I_CreateCustomer } from '@/common/types/modules/customer'
+import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { Icons } from '@/components/icons'
 
 export const CustomerSection: React.FC = () => {
 	// Estado local (se mantiene igual)
@@ -27,6 +31,7 @@ export const CustomerSection: React.FC = () => {
 	const [debouncedSearchValue, setDebouncedSearchValue] = useState('')
 	const [selectedCustomer, setSelectedCustomer] = useState<I_CreateCustomer | null>(null)
 	const [shouldAutoSelect, setShouldAutoSelect] = useState(false)
+	const [dialogOpen, setDialogOpen] = useState(false)
 
 	// Hook de datos (se mantiene igual)
 	const { recordsData, loading, error, createRecord, refetchRecords } = useCustomer({
@@ -78,9 +83,7 @@ export const CustomerSection: React.FC = () => {
 	}, [debouncedSearchValue, customers, loading, shouldAutoSelect, storeSelectedCustomer])
 
 	// 🚀 SINCRONIZAR con el store cada vez que cambie la selección local
-	useEffect(() => {
-		setStoreSelectedCustomer(selectedCustomer)
-	}, [selectedCustomer, setStoreSelectedCustomer])
+	useEffect(() => setStoreSelectedCustomer(selectedCustomer), [selectedCustomer, setStoreSelectedCustomer])
 
 	const handleCreateCustomer = async (data: any) => {
 		try {
@@ -135,6 +138,7 @@ export const CustomerSection: React.FC = () => {
 		// 👆 El useEffect se encarga de sincronizar con el store automáticamente
 		setSearchValue('')
 		setDebouncedSearchValue('')
+		setDialogOpen(false) // Cerrar el diálogo después de seleccionar
 	}
 
 	const handleDeselectCustomer = () => {
@@ -144,36 +148,55 @@ export const CustomerSection: React.FC = () => {
 		setDebouncedSearchValue('')
 	}
 
+	const handleOpenDialog = () => {
+		setDialogOpen(true)
+		// Resetear el formulario al abrir el diálogo
+		setSearchValue('')
+		setShowNewCustomerForm(false)
+	}
+
 	return (
-		<div className='space-y-4'>
-			<Typography variant='lead'>Cliente</Typography>
+		<div className='space-y-2 pt-2'>
+			{selectedCustomer && <Typography variant='h6'>Cliente</Typography>}
 
+			{/* Mostrar solo un botón inicialmente */}
 			{!selectedCustomer ? (
-				<div className='space-y-4'>
-					{!showNewCustomerForm ? (
-						<>
-							<CustomerSearch
-								searchValue={searchValue}
-								onSearchChange={setSearchValue}
-								onShowNewForm={handleShowNewCustomerForm}
-							/>
-
-							{debouncedSearchValue && customers && (
-								<CustomerList customers={customers} onSelectCustomer={handleSelectCustomer} isLoading={loading} />
-							)}
-						</>
-					) : (
-						<CustomerFormModal
-							isOpen={showNewCustomerForm}
-							defaultValues={newCustomer}
-							onSubmit={handleCreateCustomer}
-							onClose={handleCancelForm}
-						/>
-					)}
-				</div>
+				<ActionButton onClick={handleOpenDialog} text='Cliente' icon={<Icons.user />} size='lg' />
 			) : (
 				<SelectedCustomer customer={selectedCustomer} onDeselect={handleDeselectCustomer} />
 			)}
+
+			{/* Diálogo con toda la funcionalidad */}
+			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+				<DialogContent className='sm:max-w-[600px]'>
+					<DialogHeader>
+						<DialogTitle>Seleccionar cliente</DialogTitle>
+					</DialogHeader>
+
+					<div className='space-y-4'>
+						{!showNewCustomerForm ? (
+							<>
+								<CustomerSearch
+									searchValue={searchValue}
+									onSearchChange={setSearchValue}
+									onShowNewForm={handleShowNewCustomerForm}
+								/>
+
+								{debouncedSearchValue && customers && (
+									<CustomerList customers={customers} onSelectCustomer={handleSelectCustomer} isLoading={loading} />
+								)}
+							</>
+						) : (
+							<CustomerFormModal
+								isOpen={showNewCustomerForm}
+								defaultValues={newCustomer}
+								onSubmit={handleCreateCustomer}
+								onClose={handleCancelForm}
+							/>
+						)}
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

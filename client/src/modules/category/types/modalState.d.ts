@@ -1,34 +1,34 @@
-// INTERFAZ  OBTIENIDA DE RETURN DE "useModalState.ts"
+import { I_Category } from '@/common/types/modules/category'
 
 export interface ModalState {
 	// Dialog state
 	isDialogOpen: boolean
-	currentRecord: Partial<Category_I> | null
+	currentRecord: Partial<I_Category> | null
 	openCreateDialog: () => void
-	openEditDialog: (category: Category_I) => void
+	openEditDialog: (record: I_Category) => void
 	closeDialog: () => void
 
 	// Soft delete modal state
 	isSoftDeleteModalOpen: boolean
-	categoryToDelete: Category_I | null
+	recordToSoftDelete: I_Category | null
 	isSoftDeleting: boolean
 	setIsSoftDeleting: (value: boolean) => void
-	openSoftDeleteModal: (category: Category_I) => void
+	openSoftDeleteModal: (record: I_Category) => void
 	closeSoftDeleteModal: () => void
 
 	// Restore modal state
 	isRestoreModalOpen: boolean
-	categoryToRestore: Category_I | null
+	recordToRestore: I_Category | null
 	isRestoring: boolean
 	setIsRestoring: (value: boolean) => void
-	openRestoreModal: (category: Category_I) => void
+	openRestoreModal: (record: I_Category) => void
 	closeRestoreModal: () => void
 
 	// Hard delete modal state
 	isHardDeleteModalOpen: boolean
-	categoryToHardDelete: Category_I | null
+	recordToHardDelete: I_Category | null
 	isHardDeleting: boolean
 	setIsHardDeleting: (value: boolean) => void
-	openHardDeleteModal: (category: Category_I) => void
+	openHardDeleteModal: (record: I_Category) => void
 	closeHardDeleteModal: () => void
 }

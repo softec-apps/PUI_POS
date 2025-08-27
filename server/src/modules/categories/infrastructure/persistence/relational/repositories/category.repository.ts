@@ -7,10 +7,21 @@ import {
 import { NullableType } from '@/utils/types/nullable.type'
 import { Category } from '@/modules/categories/domain/category'
 import { IPaginationOptions } from '@/utils/types/pagination-options'
-import { FindOptionsWhere, Repository, In, EntityManager, ILike } from 'typeorm'
+import {
+  FindOptionsWhere,
+  Repository,
+  In,
+  EntityManager,
+  ILike,
+  Between,
+  MoreThanOrEqual,
+  LessThanOrEqual,
+  Not,
+} from 'typeorm'
 import { CategoryRepository } from '@/modules/categories/infrastructure/persistence/category.repository'
 import { CategoryMapper } from '@/modules/categories/infrastructure/persistence/relational/mappers/category.mapper'
 import { CategoryEntity } from '@/modules/categories/infrastructure/persistence/relational/entities/category.entity'
+import { DateRangeDto } from '@/utils/dto/DateRangeDto'
 
 @Injectable()
 export class CategoriesRelationalRepository implements CategoryRepository {
@@ -48,39 +59,78 @@ export class CategoriesRelationalRepository implements CategoryRepository {
       | FindOptionsWhere<CategoryEntity>
       | FindOptionsWhere<CategoryEntity>[] = {}
 
+    const buildDateFilter = (dateRange: DateRangeDto | null | undefined) => {
+      if (!dateRange) return undefined
+
+      const { startDate, endDate } = dateRange
+
+      // Si ambas fechas están presentes
+      if (startDate && endDate)
+        return Between(new Date(startDate), new Date(endDate))
+
+      // Solo fecha de inicio
+      if (startDate) return MoreThanOrEqual(new Date(startDate))
+
+      // Solo fecha de fin
+      if (endDate) return LessThanOrEqual(new Date(endDate))
+
+      return undefined
+    }
+
     // Aplicar filtros
     if (filterOptions) {
       const filteredEntries = Object.entries(filterOptions).filter(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         ([_, value]) => value !== undefined && value !== null,
       )
+
       if (filteredEntries.length > 0) {
         whereClause = filteredEntries.reduce((acc, [key, value]) => {
-          acc[key as keyof CategoryEntity] = value as any
+          if (['createdAt', 'updatedAt', 'deletedAt'].includes(key)) {
+            const dateFilter = buildDateFilter(value as DateRangeDto)
+            if (dateFilter) acc[key as keyof CategoryEntity] = dateFilter as any
+          } else {
+            // Filtros normales (roleId, statusId, etc.)
+            acc[key as keyof CategoryEntity] = value as any
+          }
           return acc
         }, {} as FindOptionsWhere<CategoryEntity>)
       }
     }
 
-    // Aplicar búsqueda
+    // Aplicar búsqueda (mantener lógica existente)
     if (searchOptions?.trim()) {
       const searchTerm = `%${searchOptions.trim().toLowerCase()}%`
+
+      const baseSearchConditions = [
+        { name: ILike(searchTerm) },
+        { description: ILike(searchTerm) },
+      ]
+
       if (Array.isArray(whereClause) || Object.keys(whereClause).length > 0) {
-        whereClause = [
-          {
-            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
-            name: ILike(searchTerm),
-          },
-          {
-            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
-            description: ILike(searchTerm),
-          },
-        ]
+        const baseWhere = Array.isArray(whereClause)
+          ? whereClause[0]
+          : whereClause
+        whereClause = baseSearchConditions.map((condition) => ({
+          ...baseWhere,
+          ...condition,
+        }))
       } else {
-        whereClause = [
-          { name: ILike(searchTerm) },
-          { description: ILike(searchTerm) },
-        ]
+        whereClause = baseSearchConditions.map((condition) => ({
+          ...condition,
+        }))
+      }
+    } else {
+      // Si no hay búsqueda, agregar la condición de exclusión del roleId = 1
+      if (Array.isArray(whereClause)) {
+        whereClause = whereClause.map((clause) => ({
+          ...clause,
+        }))
+      } else if (Object.keys(whereClause).length > 0) {
+        whereClause = {
+          ...whereClause,
+        }
+      } else {
+        whereClause = {}
       }
     }
 
@@ -96,7 +146,7 @@ export class CategoriesRelationalRepository implements CategoryRepository {
 
     // Consultas en paralelo para mejor rendimiento
     const [entities, totalCount, totalRecords] = await Promise.all([
-      // 1. Datos paginados (con filtros)
+      // 1. Datos paginados (con filtros y excluir roleId = 1)
       this.categoryRepository.find({
         skip: (paginationOptions.page - 1) * paginationOptions.limit,
         take: paginationOptions.limit,
@@ -104,12 +154,12 @@ export class CategoriesRelationalRepository implements CategoryRepository {
         order: orderClause,
         withDeleted: true,
       }),
-      // 2. Total CON filtros (para paginación)
+      // 2. Total CON filtros (para paginación, excluir roleId = 1)
       this.categoryRepository.count({
         where: whereClause,
         withDeleted: true,
       }),
-      // 3. Total SIN filtros (estadísticas brutas)
+      // 3. Total SIN filtros (estadísticas brutas, excluir roleId = 1)
       this.categoryRepository.count({
         withDeleted: true,
       }),
@@ -118,7 +168,7 @@ export class CategoriesRelationalRepository implements CategoryRepository {
     return {
       data: entities.map(CategoryMapper.toDomain),
       totalCount, // Total filtrado
-      totalRecords, // Total absoluto
+      totalRecords, // Total absoluto (sin roleId = 1)
     }
   }
 

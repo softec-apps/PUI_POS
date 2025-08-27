@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
-import { Icons } from '@/components/icons'
+import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 
@@ -39,14 +38,32 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 		getTotalItems,
 	} = useCartStore()
 
-	const { selectedCustomer, clearCustomer } = useCustomerStore()
 	const { cartState, setCartState } = useCheckoutStore()
+	const { selectedCustomer, clearCustomer } = useCustomerStore()
+
+	// Local state for payment details
+	const [transferNumber, setTransferNumber] = useState<string>('')
+	const [receivedAmount, setReceivedAmount] = useState<string>('')
 
 	// Calculations
 	const subtotal = getSubtotal()
 	const tax = getTax()
 	const total = getTotal()
 	const totalItems = getTotalItems()
+
+	// Reset payment fields when payment method changes
+	useEffect(() => {
+		setTransferNumber('')
+		setReceivedAmount('')
+	}, [selectedPayment])
+
+	// Reset payment fields when going back to cart
+	useEffect(() => {
+		if (cartState === 'cart') {
+			setTransferNumber('')
+			setReceivedAmount('')
+		}
+	}, [cartState])
 
 	// Block reload during processing
 	useEffect(() => {
@@ -56,15 +73,35 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 				e.returnValue = 'Hay una venta en proceso. ¿Estás seguro de que quieres salir?'
 				return e.returnValue
 			}
-
 			window.addEventListener('beforeunload', handleBeforeUnload)
 			return () => window.removeEventListener('beforeunload', handleBeforeUnload)
 		}
 	}, [cartState])
 
+	// Check if order can be finalized
+	const canFinalizeOrder = () => {
+		if (!selectedCustomer || !selectedPayment) return false
+
+		// For cash payment, check if received amount is sufficient
+		if (selectedPayment === 'cash') {
+			const received = parseFloat(receivedAmount || '0')
+			return received >= total
+		}
+
+		// For digital payment, check if transfer number is provided
+		if (selectedPayment === 'digital') return transferNumber.trim().length > 0
+
+		// Card payments don't need additional validation
+		return true
+	}
+
 	const handleStartSale = () => setCartState('checkout')
 
-	const handleBackToCart = () => setCartState('cart')
+	const handleBackToCart = () => {
+		setCartState('cart')
+		setTransferNumber('')
+		setReceivedAmount('')
+	}
 
 	const handleFinalizeOrder = async () => {
 		setCartState('processing')
@@ -74,12 +111,15 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 			await new Promise(resolve => setTimeout(resolve, 3000))
 
 			// Call the actual order processing function
+
 			await onPlaceOrder()
 
 			// Reset state after success
 			setCartState('cart')
 			clearCart()
 			clearCustomer()
+			setTransferNumber('')
+			setReceivedAmount('')
 		} catch (error) {
 			console.error('Error processing order:', error)
 			setCartState('checkout') // Return to checkout on error
@@ -110,9 +150,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 	}
 
 	// Full screen processing screen
-	if (cartState === 'processing') {
-		return <ProcessingScreen />
-	}
+	if (cartState === 'processing') return <ProcessingScreen />
 
 	return (
 		<AnimatePresence mode='wait'>
@@ -166,7 +204,14 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 									<CustomerSection />
 
 									{/* Payment Methods Section */}
-									<PaymentMethods selectedPayment={selectedPayment} onSelectPayment={setPayment} />
+									<PaymentMethods
+										selectedPayment={selectedPayment}
+										onSelectPayment={setPayment}
+										transferNumber={transferNumber}
+										onTransferNumberChange={setTransferNumber}
+										receivedAmount={receivedAmount}
+										onReceivedAmountChange={setReceivedAmount}
+									/>
 								</div>
 							</motion.div>
 						)}
@@ -174,7 +219,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 				</div>
 
 				{/* Footer */}
-				<div className='border-t border-dashed'>
+				<div className='mt-6 border-t border-dashed'>
 					<div className='space-y-6 py-6'>
 						{cartState === 'cart' ? (
 							<>
@@ -184,7 +229,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 								{/* Start Sale Button */}
 								<ActionButton
 									size='pos'
-									className='w-full'
+									className='w-full text-xl font-semibold'
 									text='Comenzar venta'
 									onClick={handleStartSale}
 									disabled={orderItems.length === 0}
@@ -193,16 +238,21 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 						) : (
 							<>
 								{/* Checkout Summary at bottom */}
-								<CheckoutSummary subtotal={subtotal} tax={tax} total={total} totalItems={totalItems} />
+								<CheckoutSummary
+									subtotal={subtotal}
+									tax={tax}
+									total={total}
+									totalItems={totalItems}
+									receivedAmount={receivedAmount}
+								/>
 
 								{/* Finalize Order Button */}
 								<ActionButton
 									size='pos'
-									disabled={!selectedCustomer || !selectedPayment}
-									icon={<Icons.cashRegister />}
+									disabled={!canFinalizeOrder()}
 									onClick={handleFinalizeOrder}
 									text='Finalizar compra'
-									className='w-full'
+									className='w-full text-xl font-semibold'
 								/>
 							</>
 						)}

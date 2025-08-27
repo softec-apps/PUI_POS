@@ -146,6 +146,18 @@ export class Product {
   @IsInt({ message: 'El stock debe ser un número entero' })
   stock: number
 
+  @ApiProperty({
+    type: Number,
+    example: 0,
+    description: 'Inpuesto (debe ser "0" o "15)',
+    default: 0,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'El impuesto debe ser un número' })
+  @IsInt({ message: 'El impuesto debe ser un número entero' })
+  @IsPositive({ message: 'El impuesto debe ser un número positivo' })
+  tax?: number = 0
+
   // Relations
   @ApiPropertyOptional({
     type: () => Brand,

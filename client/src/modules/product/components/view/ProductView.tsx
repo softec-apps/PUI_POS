@@ -16,7 +16,7 @@ import { useModalState } from '@/modules/product/hooks/useModalState'
 import { usePagination } from '@/modules/product/hooks/usePagination'
 
 import { ProductModals } from '@/modules/product/components/templates/Modals'
-import { ProductHeader } from '@/modules/product/components/templates/Header'
+import { ProductHeader, ProductImportAction } from '@/modules/product/components/templates/Header'
 import { ProductFilters } from '@/modules/product/components/templates/Filters'
 import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { TableProduct } from '@/modules/product/components/organisms/Table/TableProduct'
@@ -100,6 +100,12 @@ export function ProductView() {
 		refetchRecords()
 	}, [refetchRecords])
 
+	// Handler para refrescar datos
+	const handleFiltersRefresh = useCallback(async () => {
+		await handleRefresh()
+		refetchRecords()
+	}, [handleRefresh, recordsData?.data?.pagination?.totalRecords])
+
 	if (errorProduct && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
 
 	if (errorProduct)
@@ -119,19 +125,27 @@ export function ProductView() {
 						description='No hay datos disponibles. Intentá crear un registro'
 					/>
 
-					<ActionButton
-						size='lg'
-						variant='default'
-						icon={<Icons.plus />}
-						text='Nuevo producto'
-						className='rounded-xl'
-						onClick={modalState.openCreateDialog}
-					/>
+					<div className='flex items-center gap-4'>
+						<ProductImportAction />
+
+						<ActionButton
+							size='lg'
+							variant='default'
+							icon={<Icons.plus />}
+							text='Nuevo producto'
+							className='rounded-xl'
+							onClick={modalState.openCreateDialog}
+						/>
+					</div>
 				</Card>
 			) : (
 				<>
 					{/* Header */}
-					<ProductHeader onCreateClick={modalState.openCreateDialog} />
+					<ProductHeader
+						onCreateClick={modalState.openCreateDialog}
+						onRefresh={handleFiltersRefresh}
+						totalRecords={recordsData?.data?.pagination?.totalRecords}
+					/>
 
 					{/* Filters and search */}
 					<ProductFilters

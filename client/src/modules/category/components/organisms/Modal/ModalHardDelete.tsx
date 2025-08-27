@@ -1,17 +1,17 @@
 'use client'
 
 import { I_Category } from '@/common/types/modules/category'
-import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
+import { ConfirmationModal } from '@/components/layout/templates/ConfirmationModal'
 
-interface Props {
+interface HardDeleteModalProps {
 	isOpen: boolean
-	category: I_Category | null
+	currentRecord: I_Category | null
 	isAction: boolean
 	onClose: () => void
 	onConfirm: () => Promise<void>
 }
 
-export function HardDeleteModal({ isOpen, category, isAction, onClose, onConfirm }: Props) {
+export function HardDeleteModal({ isOpen, currentRecord, isAction, onClose, onConfirm }: HardDeleteModalProps) {
 	return (
 		<ConfirmationModal
 			isOpen={isOpen}
@@ -20,17 +20,22 @@ export function HardDeleteModal({ isOpen, category, isAction, onClose, onConfirm
 			description='Esta acción no se puede deshacer'
 			message={
 				<>
-					¿Estás seguro de que deseas eliminar de forma permanente la categoría{' '}
-					<span className='text-foreground font-semibold'>{category?.name}</span>? Todos los productos asociados a esta
-					categoría perderán su clasificación permanentemente.
+					¿Deseas eliminar permanentemente la categoría{' '}
+					<span className='text-foreground font-semibold'>{currentRecord?.name}</span>?
 				</>
 			}
-			alertMessage='Esta acción eliminará la categoría de la base de datos de forma permanente.'
+			alertMessage={
+				<>
+					<p className='text-destructive'>Esta categoría será eliminada de forma permanente y no podrá recuperarse.</p>
+					<p className='text-destructive'>Todos los productos relacionados quedarán sin categoría asignada.</p>
+				</>
+			}
+			confirmKey={currentRecord?.name}
 			isProcessing={isAction}
 			onClose={onClose}
 			onConfirm={onConfirm}
-			confirmText='Ok, eliminar'
-			cancelText='No, cancelar'
+			confirmText='Eliminar'
+			cancelText='Cancelar'
 		/>
 	)
 }

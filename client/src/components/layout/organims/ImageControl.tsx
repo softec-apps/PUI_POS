@@ -61,7 +61,7 @@ export const ImageControl = ({
 	const [isDownloading, setIsDownloading] = useState(false)
 
 	// Determinar la fuente de la imagen y datos
-	const imageSource = recordData?.photo?.path || imageUrl
+	const imageSource = recordData?.path || imageUrl
 	const displayName = recordData?.name || imageName
 	const displayDate = recordData?.createdAt
 	const displayAlt = recordData ? `Imagen de ${recordData.name}` : altText
@@ -211,7 +211,7 @@ export const ImageControl = ({
 				{/* Miniatura clickeable */}
 				<div className={`flex w-auto ${className}`}>
 					<Card
-						className={`group dark:border-border/50 relative overflow-hidden bg-transparent p-0 shadow-none transition-all duration-500 ${getHoverClasses()} ${getCursorClass()}`}
+						className={`group dark:border-border/50 relative min-w-full overflow-hidden bg-transparent p-0 shadow-none transition-all duration-500 ${getHoverClasses()} ${getCursorClass()}`}
 						onClick={handleImageClick}
 						style={{
 							width: imageWidth,

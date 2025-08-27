@@ -1,17 +1,17 @@
 'use client'
 
 import { I_Brand } from '@/common/types/modules/brand'
-import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
+import { ConfirmationModal } from '@/components/layout/templates/ConfirmationModal'
 
-interface Props {
+interface HardDeleteModalProps {
 	isOpen: boolean
-	brand: I_Brand | null
+	currentRecord: I_Brand | null
 	isAction: boolean
 	onClose: () => void
 	onConfirm: () => Promise<void>
 }
 
-export function HardDeleteModal({ isOpen, brand, isAction, onClose, onConfirm }: Props) {
+export function HardDeleteModal({ isOpen, currentRecord, isAction, onClose, onConfirm }: HardDeleteModalProps) {
 	return (
 		<ConfirmationModal
 			isOpen={isOpen}
@@ -20,17 +20,22 @@ export function HardDeleteModal({ isOpen, brand, isAction, onClose, onConfirm }:
 			description='Esta acción no se puede deshacer'
 			message={
 				<>
-					¿Estás seguro de que deseas eliminar de forma permanente la marca{' '}
-					<span className='text-foreground font-semibold'>{brand?.name}</span>? Todos los productos asociados a esta
-					marca perderán su clasificación permanentemente.
+					¿Deseas eliminar permanentemente lamarca{' '}
+					<span className='text-foreground font-semibold'>{currentRecord?.name}</span>?
 				</>
 			}
-			alertMessage='Esta acción eliminará la marca de la base de datos de forma permanente.'
+			alertMessage={
+				<>
+					<p className='text-destructive'>Esta marca será eliminada de forma permanente y no podrá recuperarse.</p>
+					<p className='text-destructive'>Todos los productos relacionados quedarán sin marca asignada.</p>
+				</>
+			}
+			confirmKey={currentRecord?.name}
 			isProcessing={isAction}
 			onClose={onClose}
 			onConfirm={onConfirm}
-			confirmText='Ok, eliminar'
-			cancelText='No, cancelar'
+			confirmText='Eliminar'
+			cancelText='Cancelar'
 		/>
 	)
 }

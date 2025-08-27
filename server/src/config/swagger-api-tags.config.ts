@@ -94,4 +94,12 @@ export const API_TAGS_CONFIG = [
       url: '',
     },
   },
+  {
+    name: PATH_SOURCE.SALE,
+    description: 'sales',
+    externalDocs: {
+      description: '',
+      url: '',
+    },
+  },
 ]

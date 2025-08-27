@@ -1,15 +1,26 @@
 'use client'
-
 import { Icons } from '@/components/icons'
 import { Control } from 'react-hook-form'
 import { ProductFormData } from '@/modules/product/types/product-form'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
-import { STATUS_OPTIONS } from '@/modules/product/constants/product.constants'
+import { taxLabelsTraslateToEs, TaxAllow } from '@/modules/product/constants/product.constants'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface EconomicSectionProps {
 	control: Control<ProductFormData>
 }
+
+// Crear las opciones correctamente - los valores deben ser numbers, no strings
+const typeOptions = Object.entries(taxLabelsTraslateToEs).map(([key, label]) => ({
+	value: Number(key), // Convertir la clave a número
+	label,
+}))
+
+// O alternativamente, usar directamente los valores del enum:
+// const typeOptions = [
+// 	{ value: TaxAllow.EXENTO, label: taxLabelsTraslateToEs[TaxAllow.EXENTO] },
+// 	{ value: TaxAllow.CON_IVA, label: taxLabelsTraslateToEs[TaxAllow.CON_IVA] },
+// ]
 
 export function EconomicSection({ control }: EconomicSectionProps) {
 	return (
@@ -21,60 +32,48 @@ export function EconomicSection({ control }: EconomicSectionProps) {
 				</CardTitle>
 				<CardDescription>Datos económicos y logísticos del producto</CardDescription>
 			</CardHeader>
-
-			<CardContent className='space-y-6 p-0'>
-				<UniversalFormField
-					required
-					control={control}
-					name='price'
-					type='number'
-					label='Precio'
-					placeholder='Ej: 6.123456'
-					description='Precio base del producto'
-				/>
-
-				<UniversalFormField
-					required
-					control={control}
-					name='stock'
-					type='number'
-					label='Stock'
-					placeholder='Ej: 666'
-					description='Stock inicial del producto'
-				/>
-
-				{/* 
-				<UniversalFormField
-					control={control}
-					name='sku'
-					type='text'
-					label='SKU'
-					placeholder='Ej: SKU-12345'
-					max={20}
-					description='SKU del producto'
-				/>
-				*/}
-
-				<UniversalFormField
-					control={control}
-					name='barCode'
-					type='text'
-					label='Código de barras'
-					placeholder='Ej: 1234567890123'
-					max={50}
-					description='Código de barras del producto'
-				/>
-
-				<UniversalFormField
-					required
-					control={control}
-					name='status'
-					type='select'
-					label='Estado'
-					placeholder='Selecciona el estado'
-					description='Define el estado del producto'
-					options={STATUS_OPTIONS}
-				/>
+			<CardContent className='grid grid-cols-1 gap-6 p-0'>
+				{/* Fila 1: Costo, Stock, Impuesto */}
+				<div className='grid grid-cols-1 gap-6 sm:grid-cols-3'>
+					<UniversalFormField
+						required
+						control={control}
+						name='price'
+						type='number'
+						label='Costo'
+						placeholder='Ej: 6.123456'
+						description='Costo del producto'
+					/>
+					<UniversalFormField
+						required
+						control={control}
+						name='stock'
+						type='number'
+						label='Stock'
+						placeholder='Ej: 666'
+						description='Stock inicial del producto'
+					/>
+					<UniversalFormField
+						required
+						control={control}
+						name='tax'
+						type='select'
+						options={typeOptions}
+						label='Impuesto'
+						description='Impuesto del producto'
+					/>
+				</div>
+				{/* Fila 2: SKU, Código de barras */}
+				<div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
+					<UniversalFormField control={control} name='sku' type='text' label='SKU' placeholder='Ej: SKU-12345' />
+					<UniversalFormField
+						control={control}
+						name='barCode'
+						type='text'
+						label='Código de barras'
+						placeholder='Ej: 1234567890123'
+					/>
+				</div>
 			</CardContent>
 		</Card>
 	)

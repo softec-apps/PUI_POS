@@ -32,52 +32,35 @@ export const CustomerList: React.FC<CustomerListProps> = ({ customers, onSelectC
 		)
 
 	return (
-		<div className='space-y-2'>
-			<Typography variant='small' className='text-muted-foreground px-2'>
-				{customers.length} {customers.length === 1 ? 'cliente encontrado' : 'clientes encontrados'}
-			</Typography>
+		<div className='max-h-60 space-y-2 overflow-y-auto rounded-lg'>
+			{customers.map(customer => (
+				<Card
+					key={customer.id}
+					role='button'
+					tabIndex={0}
+					aria-label={`Seleccionar cliente ${customer.firstName} ${customer.lastName}`}
+					className='hover:bg-accent/50 focus:ring-primary cursor-pointer p-3 shadow-none transition-all duration-500 focus:ring-2 focus:outline-none'
+					onClick={() => onSelectCustomer(customer)}
+					onKeyDown={e => e.key === 'Enter' && onSelectCustomer(customer)}>
+					<div className='flex items-center justify-between'>
+						<Typography variant='small' className='font-semibold'>
+							{customer.firstName}
+							{customer.lastName}
+						</Typography>
 
-			<div className='max-h-60 space-y-2 overflow-y-auto rounded-lg'>
-				{customers.map(customer => (
-					<Card
-						key={customer.id}
-						role='button'
-						tabIndex={0}
-						aria-label={`Seleccionar cliente ${customer.firstName} ${customer.lastName}`}
-						className='hover:bg-accent/50 focus:ring-primary cursor-pointer p-4 shadow-none transition-all duration-500 focus:ring-2 focus:outline-none'
-						onClick={() => onSelectCustomer(customer)}
-						onKeyDown={e => e.key === 'Enter' && onSelectCustomer(customer)}>
-						<div className='flex items-start justify-between'>
-							<div className='space-y-1.5'>
-								<div className='flex items-center gap-2'>
-									<Typography variant='small' className='font-semibold'>
-										{customer.firstName}
-										{customer.lastName}
-									</Typography>
-								</div>
-
-								<div className='text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-sm'>
-									<span className='line-clamp-1 flex items-center gap-1 break-words'>
-										<Icons.mail className='h-3.5 w-3.5' />
-										{customer.email || 'No asignado'}
-									</span>
-								</div>
-							</div>
-
-							<Badge
-								variant='info'
-								className='ml-2'
-								text={
-									<>
-										<Icons.id />
-										{customer?.identificationNumber}
-									</>
-								}
-							/>
-						</div>
-					</Card>
-				))}
-			</div>
+						<Badge
+							variant='info'
+							className='ml-2'
+							text={
+								<>
+									<Icons.id />
+									{customer?.identificationNumber}
+								</>
+							}
+						/>
+					</div>
+				</Card>
+			))}
 		</div>
 	)
 }

@@ -10,6 +10,7 @@ export type ProductStatus = 'draft' | 'active' | 'inactive' | 'discontinued' | '
 export interface I_Product {
 	id: string
 	code: string
+	tax: number
 	isVariant: boolean
 	name: string
 	description: string | null

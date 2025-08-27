@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { I_Customer, I_CreateCustomer } from '@/common/types/modules/customer'
+import { CustomerType, IdentificationType } from '@/common/enums/customer.enum'
 
 interface CustomerState {
 	selectedCustomer: I_Customer | null
@@ -21,8 +22,8 @@ interface CustomerState {
 }
 
 const initialNewCustomer: I_CreateCustomer = {
-	customerType: 'regular',
-	identificationType: '05',
+	customerType: CustomerType.REGULAR,
+	identificationType: IdentificationType.IDENTIFICATION_CARD,
 	identificationNumber: '',
 	firstName: '',
 	lastName: '',
@@ -35,7 +36,7 @@ const initialNewCustomer: I_CreateCustomer = {
 
 export const useCustomerStore = create<CustomerState>()(
 	persist(
-		(set, get) => ({
+		set => ({
 			selectedCustomer: null,
 			searchCustomer: '',
 			debouncedSearchCustomer: '',

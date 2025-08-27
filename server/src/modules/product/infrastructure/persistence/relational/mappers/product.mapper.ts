@@ -26,6 +26,7 @@ export class ProductMapper {
     domainEntity.sku = raw.sku
     domainEntity.barCode = raw.barCode
     domainEntity.stock = raw.stock
+    domainEntity.tax = raw.tax
     domainEntity.createdAt = raw.createdAt
     domainEntity.updatedAt = raw.updatedAt
     domainEntity.deletedAt = raw.deletedAt
@@ -77,6 +78,7 @@ export class ProductMapper {
     persistenceEntity.id = domainEntity.id
     persistenceEntity.isVariant = domainEntity.isVariant
     persistenceEntity.code = domainEntity.code
+    persistenceEntity.tax = domainEntity.tax ?? 0
     persistenceEntity.name = domainEntity.name
     persistenceEntity.description = domainEntity.description
     persistenceEntity.price = domainEntity.price

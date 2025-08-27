@@ -1,8 +1,8 @@
 'use client'
 
 import { Icons } from '@/components/icons'
-import { I_User } from '@/common/types/user'
 import { ChangeEvent, useEffect } from 'react'
+import { I_User } from '@/common/types/modules/user'
 import { useFileUpload } from '@/common/hooks/useFileUpload'
 import { UserFormData } from '@/modules/user/types/user-form'
 import { Control, UseFormSetValue, UseFormWatch } from 'react-hook-form'
@@ -22,7 +22,6 @@ export function MediaSection({ control, setValue, watch, userData, currentRecord
 	const { previewImage, isUploading, fileInputRef, uploadFile, clearPreview, triggerFileInput, setPreviewImage } =
 		useFileUpload({
 			showPreview: true,
-			// maxSize y allowedTypes usarán los valores por defecto del hook
 		})
 
 	// Observar el campo photo del formulario
@@ -32,21 +31,17 @@ export function MediaSection({ control, setValue, watch, userData, currentRecord
 	// Obtener la imagen completa del userData si está disponible
 	const getImageForDisplay = () => {
 		// Si tenemos userData y tiene photo como objeto, usarlo
-		if (userData?.photo && typeof userData.photo === 'object') {
-			return userData.photo
-		}
+		if (userData?.photo && typeof userData.photo === 'object') return userData.photo
+
 		// Si tenemos currentRecord y tiene photo como objeto, usarlo
-		if (currentRecord?.photo && typeof currentRecord.photo === 'object') {
-			return currentRecord.photo
-		}
+		if (currentRecord?.photo && typeof currentRecord.photo === 'object') return currentRecord.photo
+
 		// Si currentPhoto ya es un objeto con path, usarlo directamente
-		if (currentPhoto && typeof currentPhoto === 'object' && currentPhoto.path) {
-			return currentPhoto
-		}
+		if (currentPhoto && typeof currentPhoto === 'object' && currentPhoto.path) return currentPhoto
+
 		// Si solo tenemos el ID, crear objeto con el ID y null para path
-		if (currentPhoto && typeof currentPhoto === 'string') {
-			return { id: currentPhoto, path: null }
-		}
+		if (currentPhoto && typeof currentPhoto === 'string') return { id: currentPhoto, path: null }
+
 		return null
 	}
 
@@ -63,19 +58,14 @@ export function MediaSection({ control, setValue, watch, userData, currentRecord
 		}
 
 		// Si el valor actual del formulario no coincide con el ID extraído, actualizarlo
-		if (photoId && photoId !== (typeof currentPhoto === 'string' ? currentPhoto : '')) {
+		if (photoId && photoId !== (typeof currentPhoto === 'string' ? currentPhoto : ''))
 			setValue('photo', photoId, { shouldValidate: true })
-		}
 
 		// Manejar el preview de la imagen
 		if (photoId && !removePhoto && imageForDisplay?.path) {
-			if (!previewImage) {
-				setPreviewImage(imageForDisplay.path)
-			}
+			if (!previewImage) setPreviewImage(imageForDisplay.path)
 		} else if (removePhoto || !photoId) {
-			if (previewImage) {
-				setPreviewImage(null)
-			}
+			if (previewImage) setPreviewImage(null)
 		}
 	}, [currentPhoto, removePhoto, setPreviewImage, imageForDisplay?.path, previewImage, setValue])
 
@@ -121,6 +111,7 @@ export function MediaSection({ control, setValue, watch, userData, currentRecord
 						onTriggerFileInput={triggerFileInput}
 						onClearPreview={handleClearPreview}
 						shouldHideCurrentImage={removePhoto || false}
+						imageHeight={210}
 					/>
 				</div>
 

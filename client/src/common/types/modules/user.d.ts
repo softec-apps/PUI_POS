@@ -1,10 +1,5 @@
+import { I_Photo } from '@/common/types/photo'
 import { MetaDataPagination, MetaResponse } from '@/common/types/pagination'
-
-/** Información de la foto del usuario */
-export interface I_Photo {
-	id: string
-	path: string
-}
 
 /** Rol asignado al usuario */
 export interface I_Role {
@@ -21,10 +16,13 @@ export interface I_Status {
 /** Propiedades base comunes a creación, edición y visualización */
 export interface I_BaseUser {
 	email: string
-	provider?: string | null
-	socialId?: string | null
+	dni: string
+	identificationCard: string
 	firstName: string
 	lastName: string
+
+	provider?: string | null
+	socialId?: string | null
 }
 
 /** Representación completa del usuario */

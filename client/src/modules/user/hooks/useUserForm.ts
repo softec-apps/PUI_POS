@@ -9,6 +9,7 @@ export function useUserForm({ isEditing }: { isEditing: boolean }) {
 			firstName: '',
 			lastName: '',
 			email: '',
+			dni: '',
 			password: '',
 			photo: '',
 			roleId: '',
@@ -21,6 +22,8 @@ export function useUserForm({ isEditing }: { isEditing: boolean }) {
 
 	return {
 		form,
+		setValue: form.setValue,
+		watch: form.watch,
 		resetForm,
 	}
 }

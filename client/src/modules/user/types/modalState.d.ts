@@ -1,5 +1,3 @@
-// INTERFAZ  OBTIENIDA DE RETURN DE "useModalState.ts"
-
 import { I_User } from '@/common/types/modules/user'
 
 export interface ModalState {
@@ -17,6 +15,14 @@ export interface ModalState {
 	setIsSoftDeleting: (value: boolean) => void
 	openSoftDeleteModal: (record: I_User) => void
 	closeSoftDeleteModal: () => void
+
+	// Restore modal state
+	isRestoreModalOpen: boolean
+	recordToRestore: I_User | null
+	isRestoring: boolean
+	setIsRestoring: (value: boolean) => void
+	openRestoreModal: (record: I_User) => void
+	closeRestoreModal: () => void
 
 	// Hard delete modal state
 	isHardDeleteModalOpen: boolean

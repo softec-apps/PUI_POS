@@ -1,4 +1,4 @@
-import { I_MetaPagination } from '@/common/types/pagination'
+import { MetaDataPagination, MetaResponse } from '@/common/types/pagination'
 
 /** Propiedades base de marca */
 interface I_BaseBrand {
@@ -35,6 +35,12 @@ export interface I_BrandId {
 
 /** Respuesta paginada de marcas */
 export interface I_BrandsResponse {
-	brands: I_Brand[]
-	metadata?: I_MetaPagination
+	success: boolean
+	statusCode: number
+	message: string
+	data: {
+		items: I_Brand[]
+		pagination: MetaDataPagination
+	}
+	meta: MetaResponse
 }

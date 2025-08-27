@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { I_Product } from '@/common/types/modules/product'
-import { STATUS_ALLOW } from '@/modules/product/constants/product.constants'
+import { STATUS_ALLOW, TaxAllow } from '@/modules/product/constants/product.constants'
 
 export const ProductSchema = z.object({
 	name: z.string().nonempty('Campo requerido').min(5, 'Mínimo 5 caracteres').max(255, 'Máximo 255 caracteres'),
@@ -44,12 +44,21 @@ export const ProductSchema = z.object({
 		STATUS_ALLOW.DISCONTINUED,
 		STATUS_ALLOW.OUT_OF_STOCK,
 	]),
+	tax: z.preprocess(val => {
+		// Si es string, convertir a número
+		if (typeof val === 'string') {
+			const numericValue = Number(val)
+			return isNaN(numericValue) ? val : numericValue
+		}
+		return val
+	}, z.nativeEnum(TaxAllow)),
 	photo: z.string().optional(),
-	//removePhoto: z.boolean().optional(),
+	// removePhoto: z.boolean().optional(),
 	categoryId: z.string().uuid('Selecciona una categoría válida'),
-	brandId: z.string().uuid('Selecciona una marca válida'),
 	supplierId: z.string().uuid('Selecciona un proveedor válida'),
-	templateId: z.string().uuid('Selecciona una plantilla válida'),
+	// Make brandId and templateId properly optional
+	brandId: z.string().uuid('Selecciona una marca válida').optional().or(z.literal('')),
+	templateId: z.string().uuid('Selecciona una plantilla válida').optional().or(z.literal('')),
 })
 
 export type ProductFormData = z.infer<typeof ProductSchema>

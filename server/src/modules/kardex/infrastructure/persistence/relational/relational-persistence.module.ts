@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { KardexRepository } from '@/modules/kardex/infrastructure/persistence/kardex.repository'
+
 import { UserEntity } from '@/modules/users/infrastructure/persistence/relational/entities/user.entity'
 import { KardexEntity } from '@/modules/kardex/infrastructure/persistence/relational/entities/kardex.entity'
 import { ProductEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product.entity'
-import { kardexRelationalRepository } from '@/modules/kardex/infrastructure/persistence/relational/repositories/kardex.repository'
+
+import { KardexRepository } from '@/modules/kardex/infrastructure/persistence/kardex.repository'
+import { KardexRelationalRepository } from '@/modules/kardex/infrastructure/persistence/relational/repositories/kardex.repository'
 
 @Module({
   imports: [
@@ -13,7 +15,7 @@ import { kardexRelationalRepository } from '@/modules/kardex/infrastructure/pers
   providers: [
     {
       provide: KardexRepository,
-      useClass: kardexRelationalRepository,
+      useClass: KardexRelationalRepository,
     },
   ],
   exports: [KardexRepository],

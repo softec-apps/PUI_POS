@@ -8,6 +8,22 @@ export interface ModalState {
 	openEditDialog: (record: I_Customer) => void
 	closeDialog: () => void
 
+	// Soft delete modal state
+	isSoftDeleteModalOpen: boolean
+	recordToSoftDelete: I_Customer | null
+	isSoftDeleting: boolean
+	setIsSoftDeleting: (value: boolean) => void
+	openSoftDeleteModal: (record: I_Customer) => void
+	closeSoftDeleteModal: () => void
+
+	// Restore modal state
+	isRestoreModalOpen: boolean
+	recordToRestore: I_Customer | null
+	isRestoring: boolean
+	setIsRestoring: (value: boolean) => void
+	openRestoreModal: (record: I_Customer) => void
+	closeRestoreModal: () => void
+
 	// Hard delete modal state
 	isHardDeleteModalOpen: boolean
 	recordToHardDelete: I_Customer | null

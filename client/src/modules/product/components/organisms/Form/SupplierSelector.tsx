@@ -58,6 +58,7 @@ export function SupplierSelector({
 					/>
 				) : (
 					<UniversalFormField
+						required
 						control={control}
 						name='supplierId'
 						type='command'

@@ -60,7 +60,7 @@ export const FileUploadSection = ({
 				<Card
 					onClick={onTriggerFileInput}
 					className={cn(
-						'border-muted-foreground/30 cursor-pointer rounded-xl border-2 border-dashed p-7 text-center transition-all',
+						'cursor-pointer rounded-xl border-dashed p-7 text-center shadow-none transition-all',
 						'hover:bg-muted/10',
 						isUploading ? 'pointer-events-none opacity-70' : ''
 					)}>
@@ -69,7 +69,7 @@ export const FileUploadSection = ({
 							<SpinnerLoader text='Subiendo imagen...' />
 						</div>
 					) : (
-						<div className='flex flex-col items-center gap-4 p-5'>
+						<div className='flex flex-col items-center gap-4'>
 							<div className='bg-muted/50 rounded-full p-4'>
 								<Icons.upload className='text-muted-foreground h-6 w-6' />
 							</div>
@@ -89,7 +89,7 @@ export const FileUploadSection = ({
 					)}
 				</Card>
 			) : (
-				<div className='flex w-full flex-col items-center justify-center space-y-4'>
+				<div className='flex w-full flex-col space-y-4'>
 					<ImageControl
 						imageUrl={displayImage}
 						alt='Vista previa'
@@ -97,7 +97,7 @@ export const FileUploadSection = ({
 						imageWidth={imageWidth}
 						enableHover={false}
 						enableClick={false}
-						className='h-auto w-full object-cover object-center'
+						className='h-full w-full object-cover object-center'
 					/>
 
 					<div className='flex justify-end gap-2'>
@@ -116,7 +116,7 @@ export const FileUploadSection = ({
 							disabled={isUploading}
 							size='sm'
 							variant='default'
-							text={isUploading ? 'Subiendo...' : 'Cambiar imagen'}
+							text={isUploading ? 'Subiendo...' : 'Cambiar'}
 							icon={
 								isUploading ? (
 									<Icons.spinnerSimple className='h-4 w-4 animate-spin' />

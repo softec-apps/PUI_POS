@@ -5,7 +5,6 @@ import {
   UpdateCustomerResponseDto,
   FindOneCustomerResponseDto,
   FindAllCustomerResponseDto,
-  SoftDeleteCustomerResponseDto,
   HardDeleteCustomerResponseDto,
 } from '@/modules/customer/dto/response-customer.dto'
 import { ParamCustomerDto } from '@/modules/customer/dto/param-customer.dto'
@@ -66,17 +65,6 @@ export const CustomerApiDocs = {
       conflict:
         'El nuevo número de identificación o correo electrónico ya está en uso por otro cliente.',
       forbidden: 'Permisos insuficientes para modificar clientes.',
-    },
-  }),
-
-  delete: crudDocs.delete({
-    summary: 'Eliminar cliente (borrado lógico)',
-    description:
-      'Desactiva un cliente (borrado lógico). El cliente no se elimina permanentemente de la base de datos. Requiere privilegios de administrador o manager.',
-    responseDto: SoftDeleteCustomerResponseDto,
-    customResponses: {
-      notFound: 'El cliente a eliminar no existe.',
-      forbidden: 'Permisos insuficientes para eliminar clientes.',
     },
   }),
 

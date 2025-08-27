@@ -1,32 +1,65 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client'
 
-import { ModalState } from '@/modules/supplier/types/modalState'
+import { I_Supplier } from '@/common/types/modules/supplier'
+import { FormModal } from '@/modules/supplier/components/organisms/Modal/ModalForm'
 import { HardDeleteModal } from '@/modules/supplier/components/organisms/Modal/ModalHardDelete'
-import { RecordFormModal } from '@/modules/supplier/components/organisms/Modal/ModalForm'
+import { SoftDeleteModal } from '@/modules/supplier/components/organisms/Modal/ModalSoftDelete'
+import { RestoreModal } from '@/modules/supplier/components/organisms/Modal/ModalRestore'
 
-interface Props {
-	modalState: ModalState
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	recordHandlers: any
+interface ModalsProps {
+	modal: {
+		type: 'create' | 'edit' | 'hardDelete' | 'softDelete' | 'restore' | null
+		isOpen: boolean
+		record: I_Supplier | null
+		isLoading: boolean
+		closeModal: () => void
+	}
+	onSubmit: (data: any) => Promise<void>
+	onDelete: () => Promise<void>
+	onRestore: () => Promise<void>
 }
 
-export function ModalsSupplier({ modalState, recordHandlers }: Props) {
+export function Modals({ modal, onSubmit, onDelete, onRestore }: ModalsProps) {
+	const isFormModal = modal.type === 'create' || modal.type === 'edit'
+	const isRestoreModal = modal.type === 'restore'
+
 	return (
 		<>
-			<RecordFormModal
-				isOpen={modalState.isDialogOpen}
-				currentRecord={modalState.currentRecord}
-				onClose={recordHandlers.handleDialogClose}
-				onSubmit={recordHandlers.handleFormSubmit}
+			<FormModal
+				isOpen={isFormModal && modal.isOpen}
+				currentRecord={modal.record}
+				onClose={modal.closeModal}
+				onSubmit={onSubmit}
+				isLoading={modal.isLoading}
+			/>
+
+			<SoftDeleteModal
+				isOpen={modal.type === 'softDelete' && modal.isOpen}
+				currentRecord={modal.record}
+				isAction={modal.isLoading}
+				onClose={modal.closeModal}
+				onConfirm={onDelete}
 			/>
 
 			<HardDeleteModal
-				isOpen={modalState.isHardDeleteModalOpen}
-				currentRecord={modalState.recordToHardDelete}
-				isAction={modalState.isHardDeleting}
-				onClose={modalState.closeHardDeleteModal}
-				onConfirm={recordHandlers.handleConfirmHardDelete}
+				isOpen={modal.type === 'hardDelete' && modal.isOpen}
+				currentRecord={modal.record}
+				isAction={modal.isLoading}
+				onClose={modal.closeModal}
+				onConfirm={onDelete}
 			/>
+
+			{isRestoreModal && (
+				<RestoreModal
+					isOpen={modal.isOpen}
+					currentRecord={modal.record}
+					isAction={modal.isLoading}
+					onClose={modal.closeModal}
+					onConfirm={onRestore}
+				/>
+			)}
 		</>
 	)
 }

@@ -1,31 +1,42 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client'
 
-import { ModalState } from '@/modules/customer/types/modalState'
+import { I_Customer } from '@/common/types/modules/customer'
+import { FormModal } from '@/modules/customer/components/organisms/Modal/ModalForm'
 import { HardDeleteModal } from '@/modules/customer/components/organisms/Modal/ModalHardDelete'
-import { CustomerFormModal } from '@/modules/customer/components/organisms/Modal/ModalCustomerForm'
-import { CustomerHandlers } from '@/modules/customer/hooks/useCustomerHandlers'
 
-interface CustomerModalsProps {
-	modalState: ModalState
-	customerHandlers: CustomerHandlers
+interface ModalsProps {
+	modal: {
+		type: 'create' | 'edit' | 'hardDelete' | 'softDelete' | 'restore' | null
+		isOpen: boolean
+		record: I_Customer | null
+		isLoading: boolean
+		closeModal: () => void
+	}
+	onSubmit: (data: any) => Promise<void>
+	onDelete: () => Promise<void>
 }
 
-export function CustomerModals({ modalState, customerHandlers }: CustomerModalsProps) {
+export function Modals({ modal, onSubmit, onDelete }: ModalsProps) {
+	const isFormModal = modal.type === 'create' || modal.type === 'edit'
+
 	return (
 		<>
-			<CustomerFormModal
-				isOpen={modalState.isDialogOpen}
-				currentCustomer={modalState.currentRecord}
-				onClose={customerHandlers.handleDialogClose}
-				onSubmit={customerHandlers.handleFormSubmit}
+			<FormModal
+				isOpen={isFormModal && modal.isOpen}
+				currentRecord={modal.record}
+				onClose={modal.closeModal}
+				onSubmit={onSubmit}
+				isLoading={modal.isLoading}
 			/>
 
 			<HardDeleteModal
-				isOpen={modalState.isHardDeleteModalOpen}
-				customer={modalState.recordToHardDelete}
-				isAction={modalState.isHardDeleting}
-				onClose={modalState.closeHardDeleteModal}
-				onConfirm={customerHandlers.handleConfirmHardDelete}
+				isOpen={modal.type === 'hardDelete' && modal.isOpen}
+				currentRecord={modal.record}
+				isAction={modal.isLoading}
+				onClose={modal.closeModal}
+				onConfirm={onDelete}
 			/>
 		</>
 	)

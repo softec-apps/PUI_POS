@@ -8,5 +8,7 @@ import { MatrizView } from '@/modules/pos/matriz/components/view/MatrizView'
 export function PosViewSelector() {
 	const { currentView } = useViewStore()
 
-	return <div className='h-full'>{currentView === 'pos' ? <PosView /> : <MatrizView />}</div>
+	return (
+		<div className='h-screen max-h-screen min-h-screen'>{currentView === 'pos' ? <PosView /> : <MatrizView />}</div>
+	)
 }

@@ -12,6 +12,7 @@ import {
 } from '@/modules/customer/customer.enum'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Transform, Type, plainToInstance } from 'class-transformer'
+import { DateRangeDto } from '@/utils/dto/DateRangeDto'
 
 export class FilterCustomerDto {
   @ApiPropertyOptional({
@@ -33,6 +34,33 @@ export class FilterCustomerDto {
     message: `El tipo de identificación debe ser uno de: ${Object.values(IdentificationType).join(', ')}`,
   })
   identificationType?: IdentificationType
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de creación',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  createdAt?: DateRangeDto | null
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de actualización',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  updatedAt?: DateRangeDto | null
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de eliminación',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  deletedAt?: DateRangeDto | null
 }
 
 export class SortCustomerDto {

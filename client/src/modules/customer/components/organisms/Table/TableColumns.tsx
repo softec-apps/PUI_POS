@@ -4,8 +4,9 @@ import { Icons } from '@/components/icons'
 import { Column, ColumnDef } from '@tanstack/react-table'
 import { I_Customer } from '@/common/types/modules/customer'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { TableActions } from '@/modules/customer/components/organisms/Table/TableActions'
-import { TableInfoDate } from '@/modules/customer/components/organisms/Table/TableInfoDate'
+import { Actions } from '@/modules/customer/components/organisms/Actions'
+import { InfoDate } from '@/modules/customer/components/atoms/InfoDate'
+import { IdentificationTypeBadge } from '@/modules/customer/components/atoms/IdentificationTypeBadge'
 
 interface TableColumnsProps {
 	onEdit: (recordData: I_Customer) => void
@@ -36,6 +37,15 @@ const createHeader = (column: Column<I_Customer>, label: string) => {
 export const createTableColumns = ({ onEdit, onHardDelete }: TableColumnsProps): ColumnDef<I_Customer>[] => [
 	{
 		accessorKey: 'identificationNumber',
+		header: ({ column }) => createHeader(column, 'Tipo Identi.'),
+		cell: ({ row }) => (
+			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
+				<IdentificationTypeBadge identificationType={row.original.identificationType} />
+			</div>
+		),
+	},
+	{
+		accessorKey: 'identificationNumber',
 		header: ({ column }) => createHeader(column, 'Identificación'),
 		cell: ({ row }) => (
 			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
@@ -57,7 +67,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: TableColumnsProps):
 		header: ({ column }) => createHeader(column, 'Email'),
 		cell: ({ row }) => (
 			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				{row.original.email}
+				{row.original.email || '-'}
 			</div>
 		),
 	},
@@ -66,7 +76,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: TableColumnsProps):
 		header: ({ column }) => createHeader(column, 'Teléfono'),
 		cell: ({ row }) => (
 			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				{row.original.phone}
+				{row.original.phone || '-'}
 			</div>
 		),
 	},
@@ -75,20 +85,20 @@ export const createTableColumns = ({ onEdit, onHardDelete }: TableColumnsProps):
 		header: ({ column }) => createHeader(column, 'Dirección'),
 		cell: ({ row }) => (
 			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				{row.original.address}
+				{row.original.address || '-'}
 			</div>
 		),
 	},
 	{
 		accessorKey: 'createdAt',
 		header: () => <div className='text-muted-foreground'>Información</div>,
-		cell: ({ row }) => <TableInfoDate recordData={row.original} />,
+		cell: ({ row }) => <InfoDate recordData={row.original} />,
 	},
 	{
 		id: 'actions',
 		cell: ({ row }) => (
 			<div className='flex justify-end'>
-				<TableActions recordData={row.original} onEdit={onEdit} onHardDelete={onHardDelete} />
+				<Actions recordData={row.original} onEdit={onEdit} onHardDelete={onHardDelete} />
 			</div>
 		),
 	},

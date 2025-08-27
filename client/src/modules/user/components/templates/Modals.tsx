@@ -1,47 +1,64 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { ModalState } from '@/modules/user/types/modalState'
-import { I_User, I_CreateUser, I_UpdateUser } from '@/common/types/modules/user'
+import { I_User } from '@/common/types/modules/user'
 import { UserFormModal } from '@/modules/user/components/organisms/Modal/ModalUserForm'
 import { HardDeleteModal } from '@/modules/user/components/organisms/Modal/ModalHardDelete'
 import { SoftDeleteModal } from '@/modules/user/components/organisms/Modal/ModalSoftDelete'
+import { RestoreModal } from '@/modules/user/components/organisms/Modal/ModalRestore'
 
 interface UserModalsProps {
-	modalState: ModalState
-	userHandlers: {
-		handleFormSubmit: (data: I_CreateUser | I_UpdateUser) => Promise<void>
-		handleDialogClose: () => void
-		handleEdit: (record: I_User) => void
-		handleConfirmHardDelete: () => Promise<void>
-		handleConfirmSoftDelete: () => Promise<void>
+	modal: {
+		type: 'create' | 'edit' | 'hardDelete' | 'softDelete' | 'restore' | null
+		isOpen: boolean
+		record: I_User | null
+		isLoading: boolean
+		closeModal: () => void
 	}
+	onSubmit: (data: any) => Promise<void>
+	onDelete: () => Promise<void>
+	onRestore: () => Promise<void>
 }
 
-export function UserModals({ modalState, userHandlers }: UserModalsProps) {
+export function UserModals({ modal, onSubmit, onDelete, onRestore }: UserModalsProps) {
+	const isFormModal = modal.type === 'create' || modal.type === 'edit'
+	const isRestoreModal = modal.type === 'restore'
+
 	return (
 		<>
 			<UserFormModal
-				isOpen={modalState.isDialogOpen}
-				currentRecord={modalState.currentRecord}
-				onClose={userHandlers.handleDialogClose}
-				onSubmit={userHandlers.handleFormSubmit}
+				isOpen={isFormModal && modal.isOpen}
+				currentRecord={modal.record}
+				onClose={modal.closeModal}
+				onSubmit={onSubmit}
+				isLoading={modal.isLoading}
 			/>
 
 			<SoftDeleteModal
-				isOpen={modalState.isSoftDeleteModalOpen}
-				currentRecord={modalState.recordToSoftDelete}
-				isAction={modalState.isSoftDeleting}
-				onClose={modalState.closeSoftDeleteModal}
-				onConfirm={userHandlers.handleConfirmSoftDelete}
+				isOpen={modal.type === 'softDelete' && modal.isOpen}
+				currentRecord={modal.record}
+				isAction={modal.isLoading}
+				onClose={modal.closeModal}
+				onConfirm={onDelete}
 			/>
 
 			<HardDeleteModal
-				isOpen={modalState.isHardDeleteModalOpen}
-				currentRecord={modalState.recordToHardDelete}
-				isAction={modalState.isHardDeleting}
-				onClose={modalState.closeHardDeleteModal}
-				onConfirm={userHandlers.handleConfirmHardDelete}
+				isOpen={modal.type === 'hardDelete' && modal.isOpen}
+				currentRecord={modal.record}
+				isAction={modal.isLoading}
+				onClose={modal.closeModal}
+				onConfirm={onDelete}
 			/>
+
+			{isRestoreModal && (
+				<RestoreModal
+					isOpen={modal.isOpen}
+					currentRecord={modal.record}
+					isAction={modal.isLoading}
+					onClose={modal.closeModal}
+					onConfirm={onRestore}
+				/>
+			)}
 		</>
 	)
 }

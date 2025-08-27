@@ -17,7 +17,7 @@ export type CustomerType = 'regular' | 'final_consumer'
 export type IdentificationType = '04' | '05' | '06' | '07'
 
 export interface I_CustomerBase {
-	id: string
+	id?: string
 	createdAt: string | Date
 	updatedAt: string | Date
 	deletedAt: string | Date
@@ -34,11 +34,6 @@ export interface I_Customer extends I_CustomerBase {
 	email?: string
 }
 
-export interface I_CustomerId {
-	id: string
-}
-
-<<<<<<< HEAD
 export interface I_CreateCustomer {
 	customerType: CustomerType
 	identificationType: IdentificationType
@@ -50,21 +45,9 @@ export interface I_CreateCustomer {
 	email?: string
 }
 
-export interface I_UpdateCustomer {
-	customerType: CustomerType
-	identificationType: IdentificationType
-	identificationNumber: string
-	firstName?: string
-	lastName?: string
-	address?: string
-	phone?: string
-	email?: string
+export interface I_CustomerId {
+	id: string
 }
-=======
-export type I_CreateCustomer = I_Customer
-
-export type I_UpdateCustomer = I_Customer
->>>>>>> origin/alex
 
 export interface I_CustomerResponse {
 	success: boolean

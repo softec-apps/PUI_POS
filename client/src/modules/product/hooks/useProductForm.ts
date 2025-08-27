@@ -27,7 +27,7 @@ export function useProductForm() {
 	const [templateOpen, setTemplateOpen] = useState(false)
 
 	// Hook get all categories
-	const { categories: categoriesData, loading: loadingCategories } = useCategory({
+	const { recordsData: categoriesData, loading: loadingCategories } = useCategory({
 		page: categoryPage,
 		limit: 25,
 		search: categorySearch,
@@ -35,7 +35,7 @@ export function useProductForm() {
 	})
 
 	// Hook get all brand
-	const { brands: brandsData, loading: loadingBrands } = useBrand({
+	const { recordsData: brandsData, loading: loadingBrands } = useBrand({
 		page: brandPage,
 		limit: 25,
 		search: brandSearch,
@@ -43,7 +43,7 @@ export function useProductForm() {
 	})
 
 	// Hook get all supplier
-	const { supplierData: suppliersData, loading: loadingSuppliers } = useSupplier({
+	const { recordsData: suppliersData, loading: loadingSuppliers } = useSupplier({
 		page: supplierPage,
 		limit: 25,
 		search: supplierSearch,

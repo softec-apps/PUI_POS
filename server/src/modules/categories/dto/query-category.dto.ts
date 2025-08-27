@@ -1,4 +1,5 @@
 import {
+  IsDateString,
   IsEnum,
   IsIn,
   IsNumber,
@@ -10,6 +11,7 @@ import { Category } from '@/modules/categories/domain/category'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Transform, Type, plainToInstance } from 'class-transformer'
 import { CategoryStatus } from '@/modules/categories/category-status.enum'
+import { DateRangeDto } from '@/utils/dto/DateRangeDto'
 
 export class FilterCategoryDto {
   @ApiPropertyOptional({
@@ -21,6 +23,33 @@ export class FilterCategoryDto {
     message: 'El estado debe ser "active" o "inactive"',
   })
   status?: CategoryStatus
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de creación',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  createdAt?: DateRangeDto | null
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de actualización',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  updatedAt?: DateRangeDto | null
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de eliminación',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  deletedAt?: DateRangeDto | null
 }
 
 export class SortCategoryDto {

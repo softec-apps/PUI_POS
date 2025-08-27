@@ -11,7 +11,7 @@ import {
 	I_CustomerId,
 } from '@/common/types/modules/customer'
 
-interface UseCustomerParamsProps {
+export interface UseCustomerParamsProps {
 	page?: number
 	limit?: number
 	search?: string

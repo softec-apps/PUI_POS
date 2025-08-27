@@ -14,6 +14,19 @@ export interface SortOption {
 	order: 'asc' | 'desc'
 }
 
+export interface DateRange {
+	startDate?: string
+	endDate?: string
+}
+
+export interface DateFilters {
+	createdAt?: DateRange
+	updatedAt?: DateRange
+	deletedAt?: DateRange
+}
+
+export type DateFilterType = 'createdAt' | 'updatedAt' | 'deletedAt'
+
 export interface I_MetaPagination {
 	totalRecords: number
 	totalCount: number

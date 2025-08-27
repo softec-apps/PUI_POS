@@ -11,12 +11,13 @@ import {
   HttpStatus,
   Controller,
   SerializeOptions,
+  Patch,
 } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { Roles } from '@/modules/roles/roles.decorator'
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger'
 import { RolesGuard } from '@/modules/roles/roles.guard'
-import { RoleEnum } from '@/common/constants/roles-const'
+import { RoleEnum, ROLES } from '@/common/constants/roles-const'
 import { Supplier } from '@/modules/suppliers/domain/supplier'
 import { ApiResponse } from '@/utils/types/request-response.type'
 import { PATH_SOURCE } from '@/common/constants/pathSource.const'
@@ -27,10 +28,10 @@ import { CreateSupplierDto } from '@/modules/suppliers/dto/create-supplier.dto'
 import { UpdateSupplierDto } from '@/modules/suppliers/dto/update-supplier.dto'
 import { SupplierApiDocs } from '@/modules/suppliers/docs/supplier-swagger.docs'
 import { EnhancedInfinityPaginationResponseDto } from '@/utils/dto/enhanced-infinity-pagination-response.dto'
+import { ParamUserDto } from '../users/dto/param-user.dto'
 
 @ApiTags(PATH_SOURCE.SUPPLIER)
 @ApiBearerAuth()
-@Roles(RoleEnum.Admin, RoleEnum.Manager)
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller({
   path: PATH_SOURCE.SUPPLIER,
@@ -45,9 +46,10 @@ export class SupplierController {
    * @returns The API standard response
    */
   @Post()
-  @SerializeOptions({ groups: ['admin'] })
-  @HttpCode(HttpStatus.CREATED)
   @SupplierApiDocs.create
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createSupplierDto: CreateSupplierDto,
   ): Promise<ApiResponse<Supplier>> {
@@ -60,9 +62,10 @@ export class SupplierController {
    * @returns The API standard response
    */
   @Get()
-  @SerializeOptions({ groups: ['admin'] })
-  @HttpCode(HttpStatus.OK)
   @SupplierApiDocs.findAll
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
   async findAll(
     @Query() query: QuerySupplierDto,
   ): Promise<ApiResponse<EnhancedInfinityPaginationResponseDto<Supplier>>> {
@@ -76,9 +79,10 @@ export class SupplierController {
    *
    */
   @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  @SerializeOptions({ groups: ['admin'] })
   @SupplierApiDocs.findOne
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
   async findOne(
     @Param() param: ParamSupplierDto,
   ): Promise<ApiResponse<Supplier>> {
@@ -91,14 +95,44 @@ export class SupplierController {
    * @returns The API standard responsea
    */
   @Put(':id')
-  @HttpCode(HttpStatus.OK)
-  @SerializeOptions({ groups: ['admin'] })
   @SupplierApiDocs.update
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
   async update(
     @Param() param: ParamSupplierDto,
     @Body() updateSupplierDto: UpdateSupplierDto,
   ): Promise<ApiResponse<Supplier>> {
     return await this.supplierService.update(param.id, updateSupplierDto)
+  }
+
+  /**
+   * Soft delete a supplier (hard delete)
+   * @param param - Parameter containing the supplier ID to delete
+   * @returns The API standard response confirming deletion
+   * @warning This action is irreversible and will soft remove the supplier
+   */
+  @Delete(':id')
+  //@SupplierApiDocs.hardDelete
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
+  async softDelete(@Param() param: ParamSupplierDto): Promise<ApiResponse> {
+    return await this.supplierService.softDelete(param.id)
+  }
+
+  /**
+   * Restore a supplier.
+   * @param RestoreSupplierDto - Data transfer object for supplier restore.
+   * @returns The API standard responsea
+   */
+  @Patch(':id/restore')
+  @SupplierApiDocs.update
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
+  async restore(@Param() param: ParamUserDto): Promise<ApiResponse<Supplier>> {
+    return await this.supplierService.restore(param.id)
   }
 
   /**
@@ -108,9 +142,10 @@ export class SupplierController {
    * @warning This action is irreversible and will permanently remove the supplier
    */
   @Delete(':id/hard-delete')
-  @HttpCode(HttpStatus.OK)
-  @SerializeOptions({ groups: ['admin'] })
   @SupplierApiDocs.hardDelete
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
   hardDelete(@Param() param: ParamSupplierDto): Promise<ApiResponse> {
     return this.supplierService.hardDelete(param.id)
   }

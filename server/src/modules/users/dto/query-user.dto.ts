@@ -4,12 +4,14 @@ import { StatusDto } from '@/statuses/dto/status.dto'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Transform, Type, plainToInstance } from 'class-transformer'
 import {
+  IsDateString,
   IsIn,
   IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator'
+import { DateRangeDto } from '@/utils/dto/DateRangeDto'
 
 export class FilterUserDto {
   @ApiPropertyOptional({
@@ -30,6 +32,33 @@ export class FilterUserDto {
   @ValidateNested({ each: true })
   @Type(() => StatusDto)
   statusId?: StatusDto[] | null
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de creación',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  createdAt?: DateRangeDto | null
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de actualización',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  updatedAt?: DateRangeDto | null
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de eliminación',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  deletedAt?: DateRangeDto | null
 }
 
 export class SortUserDto {

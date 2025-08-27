@@ -1,188 +1,202 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client'
 
-import { useCallback, useMemo, useState, useEffect } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 
-import { useCustomer } from '@/common/hooks/useCustomer'
-import { useModalState } from '@/modules/customer/hooks/useModalState'
+import { useModal } from '@/modules/customer/hooks/useModal'
+import { useCustomerData } from '@/modules/customer/hooks/useData'
 import { usePagination } from '@/modules/customer/hooks/usePagination'
+import { useActions } from '@/modules/customer/hooks/useActions'
 import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
-import { useCustomerHandlers } from '@/modules/customer/hooks/useCustomerHandlers'
 
-import { Icons } from '@/components/icons'
-import { Card } from '@/components/ui/card'
-import { UtilBanner } from '@/components/UtilBanner'
-import { useDebounce } from '@/common/hooks/useDebounce'
 import { ViewType } from '@/components/layout/organims/ViewSelector'
-import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { Header } from '@/modules/customer/components/templates/Header'
+import { Modals } from '@/modules/customer/components/templates/Modals'
+import { Filters } from '@/modules/customer/components/templates/Filters'
+import { EmptyState } from '@/modules/customer/components/templates/EmptyState'
+import { ErrorState } from '@/components/layout/templates/ErrorState'
 import { PaginationControls } from '@/components/layout/organims/Pagination'
-import { CustomerHeader } from '@/modules/customer/components/templates/Header'
-import { CustomerModals } from '@/modules/customer/components/templates/Modals'
-import { CustomerFilters } from '@/modules/customer/components/templates/Filters'
-import { TableCustomer } from '@/modules/customer/components/organisms/Table/TableCustomer'
-import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
+import { TableData } from '@/modules/customer/components/organisms/Table/TableData'
+
+const SEARCH_DELAY = 500
+const MAX_RETRIES = 3
 
 export function CustomerView() {
-	const [retryCount, setRetryCount] = useState(0)
 	const [viewType, setViewType] = useState<ViewType>('table')
+	const [debouncedSearch, setDebouncedSearch] = useState('')
+	const [retryCount, setRetryCount] = useState(0)
+	const [totalRealRecords, setTotalRealRecords] = useState(0)
 
-	const [localSearchTerm, setLocalSearchTerm] = useState<string>('')
-	const debouncedSearchTerm = useDebounce(localSearchTerm, 500)
+	// Hooks
+	const pagination = usePagination()
+	const modal = useModal()
 
-	const {
-		pagination,
-		currentSort,
-		handleNextPage,
-		handlePrevPage,
-		handleLimitChange,
-		handleSort,
-		handleResetAll,
-		handlePageChange,
-		setPagination,
-	} = usePagination()
-
+	// Debounce search
 	useEffect(() => {
-		setPagination(prev => ({
-			...prev,
-			search: debouncedSearchTerm,
-			page: 1,
-		}))
-	}, [debouncedSearchTerm, setPagination])
+		const timer = setTimeout(() => setDebouncedSearch(pagination.searchTerm), SEARCH_DELAY)
+		return () => clearTimeout(timer)
+	}, [pagination.searchTerm])
 
-	const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value
-		setLocalSearchTerm(value)
-	}, [])
+	// Data parameters (updated to include date filters)
+	const dataParams = useMemo(() => {
+		const cleanedDateFilters = Object.fromEntries(
+			Object.entries(pagination.dateFilters).filter(([_, range]) => range && (range.startDate || range.endDate))
+		)
 
-	const handleResetAllWithSearch = useCallback(() => {
-		setLocalSearchTerm('')
-		handleResetAll()
-	}, [handleResetAll])
+		return {
+			search: debouncedSearch,
+			page: pagination.pagination.page,
+			limit: pagination.pagination.limit,
+			sort: pagination.currentSort ? [pagination.currentSort] : undefined,
+			filters: {
+				identificationType: pagination.currentIdentificationType || undefined,
+				...cleanedDateFilters,
+			},
+		}
+	}, [debouncedSearch, pagination])
 
-	// Memoizar parámetros de paginación usando debouncedSearchTerm
-	const paginationParams = useMemo(
+	// Data parameters para obtener el total real (sin filtros)
+	const totalParams = useMemo(
 		() => ({
-			search: debouncedSearchTerm,
-			page: pagination.page,
-			limit: pagination.limit,
-			sort: currentSort ? [currentSort] : undefined,
+			search: '',
+			page: 1,
+			limit: 1,
+			filters: {},
 		}),
-		[pagination.page, pagination.limit, debouncedSearchTerm, currentSort]
+		[]
 	)
 
-	const {
-		recordsData,
-		loading,
-		error: errorRecords,
-		createRecord,
-		updateRecord,
-		hardDeleteRecord,
-		refetchRecords,
-	} = useCustomer(paginationParams)
+	// Data and actions
+	const customerData = useCustomerData(dataParams)
+	const totalCustomerData = useCustomerData(totalParams)
+	const { isRefreshing, handleRefresh } = useGenericRefresh(customerData.refetchRecords)
 
-	// Función para reintentar la carga
-	const handleRetry = useCallback(() => {
-		setRetryCount(prev => prev + 1)
-		refetchRecords()
-	}, [refetchRecords])
+	// Actualizar el total real cuando se obtengan los datos
+	useEffect(() => {
+		if (totalCustomerData.data.pagination?.totalRecords)
+			setTotalRealRecords(totalCustomerData.data.pagination.totalRecords)
+	}, [totalCustomerData.data.pagination?.totalRecords])
 
-	// Hook de refresh
-	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchRecords)
-
-	const modalState = useModalState()
-
-	// Handlers de categorías
-	const customerHandlers = useCustomerHandlers({
-		modalState,
-		createRecord,
-		updateRecord,
-		hardDeleteRecord,
+	const userActions = useActions({
+		createRecord: customerData.createRecord,
+		updateRecord: customerData.updateRecord,
+		hardDeleteRecord: customerData.hardDeleteRecord,
 	})
 
-	// Optimized next page handler
-	const handleNext = useCallback(() => {
-		handleNextPage(recordsData?.data?.pagination?.hasNextPage)
-	}, [handleNextPage, recordsData?.data?.pagination?.hasNextPage])
+	// Handler para refrescar datos
+	const handleFiltersRefresh = useCallback(async () => {
+		await handleRefresh()
+		totalCustomerData.refetchRecords()
+	}, [handleRefresh, totalCustomerData])
 
-	// Memoizar datos derivados
-	const customerData = useMemo(
-		() => ({
-			items: recordsData?.data?.items || [],
-			pagination: recordsData?.data?.pagination,
-			hasNextPage: recordsData?.data?.pagination?.hasNextPage,
-		}),
-		[recordsData?.data]
+	const handleModalSubmit = useCallback(
+		async (data: any) => {
+			try {
+				modal.setLoading(true)
+				await userActions.handleSubmit(data, modal.record?.id)
+				modal.closeModal()
+			} catch (error) {
+				throw error
+			} finally {
+				modal.setLoading(false)
+			}
+		},
+		[modal, userActions]
 	)
 
-	if (errorRecords && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
+	const handleModalDelete = useCallback(async () => {
+		if (!modal.record?.id || !modal.type) return
 
-	if (errorRecords)
-		return (
-			<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
-				<FatalErrorState />
-			</Card>
-		)
+		try {
+			modal.setLoading(true)
+			const deleteType = modal.type === 'hardDelete' ? 'hard' : 'soft'
+			await userActions.handleDelete(modal.record.id, deleteType)
+			modal.closeModal()
+		} catch (error) {
+		} finally {
+			modal.setLoading(false)
+		}
+	}, [modal, userActions])
+
+	const handleModalRestore = useCallback(async () => {
+		if (!modal.record?.id) return
+
+		try {
+			modal.setLoading(true)
+			await userActions.handleRestore(modal.record.id)
+			modal.closeModal()
+		} catch (error) {
+		} finally {
+			modal.setLoading(false)
+		}
+	}, [modal, userActions])
+
+	const handleRetry = useCallback(() => {
+		setRetryCount(prev => prev + 1)
+		customerData.refetchRecords()
+	}, [customerData])
+
+	const handleNextPage = useCallback(() => {
+		pagination.handleNextPage(customerData.data.pagination?.hasNextPage)
+	}, [pagination, customerData.data.pagination?.hasNextPage])
+
+	// Render states
+	if (customerData.data.hasError && retryCount < MAX_RETRIES) return <ErrorState onRetry={handleRetry} type='retry' />
+
+	if (customerData.data.hasError) return <ErrorState type='fatal' />
+
+	if (customerData.data.isEmpty) return
 
 	return (
 		<div className='flex flex-1 flex-col space-y-6'>
-			{customerData?.pagination?.totalRecords === 0 ? (
-				<Card className='flex h-screen items-center justify-center border-none bg-transparent shadow-none'>
-					<UtilBanner
-						icon={<Icons.dataBase />}
-						title='Sin registros'
-						description='No hay datos disponibles. Intentá crear un registro'
-					/>
-
-					<ActionButton
-						size='lg'
-						variant='default'
-						icon={<Icons.plus />}
-						text='Nuevo cliente'
-						className='rounded-xl'
-						onClick={modalState.openCreateDialog}
-					/>
-				</Card>
+			{customerData.data.isEmpty ? (
+				<EmptyState onCreate={modal.openCreate} />
 			) : (
 				<>
-					{/* Header */}
-					<CustomerHeader onCreateClick={modalState.openCreateDialog} />
+					<Header onCreateClick={modal.openCreate} onRefresh={handleFiltersRefresh} totalRecords={totalRealRecords} />
 
-					{/* Filtros y búsqueda */}
-					<CustomerFilters
-						searchValue={localSearchTerm}
-						currentSort={currentSort}
+					<Filters
+						searchValue={pagination.searchTerm}
+						currentSort={pagination.currentSort}
+						currentIdentificationType={pagination.currentIdentificationType}
+						dateFilters={pagination.dateFilters}
 						isRefreshing={isRefreshing}
-						onSearchChange={handleSearchChange}
-						onSort={handleSort}
-						onRefresh={handleRefresh}
-						onResetAll={handleResetAllWithSearch}
+						onRefresh={handleFiltersRefresh}
+						onIdentificationTypeChange={pagination.handleIdentificationTypeChange}
+						onSearchChange={pagination.handleSearchChange}
+						onSort={pagination.handleSort}
+						onDateFilterChange={pagination.handleDateFilterChange}
+						onClearDateFilter={pagination.clearDateFilter}
+						onResetAll={pagination.handleResetAll}
 						viewType={viewType}
 						onViewChange={setViewType}
 					/>
 
-					{/* Tabla */}
-					<TableCustomer
-						customerData={customerData.items}
-						loading={loading}
-						onEdit={customerHandlers.handleEdit}
-						onHardDelete={modalState.openHardDeleteModal}
+					<TableData
+						recordsData={customerData.data.items}
+						loading={customerData.loading}
+						onEdit={modal.openEdit}
+						onHardDelete={modal.openHardDelete}
+						onSoftDelete={modal.openSoftDelete}
+						onRestore={modal.openRestore}
 						viewType={viewType}
 					/>
 
-					{/* Controles de paginación */}
 					<PaginationControls
-						loading={loading}
-						pagination={pagination}
-						onPrevPage={handlePrevPage}
-						onPageChange={handlePageChange}
-						onNextPage={handleNext}
-						onLimitChange={handleLimitChange}
-						metaDataPagination={recordsData?.data?.pagination}
+						loading={customerData.loading}
+						pagination={pagination.pagination}
+						onPrevPage={pagination.handlePrevPage}
+						onPageChange={pagination.handlePageChange}
+						onNextPage={handleNextPage}
+						onLimitChange={pagination.handleLimitChange}
+						metaDataPagination={customerData.data.pagination}
 					/>
 				</>
 			)}
 
-			{/* Modales */}
-			<CustomerModals modalState={modalState} customerHandlers={customerHandlers} />
+			<Modals modal={modal} onSubmit={handleModalSubmit} onDelete={handleModalDelete} />
 		</div>
 	)
 }

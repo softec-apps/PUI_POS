@@ -14,7 +14,7 @@ import { KardexEntity } from '@/modules/kardex/infrastructure/persistence/relati
 import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 
 @Injectable()
-export class kardexRelationalRepository implements KardexRepository {
+export class KardexRelationalRepository implements KardexRepository {
   constructor(
     @InjectRepository(KardexEntity)
     private readonly KardexRepository: Repository<KardexEntity>,
@@ -30,6 +30,22 @@ export class kardexRelationalRepository implements KardexRepository {
     const newEntity = await repository.save(repository.create(persistenceModel))
 
     return KardexMapper.toDomain(newEntity)
+  }
+
+  async bulkCreate(
+    data: Partial<Kardex>[],
+    entityManager: EntityManager,
+  ): Promise<Kardex[]> {
+    const repository = entityManager.getRepository(KardexEntity)
+
+    const persistenceModels = data.map((item) =>
+      KardexMapper.toPersistence(item as Kardex),
+    )
+
+    const entities = repository.create(persistenceModels)
+    const savedEntities = await repository.save(entities)
+
+    return savedEntities.map(KardexMapper.toDomain)
   }
 
   async findManyWithPagination({

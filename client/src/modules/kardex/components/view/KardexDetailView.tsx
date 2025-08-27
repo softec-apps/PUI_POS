@@ -1,79 +1,79 @@
 'use client'
 
 import { useKardex } from '@/common/hooks/useKardex'
-import { useProduct } from '@/common/hooks/useProduct' // Importar useProduct
+import { useProduct } from '@/common/hooks/useProduct'
 import { FatalErrorState } from '@/components/layout/organims/ErrorStateCard'
 import { EmptyState } from '@/components/layout/organims/EmptyState'
 import { NotFoundState } from '@/components/layout/organims/NotFoundState'
-import { TableKardex } from '../organisms/Table/TableKardex'
-import { LoadingStates } from '../organisms/Table/StateLoading'
-import { KardexFilters } from '../templates/Filters'
-import { usePagination } from '../../hooks/usePagination'
+import { TableData } from '@/modules/kardex/components/organisms/Table/TableData'
+import { LoadingStates } from '@/modules/kardex/components/templates/ViewSkeleton'
+import { Filters } from '@/modules/kardex/components/templates/Filters'
+import { usePagination } from '@/modules/kardex/hooks/usePagination'
 import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
-import { useEffect, useMemo, useState } from 'react'
-import { useDebounce } from '@/common/hooks/useDebounce'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { ImageControl } from '@/components/layout/organims/ImageControl'
-import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/layout/atoms/Badge'
 import { Typography } from '@/components/ui/typography'
 import { Card, CardContent } from '@/components/ui/card'
-import { PaginationControls } from '../templates/Pagination'
+import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { ProductStatusBadge } from '@/modules/product/components/atoms/ProductStatusBadge'
 import Link from 'next/link'
 import { ROUTE_PATH } from '@/common/constants/routes-const'
 import { Icons } from '@/components/icons'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
+import { ViewType } from '@/components/layout/organims/ViewSelector'
 
 type Props = {
 	id: string
 }
 
 export function KardexDetailView({ id }: Props) {
+	const [viewType, setViewType] = useState<ViewType>('table')
+	const [debouncedSearch, setDebouncedSearch] = useState('')
+
+	// Hooks de paginación y filtros
+	const pagination = usePagination()
+
+	// Debounce search
+	useEffect(() => {
+		const timer = setTimeout(() => setDebouncedSearch(pagination.searchTerm), 500)
+		return () => clearTimeout(timer)
+	}, [pagination.searchTerm])
+
+	// Parámetros para obtener datos del kardex
+	const kardexParams = useMemo(() => {
+		const cleanedDateFilters = Object.fromEntries(
+			Object.entries(pagination.dateFilters).filter(([_, range]) => range && (range.startDate || range.endDate))
+		)
+
+		return {
+			search: debouncedSearch,
+			page: pagination.pagination.page,
+			limit: pagination.pagination.limit,
+			sort: pagination.currentSort ? [pagination.currentSort] : undefined,
+			filters: {
+				productId: id,
+				movementType: pagination.currentMovementType || undefined,
+				...cleanedDateFilters,
+			},
+		}
+	}, [debouncedSearch, pagination, id])
+
+	// Obtener datos del kardex
 	const {
-		pagination,
-		searchTerm,
-		currentSort,
-		currentMovementType,
-		handleMovementTypeChange,
-		handleNextPage,
-		handlePrevPage,
-		handleLimitChange,
-		handleSearchChange,
-		handleSort,
-		handleResetAll,
-		handlePageChange,
-	} = usePagination()
+		recordsData: movementsKardex,
+		loading: movementsLoading,
+		error: movementsError,
+		refetchRecords,
+	} = useKardex(kardexParams)
 
-	const debouncedSearchTerm = useDebounce(searchTerm, 500)
+	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchRecords)
 
-	// Obtener datos del producto por ID
+	// Obtener datos del producto
 	const { getProductById } = useProduct()
 	const [product, setProduct] = useState(null)
 	const [productLoading, setProductLoading] = useState(true)
 	const [productError, setProductError] = useState(null)
-
-	const paginationParams = useMemo(
-		() => ({
-			page: pagination.page,
-			limit: pagination.limit,
-			search: debouncedSearchTerm,
-			filters: {
-				...(currentMovementType ? { movementType: currentMovementType } : {}),
-				productId: id,
-			},
-			sort: currentSort ? [currentSort] : undefined,
-		}),
-		[pagination.page, pagination.limit, debouncedSearchTerm, currentMovementType, currentSort, id]
-	)
-
-	const {
-		records: movementsKardex,
-		loading: movementsLoading,
-		error: movementsError,
-		refetchRecords,
-	} = useKardex(paginationParams)
-
-	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchRecords)
 
 	// Obtener datos del producto al montar el componente
 	useEffect(() => {
@@ -92,6 +92,11 @@ export function KardexDetailView({ id }: Props) {
 
 		if (id) fetchProduct()
 	}, [id, getProductById])
+
+	// Handler para refrescar datos
+	const handleFiltersRefresh = useCallback(async () => {
+		await handleRefresh()
+	}, [handleRefresh])
 
 	if (productLoading) {
 		return (
@@ -130,7 +135,7 @@ export function KardexDetailView({ id }: Props) {
 						</Link>
 
 						<ImageControl
-							recordData={product}
+							imageUrl={product?.photo?.path}
 							enableHover={false}
 							enableClick={false}
 							quality={10}
@@ -162,44 +167,46 @@ export function KardexDetailView({ id }: Props) {
 			</Card>
 
 			<div className='space-y-4'>
-				<KardexFilters
-					searchValue={searchTerm}
-					currentSort={currentSort}
-					currentMovementType={currentMovementType}
-					onMovementTypeChange={handleMovementTypeChange}
+				{/* Filtros */}
+				<Filters
+					searchValue={pagination.searchTerm}
+					currentSort={pagination.currentSort}
+					currentMovementType={pagination.currentMovementType}
+					dateFilters={pagination.dateFilters}
 					isRefreshing={isRefreshing}
-					onSearchChange={handleSearchChange}
-					onSort={handleSort}
-					onRefresh={handleRefresh}
-					onResetAll={handleResetAll}
+					onRefresh={handleFiltersRefresh}
+					onMovementTypeChange={pagination.handleMovementTypeChange}
+					onSearchChange={pagination.handleSearchChange}
+					onSort={pagination.handleSort}
+					onDateFilterChange={pagination.handleDateFilterChange}
+					onClearDateFilter={pagination.clearDateFilter}
+					onResetAll={pagination.handleResetAll}
+					viewType={viewType}
+					onViewChange={setViewType}
 				/>
 
 				{/* Table */}
 				{movementsLoading ? (
 					<LoadingStates viewType='table' />
 				) : !movementsKardex?.data?.items || movementsKardex.data.items.length === 0 ? (
-					searchTerm ? (
-						<EmptyState />
-					) : (
-						<EmptyState />
-					)
+					<EmptyState />
 				) : (
 					<>
-						<TableKardex
-							recordData={movementsKardex.data.items}
+						<TableData
+							recordsData={movementsKardex.data.items}
 							loading={movementsLoading}
-							viewType={'table'}
-							showActions={false}
+							viewType={viewType}
 							showProductCode={false}
+							showActions={false}
 						/>
 
 						<PaginationControls
 							loading={movementsLoading}
-							pagination={pagination}
-							onPrevPage={handlePrevPage}
-							onPageChange={handlePageChange}
-							onNextPage={handleNextPage}
-							onLimitChange={handleLimitChange}
+							pagination={pagination.pagination}
+							onPrevPage={pagination.handlePrevPage}
+							onPageChange={pagination.handlePageChange}
+							onNextPage={pagination.handleNextPage}
+							onLimitChange={pagination.handleLimitChange}
 							metaDataPagination={movementsKardex?.data?.pagination}
 						/>
 					</>

@@ -84,20 +84,32 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 
 										{/* Precio y Stock */}
 										<div className='flex items-center justify-between'>
-											<Typography variant='h6' className='text-primary font-semibold'>
-												${formatPrice(recordData.price)} USD
-											</Typography>
+											<div className='flex items-center gap-2'>
+												<Typography variant='h6' className='text-primary font-semibold'>
+													${formatPrice(recordData.price)} USD
+												</Typography>
+												<Badge text={`${recordData.tax || '-'} tax`} variant='outline' />
+											</div>
 
 											<div className='flex items-center gap-1'>
 												<Badge text={`${recordData.stock} und`} variant='info' />
 											</div>
 										</div>
 
-										<div className='flex items-center gap-2'>
-											<Icons.barCode className='text-primary h-4 w-4' />
-											<Typography variant='span' className='text-primary text-sm'>
-												{recordData?.barCode || 'N/A'}
-											</Typography>
+										<div className='flex items-center justify-between'>
+											<div className='flex items-center gap-2'>
+												<Icons.barCode className='text-primary h-4 w-4' />
+												<Typography variant='span' className='text-primary text-sm'>
+													{recordData?.barCode || '-'}
+												</Typography>
+											</div>
+
+											<div className='flex items-center gap-2'>
+												<Icons.tag className='text-primary h-4 w-4' />
+												<Typography variant='span' className='text-primary text-sm'>
+													{recordData?.sku || '-'}
+												</Typography>
+											</div>
 										</div>
 
 										<Separator />
@@ -107,21 +119,21 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 											<div className='flex items-center gap-2'>
 												<Icons.brandMedium className='text-muted-foreground h-4 w-4' />
 												<Typography variant='span' className='text-muted-foreground text-xs'>
-													{recordData?.brand?.name || 'N/A'}
+													{recordData?.brand?.name || '-'}
 												</Typography>
 											</div>
 
 											<div className='flex items-center gap-2'>
 												<Icons.listDetails className='text-muted-foreground h-4 w-4' />
 												<Typography variant='span' className='text-muted-foreground text-xs'>
-													{recordData?.category?.name || 'N/A'}
+													{recordData?.category?.name || '-'}
 												</Typography>
 											</div>
 
 											<div className='flex items-center gap-2'>
 												<Icons.truck className='text-muted-foreground h-4 w-4' />
 												<Typography variant='span' className='text-muted-foreground line-clamp-1 text-xs'>
-													{recordData?.supplier?.legalName || 'N/A'}
+													{recordData?.supplier?.legalName || '-'}
 												</Typography>
 											</div>
 										</div>

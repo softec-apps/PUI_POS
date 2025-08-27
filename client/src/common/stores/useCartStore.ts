@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { I_Photo } from '@/common/types/photo'
 
 export interface OrderItem {
 	id: string
@@ -7,14 +8,14 @@ export interface OrderItem {
 	price: number
 	quantity: number
 	category?: string
-	image?: string
+	image?: I_Photo
 	code?: string
 }
 
 interface CartState {
 	orderItems: OrderItem[]
 	selectedPayment: string
-	addItem: (product: { id: string; name: string; price: number; code?: string }) => void
+	addItem: (product: { id: string; name: string; price: number; code?: string; image?: string }) => void
 	updateQuantity: (id: string, change: number) => void
 	removeItem: (id: string) => void
 	setPayment: (paymentId: string) => void
@@ -47,6 +48,7 @@ export const useCartStore = create<CartState>()(
 								{
 									id: product.id,
 									name: product.name,
+									image: product.image,
 									price: product.price,
 									quantity: 1,
 									code: product.code,

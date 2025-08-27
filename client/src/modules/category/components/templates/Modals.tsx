@@ -1,66 +1,65 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client'
 
-import { ModalState } from '@/modules/category/types/modalState'
-import { RestoreModal } from '@/modules/category/components/organisms/Modal/ModalRestore'
-import { SoftDeleteModal } from '@/modules/category/components/organisms/Modal/ModalSoftDelete'
+import { I_Category } from '@/common/types/modules/category'
+import { FormModal } from '@/modules/category/components/organisms/Modal/ModalForm'
 import { HardDeleteModal } from '@/modules/category/components/organisms/Modal/ModalHardDelete'
-import { CategoryFormModal } from '@/modules/category/components/organisms/Modal/ModalCategoryForm'
+import { SoftDeleteModal } from '@/modules/category/components/organisms/Modal/ModalSoftDelete'
+import { RestoreModal } from '@/modules/category/components/organisms/Modal/ModalRestore'
 
-interface Props {
-	modalState: ModalState
-	previewImage: any
-	isUploading: boolean
-	fileInputRef: any
-	categoryHandlers: any
-	triggerFileInput: () => void
+interface ModalsProps {
+	modal: {
+		type: 'create' | 'edit' | 'hardDelete' | 'softDelete' | 'restore' | null
+		isOpen: boolean
+		record: I_Category | null
+		isLoading: boolean
+		closeModal: () => void
+	}
+	onSubmit: (data: any) => Promise<void>
+	onDelete: () => Promise<void>
+	onRestore: () => Promise<void>
 }
 
-export function CategoryModals({
-	modalState,
-	previewImage,
-	isUploading,
-	fileInputRef,
-	categoryHandlers,
-	triggerFileInput,
-}: Props) {
+export function Modals({ modal, onSubmit, onDelete, onRestore }: ModalsProps) {
+	const isFormModal = modal.type === 'create' || modal.type === 'edit'
+	const isRestoreModal = modal.type === 'restore'
+
 	return (
 		<>
-			<CategoryFormModal
-				isOpen={modalState.isDialogOpen}
-				currentCategory={modalState.currentRecord}
-				previewImage={previewImage}
-				isUploading={isUploading}
-				fileInputRef={fileInputRef}
-				onClose={categoryHandlers.handleDialogClose}
-				onSubmit={categoryHandlers.handleFormSubmit}
-				onFileChange={categoryHandlers.handleFileChange}
-				onTriggerFileInput={triggerFileInput}
-				onClearPreview={categoryHandlers.handleClearPreview}
+			<FormModal
+				isOpen={isFormModal && modal.isOpen}
+				currentRecord={modal.record}
+				onClose={modal.closeModal}
+				onSubmit={onSubmit}
+				isLoading={modal.isLoading}
 			/>
 
 			<SoftDeleteModal
-				isOpen={modalState.isSoftDeleteModalOpen}
-				category={modalState.categoryToDelete}
-				isSoftDeleting={modalState.isSoftDeleting}
-				onClose={modalState.closeSoftDeleteModal}
-				onConfirm={categoryHandlers.handleConfirmSoftDelete}
-			/>
-
-			<RestoreModal
-				isOpen={modalState.isRestoreModalOpen}
-				category={modalState.categoryToRestore}
-				isRestoring={modalState.isRestoring}
-				onClose={modalState.closeRestoreModal}
-				onConfirm={categoryHandlers.handleConfirmRestore}
+				isOpen={modal.type === 'softDelete' && modal.isOpen}
+				currentRecord={modal.record}
+				isAction={modal.isLoading}
+				onClose={modal.closeModal}
+				onConfirm={onDelete}
 			/>
 
 			<HardDeleteModal
-				isOpen={modalState.isHardDeleteModalOpen}
-				category={modalState.categoryToHardDelete}
-				isAction={modalState.isHardDeleting}
-				onClose={modalState.closeHardDeleteModal}
-				onConfirm={categoryHandlers.handleConfirmHardDelete}
+				isOpen={modal.type === 'hardDelete' && modal.isOpen}
+				currentRecord={modal.record}
+				isAction={modal.isLoading}
+				onClose={modal.closeModal}
+				onConfirm={onDelete}
 			/>
+
+			{isRestoreModal && (
+				<RestoreModal
+					isOpen={modal.isOpen}
+					currentRecord={modal.record}
+					isAction={modal.isLoading}
+					onClose={modal.closeModal}
+					onConfirm={onRestore}
+				/>
+			)}
 		</>
 	)
 }

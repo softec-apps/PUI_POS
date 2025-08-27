@@ -1,34 +1,34 @@
-// INTERFAZ OBTENIDA DE RETURN DE "useModalState.ts"
+import { I_Brand } from '@/common/types/modules/brand'
 
 export interface ModalState {
-	// Dialog state - CAMBIO: usar I_Brand en lugar de Partial<Brand_I>
+	// Dialog state
 	isDialogOpen: boolean
-	currentRecord: I_Brand | null  // <- CAMBIO AQUÍ
+	currentRecord: Partial<I_Brand> | null
 	openCreateDialog: () => void
-	openEditDialog: (brand: I_Brand) => void
+	openEditDialog: (record: I_Brand) => void
 	closeDialog: () => void
 
 	// Soft delete modal state
 	isSoftDeleteModalOpen: boolean
-	brandToDelete: I_Brand | null
+	recordToSoftDelete: I_Brand | null
 	isSoftDeleting: boolean
 	setIsSoftDeleting: (value: boolean) => void
-	openSoftDeleteModal: (brand: I_Brand) => void
+	openSoftDeleteModal: (record: I_Brand) => void
 	closeSoftDeleteModal: () => void
 
 	// Restore modal state
 	isRestoreModalOpen: boolean
-	brandToRestore: I_Brand | null
+	recordToRestore: I_Brand | null
 	isRestoring: boolean
 	setIsRestoring: (value: boolean) => void
-	openRestoreModal: (brand: I_Brand) => void
+	openRestoreModal: (record: I_Brand) => void
 	closeRestoreModal: () => void
 
 	// Hard delete modal state
 	isHardDeleteModalOpen: boolean
-	brandToHardDelete: I_Brand | null
+	recordToHardDelete: I_Brand | null
 	isHardDeleting: boolean
 	setIsHardDeleting: (value: boolean) => void
-	openHardDeleteModal: (brand: I_Brand) => void
+	openHardDeleteModal: (record: I_Brand) => void
 	closeHardDeleteModal: () => void
 }

@@ -2,7 +2,7 @@ import { useGenericApi } from '@/common/hooks/useGenericApi'
 import { BRAND_ENDPOINTS_CONFIG } from '@/common/configs/api/brand-endpoints.config'
 import { I_CreateBrand, I_Brand, I_UpdateBrand, I_BrandsResponse } from '@/common/types/modules/brand'
 
-interface UseBrandParams {
+export interface UseBrandParams {
 	page?: number
 	limit?: number
 	search?: string
@@ -44,20 +44,22 @@ export const useBrand = (paginationParams: UseBrandParams = {}) => {
 	const query = api.buildQuery(queryParams)
 
 	return {
-		// Datos del query - manteniendo los mismos nombres
-		brands: query.data,
+		// Datos del query
+		recordsData: query.data,
 		loading: query.isLoading,
 		error: query.error?.message,
 
-		// Funciones - manteniendo los mismos nombres
-		refetchBrands: query.refetch,
+		// Funciones
+		refetchRecords: query.refetch,
 
-		// Funciones CRUD - manteniendo los mismos nombres
-		createBrand: api.create,
-		updateBrand: api.update,
-		hardDeleteBrand: api.hardDelete,
+		// Funciones CRUD
+		createRecord: api.create,
+		updateRecord: api.update,
+		restoreRecord: api.restore,
+		softDeleteRecord: api.delete,
+		hardDeleteRecord: api.hardDelete,
 
-		// Estados granulares de loading - manteniendo los mismos nombres
+		// Estados granulares de loading
 		isCreating: api.isCreating,
 		isUpdating: api.isUpdating,
 		isHardDeleting: api.isHardDeleting,
@@ -65,7 +67,7 @@ export const useBrand = (paginationParams: UseBrandParams = {}) => {
 		// Mutations para control avanzado - ahora completamente dinámicas
 		mutations: api.mutations, // Contiene todas las mutations configuradas
 
-		// Funciones adicionales del API genérico - manteniendo los mismos nombres
+		// Funciones adicionales del API genérico
 		executeCustomEndpoint: api.executeCustomEndpoint,
 		apiService: api.apiService,
 	}

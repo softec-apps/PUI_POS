@@ -9,7 +9,7 @@ import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTi
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { Icons } from '@/components/icons'
 import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { FormFooter } from '@/modules/customer/components/organisms/Modal/FormFooter'
+import { FormFooter } from '@/modules/customer/components/organisms/Form/FooterSection'
 import {
 	validateCedula,
 	validateEcuadorianRUC,

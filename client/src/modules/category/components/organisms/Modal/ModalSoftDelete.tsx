@@ -1,17 +1,17 @@
 'use client'
 
-import { Category_I } from '@/common/types/modules/attribute'
-import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
+import { I_Category } from '@/common/types/modules/category'
+import { ConfirmationModal } from '@/components/layout/templates/ConfirmationModal'
 
-interface Props {
+interface SoftDeleteModalProps {
 	isOpen: boolean
-	category: Category_I | null
-	isSoftDeleting: boolean
+	currentRecord: I_Category | null
+	isAction: boolean
 	onClose: () => void
 	onConfirm: () => Promise<void>
 }
 
-export function SoftDeleteModal({ isOpen, category, isSoftDeleting, onClose, onConfirm }: Props) {
+export function SoftDeleteModal({ isOpen, currentRecord, isAction, onClose, onConfirm }: SoftDeleteModalProps) {
 	return (
 		<ConfirmationModal
 			isOpen={isOpen}
@@ -20,17 +20,22 @@ export function SoftDeleteModal({ isOpen, category, isSoftDeleting, onClose, onC
 			description='Esta acción se puede deshacer'
 			message={
 				<>
-					¿Estás seguro de que deseas remover la categoría{' '}
-					<span className='text-foreground font-semibold'>{category?.name}</span>? Todos los productos asociados a esta
-					categoría perderán su clasificación.
+					¿Deseas remover temporalmente la categoría{' '}
+					<span className='text-foreground font-semibold'>{currentRecord?.name}</span>?
 				</>
 			}
-			alertMessage='Esta acción removerá la categoría de la base de datos pero no sera elimiando de forma permanente.'
-			isProcessing={isSoftDeleting}
+			alertMessage={
+				<>
+					<p className='text-amber-600 dark:text-amber-400'>
+						El categoría perderá acceso al sistema de forma temporal.
+					</p>
+				</>
+			}
+			isProcessing={isAction}
 			onClose={onClose}
 			onConfirm={onConfirm}
-			confirmText='Ok, remover'
-			cancelText='No, cancelar'
+			confirmText='Remover'
+			cancelText='Cancelar'
 		/>
 	)
 }

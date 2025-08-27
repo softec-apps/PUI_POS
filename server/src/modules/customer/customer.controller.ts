@@ -112,7 +112,7 @@ export class CustomerController {
    * @warning This action is irreversible and will permanently remove the customer
    */
   @Delete(':id/hard-delete')
-  @CustomerApiDocs.update
+  @CustomerApiDocs.hardDelete
   @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
   @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
   @HttpCode(HttpStatus.OK)

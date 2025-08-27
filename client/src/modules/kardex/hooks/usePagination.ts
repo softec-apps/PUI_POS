@@ -1,13 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Pagination } from '@/common/types/pagination'
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { DEFAULT_PAGINATION } from '@/common/constants/pagination-const'
+import { DateFilters, DateRange, DateFilterType } from '@/common/types/pagination'
 
-export function usePagination() {
-	const [pagination, setPagination] = useState<Pagination>(DEFAULT_PAGINATION)
-	const [searchTerm, setSearchTerm] = useState<string>('')
-	const debounceTimer = useRef<NodeJS.Timeout | null>(null)
-	const [currentSort, setCurrentSort] = useState<string>('')
-	const [currentMovementType, setCurrentMovementType] = useState<
+interface FilterState {
+	searchTerm: string
+	currentSort: string
+	currentMovementType:
 		| 'purchase'
 		| 'return_in'
 		| 'transfer_in'
@@ -18,82 +18,157 @@ export function usePagination() {
 		| 'adjustment_out'
 		| 'damaged'
 		| 'expired'
-		| ''
-	>('')
+		| null
+	dateFilters: DateFilters
+}
 
-	// 🆕 Nueva función para cambio directo de página
-	const handlePageChange = useCallback((page: number) => {
-		setPagination(prev => ({
-			...prev,
-			page: page,
-		}))
+const INITIAL_FILTER_STATE: FilterState = {
+	searchTerm: '',
+	currentSort: '',
+	currentMovementType: null,
+	dateFilters: {},
+}
+
+const DEBOUNCE_DELAY = 500
+
+export function usePagination() {
+	const [pagination, setPagination] = useState<Pagination>(DEFAULT_PAGINATION)
+	const [filters, setFilters] = useState<FilterState>(INITIAL_FILTER_STATE)
+	const debounceTimer = useRef<NodeJS.Timeout | null>(null)
+
+	// Generic pagination handlers
+	const updatePagination = useCallback((updates: Partial<Pagination>) => {
+		setPagination(prev => ({ ...prev, ...updates }))
 	}, [])
 
-	const handleNextPage = useCallback((hasNextPage: boolean) => {
-		if (hasNextPage) setPagination(prev => ({ ...prev, page: prev.page + 1 }))
-	}, [])
+	const resetToFirstPage = useCallback(
+		(updates: Partial<Pagination> = {}) => updatePagination({ ...updates, page: 1 }),
+		[updatePagination]
+	)
+
+	// Page navigation (same as before)
+	const handlePageChange = useCallback((page: number) => updatePagination({ page }), [updatePagination])
+
+	const handleNextPage = useCallback(
+		(hasNextPage: boolean) => {
+			if (hasNextPage) updatePagination({ page: pagination.page + 1 })
+		},
+		[updatePagination, pagination.page]
+	)
 
 	const handlePrevPage = useCallback(() => {
-		setPagination(prev => ({
-			...prev,
-			page: prev.page > 1 ? prev.page - 1 : prev.page,
-		}))
-	}, [])
+		if (pagination.page > 1) updatePagination({ page: pagination.page - 1 })
+	}, [updatePagination, pagination.page])
 
-	const handleLimitChange = useCallback((value: string) => {
-		setPagination(prev => ({ ...prev, limit: Number(value), page: 1 }))
-	}, [])
+	const handleLimitChange = useCallback(
+		(value: string) => resetToFirstPage({ limit: Number(value) }),
+		[resetToFirstPage]
+	)
 
+	// Search handling (same as before)
 	const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value
-
-		if (typeof value === 'string') {
-			setSearchTerm(value)
-		} else {
-			console.warn('⚠️ Non-string value received in search:', value)
-			setSearchTerm('')
-		}
+		setFilters(prev => ({ ...prev, searchTerm: value }))
 	}, [])
 
-	const updatePaginationSearch = useCallback((searchValue: string) => {
-		const safeSearchValue = typeof searchValue === 'string' ? searchValue : ''
-		setPagination(prev => ({
-			...prev,
-			search: safeSearchValue,
-			page: 1,
-		}))
-	}, [])
+	// ✨ Date filter handling
+	const handleDateFilterChange = useCallback(
+		(filterType: DateFilterType, dateRange: DateRange) => {
+			setFilters(prev => ({
+				...prev,
+				dateFilters: {
+					...prev.dateFilters,
+					[filterType]: dateRange,
+				},
+			}))
 
+			// Update pagination filters
+			const newDateFilters = {
+				...filters.dateFilters,
+				[filterType]: dateRange,
+			}
+
+			// Remove empty date filters
+			const cleanedDateFilters = Object.fromEntries(
+				Object.entries(newDateFilters).filter(([_, range]) => range && (range.startDate || range.endDate))
+			)
+
+			resetToFirstPage({
+				filters: {
+					movementType: filters.currentMovementType || undefined,
+					...cleanedDateFilters,
+				},
+			})
+		},
+
+		[filters, resetToFirstPage]
+	)
+
+	const clearDateFilter = useCallback(
+		(filterType: DateFilterType) => {
+			setFilters(prev => {
+				const newDateFilters = { ...prev.dateFilters }
+				delete newDateFilters[filterType]
+				return {
+					...prev,
+					dateFilters: newDateFilters,
+				}
+			})
+
+			const newDateFilters = { ...filters.dateFilters }
+			delete newDateFilters[filterType]
+
+			const cleanedDateFilters = Object.fromEntries(
+				Object.entries(newDateFilters).filter(([_, range]) => range && (range.startDate || range.endDate))
+			)
+
+			resetToFirstPage({
+				filters: {
+					status: filters.currentMovementType || undefined,
+					...cleanedDateFilters,
+				},
+			})
+		},
+		[filters, resetToFirstPage]
+	)
+
+	const updatePaginationSearch = useCallback(
+		(searchValue: string) => {
+			resetToFirstPage({ search: searchValue })
+		},
+		[resetToFirstPage]
+	)
+
+	// Debounced search effect
 	useEffect(() => {
 		if (debounceTimer.current) clearTimeout(debounceTimer.current)
-		debounceTimer.current = setTimeout(() => updatePaginationSearch(searchTerm), 500)
+
+		debounceTimer.current = setTimeout(() => updatePaginationSearch(filters.searchTerm), DEBOUNCE_DELAY)
 
 		return () => {
 			if (debounceTimer.current) clearTimeout(debounceTimer.current)
 		}
-	}, [searchTerm, updatePaginationSearch])
+	}, [filters.searchTerm, updatePaginationSearch])
 
-	// 🔧 FUNCIÓN COMPLETAMENTE CORREGIDA: handleSort
-	const handleSort = useCallback((sortKey: string) => {
-		if (!sortKey) {
-			setCurrentSort('')
-			setPagination(prev => ({
-				...prev,
-				sort: [],
-				page: 1,
-			}))
-			return
-		}
+	// Sort handling (same as before)
+	const handleSort = useCallback(
+		(sortKey: string) => {
+			setFilters(prev => ({ ...prev, currentSort: sortKey }))
 
-		const [field, order] = sortKey.split(':')
-		setCurrentSort(sortKey)
-		setPagination(prev => ({
-			...prev,
-			sort: [{ orderBy: field, order: order as 'asc' | 'desc' }],
-			page: 1,
-		}))
-	}, [])
+			if (!sortKey) {
+				resetToFirstPage({ sort: [] })
+				return
+			}
 
+			const [field, order] = sortKey.split(':')
+			resetToFirstPage({
+				sort: [{ orderBy: field, order: order as 'asc' | 'desc' }],
+			})
+		},
+		[resetToFirstPage]
+	)
+
+	// Status filtering (updated to include date filters)
 	const handleMovementTypeChange = useCallback(
 		(
 			movementType:
@@ -107,45 +182,71 @@ export function usePagination() {
 				| 'adjustment_out'
 				| 'damaged'
 				| 'expired'
-				| ''
+				| null
 		) => {
-			setCurrentMovementType(movementType)
-			setPagination(prev => ({
-				...prev,
-				filters: movementType ? { movementType } : {},
-				page: 1,
-			}))
+			setFilters(prev => ({ ...prev, currentMovementType: movementType }))
+
+			const cleanedDateFilters = Object.fromEntries(
+				Object.entries(filters.dateFilters).filter(([_, range]) => range && (range.startDate || range.endDate))
+			)
+
+			resetToFirstPage({
+				filters: {
+					movementType: status || undefined,
+					...cleanedDateFilters,
+				},
+			})
 		},
-		[]
+		[filters.dateFilters, resetToFirstPage]
 	)
 
+	// Reset all filters (updated)
 	const handleResetAll = useCallback(() => {
-		setSearchTerm('')
-		setCurrentSort('')
-		setCurrentMovementType('')
+		setFilters(INITIAL_FILTER_STATE)
 		setPagination(DEFAULT_PAGINATION)
 	}, [])
 
+	// Utility functions
 	const getCurrentSortInfo = useCallback(() => {
-		if (!currentSort) return null
-		const [field, order] = currentSort.split(':')
+		if (!filters.currentSort) return null
+		const [field, order] = filters.currentSort.split(':')
 		return { field, order }
-	}, [currentSort])
+	}, [filters.currentSort])
+
+	const hasActiveFilters = useCallback(() => {
+		const hasDateFilters = Object.values(filters.dateFilters).some(range => range && (range.startDate || range.endDate))
+		return !!(filters.searchTerm || filters.currentSort || filters.currentMovementType || hasDateFilters)
+	}, [filters])
+
+	const getActiveDateFilters = useCallback(() => {
+		return Object.fromEntries(
+			Object.entries(filters.dateFilters).filter(([_, range]) => range && (range.startDate || range.endDate))
+		)
+	}, [filters.dateFilters])
 
 	return {
+		// State
 		pagination,
-		searchTerm,
-		currentSort,
-		currentMovementType,
-		setPagination,
+		...filters,
+
+		// Pagination handlers
+		handlePageChange,
 		handleNextPage,
 		handlePrevPage,
 		handleLimitChange,
-		handleMovementTypeChange,
+
+		// Filter handlers
 		handleSearchChange,
 		handleSort,
-		handlePageChange,
+		handleMovementTypeChange,
+		handleDateFilterChange,
+		clearDateFilter,
 		handleResetAll,
+
+		// Utilities
 		getCurrentSortInfo,
+		hasActiveFilters,
+		getActiveDateFilters,
+		setPagination,
 	}
 }

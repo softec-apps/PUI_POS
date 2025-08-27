@@ -166,9 +166,7 @@ export function UniversalFormField<T extends FieldValues>({
 
 				// Componente personalizado para FormMessage con altura fija
 				const StableFormMessage = () => {
-					if (!stableLayout) {
-						return <FormMessage />
-					}
+					if (!stableLayout) return <FormMessage />
 
 					return (
 						<div className='min-h-[20px]'>
@@ -255,9 +253,7 @@ export function UniversalFormField<T extends FieldValues>({
 				const renderMultiSelectedValues = () => {
 					const selectedValues = Array.isArray(field.value) ? field.value : []
 
-					if (selectedValues.length === 0) {
-						return <span className='text-muted-foreground'>{placeholder}</span>
-					}
+					if (selectedValues.length === 0) return <span className='text-muted-foreground'>{placeholder}</span>
 
 					if (selectedValues.length === 1) {
 						const selectedOption = options?.find(opt => opt.value === selectedValues[0])
@@ -302,7 +298,7 @@ export function UniversalFormField<T extends FieldValues>({
 					<FormItem>
 						<div className='text-primary flex items-center gap-1'>
 							<FormLabel>{label}</FormLabel>
-							{required && <span className='text-destructive'>*</span>}
+							<span className={`text-destructive ${required ? 'opacity-100' : 'opacity-0'}`}>*</span>
 						</div>
 
 						<FormControl>
@@ -466,15 +462,23 @@ export function UniversalFormField<T extends FieldValues>({
 								{renderValidationIcon()}
 							</div>
 						</FormControl>
-						<StableFormDescription>{description}</StableFormDescription>
-						<StableFormMessage />
+						{description && (
+							<StableFormDescription>
+								<div className='flex items-center justify-between'>
+									<StableFormMessage />
+									{description}
+								</div>
+							</StableFormDescription>
+						)}
 					</FormItem>
 				) : type === 'command' ? (
 					<FormItem>
-						<div className='text-primary flex items-center gap-1'>
-							<FormLabel>{label}</FormLabel>
-							{required && <span className='text-destructive'>*</span>}
-						</div>
+						{label && (
+							<div className='text-primary flex items-center gap-1'>
+								<FormLabel>{label}</FormLabel>
+								<span className={`text-destructive ${required ? 'opacity-100' : 'opacity-0'}`}>*</span>
+							</div>
+						)}
 
 						<FormControl>
 							<div className='relative'>
@@ -552,14 +556,21 @@ export function UniversalFormField<T extends FieldValues>({
 								{renderValidationIcon()}
 							</div>
 						</FormControl>
-						<StableFormDescription>{description}</StableFormDescription>
-						<StableFormMessage />
+
+						{description && (
+							<StableFormDescription>
+								<div className='flex items-center justify-between'>
+									<StableFormMessage />
+									{description}
+								</div>
+							</StableFormDescription>
+						)}
 					</FormItem>
 				) : (
 					<FormItem>
 						<div className='text-primary flex items-center gap-1'>
 							<FormLabel>{label}</FormLabel>
-							{required && <span className='text-destructive'>*</span>}
+							<span className={`text-destructive ${required ? 'opacity-100' : 'opacity-0'}`}>*</span>
 						</div>
 
 						<FormControl>
@@ -689,10 +700,12 @@ export function UniversalFormField<T extends FieldValues>({
 
 						{/* Solo mostrar descripción y mensaje de error para campos visibles */}
 						{type !== 'hidden' && (
-							<>
-								<StableFormDescription>{description}</StableFormDescription>
-								<StableFormMessage />
-							</>
+							<StableFormDescription>
+								<div className='flex items-center justify-between'>
+									{description}
+									<StableFormMessage />
+								</div>
+							</StableFormDescription>
 						)}
 					</FormItem>
 				)

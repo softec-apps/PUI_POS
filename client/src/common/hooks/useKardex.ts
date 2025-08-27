@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 import { useGenericApi } from '@/common/hooks/useGenericApi'
-import { I_Kardex, I_KardexResponse, I_KardexId } from '@/modules/kardex/types/kardex'
+import { I_Kardex, I_KardexResponse, I_KardexId } from '@/common/types/modules/kardex'
 import { KARDEX_ENDPOINTS_CONFIG } from '@/common/configs/api/kardex-endpoints.config'
 
-interface UseKardexParams {
+export interface UseKardexParams {
 	page?: number
 	limit?: number
 	search?: string
@@ -59,12 +59,12 @@ export const useKardex = (paginationParams: UseKardexParams = {}) => {
 
 	return {
 		// Datos del query principal
-		records: query.data,
+		recordsData: query.data,
 		loading: query.isLoading,
 		error: query.error?.message,
 
 		// Datos del query "lasted"
-		lastedRecords: lastedQuery?.data,
+		lastedRecordsData: lastedQuery?.data,
 		loadingLasted: lastedQuery?.isLoading,
 		errorLasted: lastedQuery?.error?.message,
 

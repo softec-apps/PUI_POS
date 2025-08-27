@@ -10,12 +10,14 @@ import { TypeOrmConfigService } from '@/database/typeorm-config.service'
 import { RoleSeedModule } from '@/database/seeds/relational/role/role-seed.module'
 import { UserSeedModule } from '@/database/seeds/relational/user/user-seed.module'
 import { StatusSeedModule } from '@/database/seeds/relational/status/status-seed.module'
+import { CustomerSeedModule } from '@/database/seeds/relational/customer/customer-seed.module'
 
 @Module({
   imports: [
     RoleSeedModule,
     StatusSeedModule,
     UserSeedModule,
+    CustomerSeedModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig, appConfig],

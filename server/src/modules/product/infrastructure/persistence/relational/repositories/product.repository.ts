@@ -32,6 +32,22 @@ export class ProductRelationalRepository implements ProductRepository {
     return ProductMapper.toDomain(newEntity)
   }
 
+  async bulkCreate(
+    data: Partial<Product>[],
+    entityManager: EntityManager,
+  ): Promise<Product[]> {
+    const repository = entityManager.getRepository(ProductEntity)
+
+    const persistenceModels = data.map((item) =>
+      ProductMapper.toPersistence(item as Product),
+    )
+
+    const entities = repository.create(persistenceModels)
+    const savedEntities = await repository.save(entities)
+
+    return savedEntities.map(ProductMapper.toDomain)
+  }
+
   async findManyWithPagination({
     filterOptions,
     sortOptions,

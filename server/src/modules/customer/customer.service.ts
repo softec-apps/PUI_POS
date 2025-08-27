@@ -23,12 +23,14 @@ import { MESSAGE_RESPONSE } from '@/modules/customer/messages/responseOperation.
 import { CustomerRepository } from '@/modules/customer/infrastructure/persistence/customer.repository'
 import { EnhancedInfinityPaginationResponseDto } from '@/utils/dto/enhanced-infinity-pagination-response.dto'
 import { CustomerType, IdentificationType } from './customer.enum'
+import { SaleService } from '@/modules/sales/sale.service'
 
 @Injectable()
 export class CustomerService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly customerRepository: CustomerRepository,
+    private readonly saleService: SaleService,
   ) {}
 
   async create(
@@ -116,28 +118,45 @@ export class CustomerService {
   ): Promise<ApiResponse<EnhancedInfinityPaginationResponseDto<Customer>>> {
     const page = query?.page ?? 1
     let limit = query?.limit ?? 10
-    if (limit > 50) limit = 50
+
+    // Si el límite es 9999, marcar para obtener todos los registros
+    const isGetAll = limit === 9999
+
+    if (!isGetAll && limit > 50) limit = 50
+
+    // Si es obtener todos, usar un límite muy alto para la consulta inicial
+    const queryLimit = isGetAll ? Number.MAX_SAFE_INTEGER : limit
 
     // Obtener datos del repositorio (sin formato)
     const { data, totalCount, totalRecords } =
       await this.customerRepository.findManyWithPagination({
         filterOptions: query?.filters,
         sortOptions: query?.sort,
-        paginationOptions: { page, limit },
+        paginationOptions: {
+          page: isGetAll ? 1 : page,
+          limit: queryLimit,
+        },
         searchOptions: query?.search,
       })
+
+    // Para el caso de obtener todos, ajustar los parámetros de paginación
+    const finalPage = isGetAll ? 1 : page
+    const finalLimit = isGetAll ? totalCount : limit
 
     // Formatear respuesta paginada con la utilidad
     const paginatedData = infinityPaginationWithMetadata(
       data,
-      { page, limit },
+      {
+        page: finalPage,
+        limit: finalLimit,
+      },
       totalCount,
       totalRecords,
     )
 
     return listResponse({
       data: paginatedData,
-      resource: PATH_SOURCE.CUSTOMER,
+      resource: PATH_SOURCE.USER,
       message: MESSAGE_RESPONSE.LISTED,
     })
   }
@@ -271,6 +290,14 @@ export class CustomerService {
       if (!customer) {
         throw new NotFoundException({
           message: MESSAGE_RESPONSE.NOT_FOUND.ID,
+        })
+      }
+
+      const isSales = await this.saleService.findByCustomerId(customer.id)
+
+      if (isSales) {
+        throw new ConflictException({
+          message: MESSAGE_RESPONSE.CONFLICT.IS_SALES,
         })
       }
 

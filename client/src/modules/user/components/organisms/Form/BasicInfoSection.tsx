@@ -15,13 +15,13 @@ export function BasicInfoSection({ control }: BasicInfoSectionProps) {
 		<Card className='border-none bg-transparent p-0 shadow-none'>
 			<CardHeader className='p-0'>
 				<CardTitle className='flex items-center gap-2 text-lg'>
-					<Icons.infoCircle className='h-4 w-4' />
-					Información Personal
+					<Icons.user className='h-4 w-4' />
+					Datos personales
 				</CardTitle>
 				<CardDescription>Completa los datos personales del usuario que serán visibles en el sistema</CardDescription>
 			</CardHeader>
 
-			<CardContent className='grid grid-cols-1 items-start gap-4 p-0 md:grid-cols-1'>
+			<CardContent className='grid grid-cols-1 items-start gap-4 space-y-2 p-0 md:grid-cols-2'>
 				<UniversalFormField
 					required
 					control={control}
@@ -29,7 +29,6 @@ export function BasicInfoSection({ control }: BasicInfoSectionProps) {
 					type='text'
 					label='Nombre'
 					placeholder='Ej: John'
-					max={255}
 				/>
 
 				<UniversalFormField
@@ -39,7 +38,6 @@ export function BasicInfoSection({ control }: BasicInfoSectionProps) {
 					type='text'
 					label='Apellido'
 					placeholder='Ej: Doe'
-					max={255}
 				/>
 
 				<UniversalFormField
@@ -49,7 +47,16 @@ export function BasicInfoSection({ control }: BasicInfoSectionProps) {
 					type='email'
 					label='Email'
 					placeholder='jhon.doe@example.com'
-					max={255}
+				/>
+
+				<UniversalFormField
+					required
+					control={control}
+					name='dni'
+					type='text'
+					label='Cédula'
+					placeholder='0202176640'
+					showValidationIcons={true}
 				/>
 			</CardContent>
 		</Card>

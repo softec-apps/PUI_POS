@@ -1,66 +1,65 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client'
 
-import { ModalState } from '@/modules/brand/types/modalState'
-import { RestoreModal } from '@/modules/brand/components/organisms/Modal/ModalRestore'
-import { SoftDeleteModal } from '@/modules/brand/components/organisms/Modal/ModalSoftDelete'
+import { I_Brand } from '@/common/types/modules/brand'
+import { FormModal } from '@/modules/brand/components/organisms/Modal/ModalForm'
 import { HardDeleteModal } from '@/modules/brand/components/organisms/Modal/ModalHardDelete'
-import { BrandFormModal } from '@/modules/brand/components/organisms/Modal/ModalBrandForm'
+import { SoftDeleteModal } from '@/modules/brand/components/organisms/Modal/ModalSoftDelete'
+import { RestoreModal } from '@/modules/brand/components/organisms/Modal/ModalRestore'
 
-interface Props {
-	modalState: ModalState
-	previewImage: any
-	isUploading: boolean
-	fileInputRef: any
-	brandHandlers: any
-	triggerFileInput: () => void
+interface ModalsProps {
+	modal: {
+		type: 'create' | 'edit' | 'hardDelete' | 'softDelete' | 'restore' | null
+		isOpen: boolean
+		record: I_Brand | null
+		isLoading: boolean
+		closeModal: () => void
+	}
+	onSubmit: (data: any) => Promise<void>
+	onDelete: () => Promise<void>
+	onRestore: () => Promise<void>
 }
 
-export function BrandModals({
-	modalState,
-	previewImage,
-	isUploading,
-	fileInputRef,
-	brandHandlers,
-	triggerFileInput,
-}: Props) {
+export function Modals({ modal, onSubmit, onDelete, onRestore }: ModalsProps) {
+	const isFormModal = modal.type === 'create' || modal.type === 'edit'
+	const isRestoreModal = modal.type === 'restore'
+
 	return (
 		<>
-			<BrandFormModal
-				isOpen={modalState.isDialogOpen}
-				currentBrand={modalState.currentRecord} 
-				previewImage={previewImage}
-				isUploading={isUploading}
-				fileInputRef={fileInputRef}
-				onClose={brandHandlers.handleDialogClose}
-				onSubmit={brandHandlers.handleFormSubmit}
-				onFileChange={brandHandlers.handleFileChange}
-				onTriggerFileInput={triggerFileInput}
-				onClearPreview={brandHandlers.handleClearPreview}
+			<FormModal
+				isOpen={isFormModal && modal.isOpen}
+				currentRecord={modal.record}
+				onClose={modal.closeModal}
+				onSubmit={onSubmit}
+				isLoading={modal.isLoading}
 			/>
 
 			<SoftDeleteModal
-				isOpen={modalState.isSoftDeleteModalOpen}
-				brand={modalState.brandToDelete}
-				isSoftDeleting={modalState.isSoftDeleting}
-				onClose={modalState.closeSoftDeleteModal}
-				onConfirm={brandHandlers.handleConfirmSoftDelete}
-			/>
-
-			<RestoreModal
-				isOpen={modalState.isRestoreModalOpen}
-				brand={modalState.brandToRestore}
-				isRestoring={modalState.isRestoring}
-				onClose={modalState.closeRestoreModal}
-				onConfirm={brandHandlers.handleConfirmRestore}
+				isOpen={modal.type === 'softDelete' && modal.isOpen}
+				currentRecord={modal.record}
+				isAction={modal.isLoading}
+				onClose={modal.closeModal}
+				onConfirm={onDelete}
 			/>
 
 			<HardDeleteModal
-				isOpen={modalState.isHardDeleteModalOpen}
-				brand={modalState.brandToHardDelete}
-				isAction={modalState.isHardDeleting}
-				onClose={modalState.closeHardDeleteModal}
-				onConfirm={brandHandlers.handleConfirmHardDelete}
+				isOpen={modal.type === 'hardDelete' && modal.isOpen}
+				currentRecord={modal.record}
+				isAction={modal.isLoading}
+				onClose={modal.closeModal}
+				onConfirm={onDelete}
 			/>
+
+			{isRestoreModal && (
+				<RestoreModal
+					isOpen={modal.isOpen}
+					currentRecord={modal.record}
+					isAction={modal.isLoading}
+					onClose={modal.closeModal}
+					onConfirm={onRestore}
+				/>
+			)}
 		</>
 	)
 }

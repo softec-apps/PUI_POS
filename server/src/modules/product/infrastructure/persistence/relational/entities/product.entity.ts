@@ -118,6 +118,13 @@ export class ProductEntity extends EntityRelationalHelper {
   })
   stock: number
 
+  @Column({
+    type: 'int',
+    nullable: true,
+    default: 0,
+  })
+  tax: number
+
   // ✅ RELACIONES - Solo para productos base (no variantes)
   @Column({ type: 'uuid', nullable: true })
   @Index()

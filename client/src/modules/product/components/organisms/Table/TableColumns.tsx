@@ -38,7 +38,35 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 		),
 		cell: ({ row }) => (
 			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				<ImageControl recordData={row.original} enableHover={false} enableClick={false} />
+				<ImageControl recordData={row.original.photo} enableHover={false} enableClick={false} />
+			</div>
+		),
+	},
+	{
+		accessorKey: 'code',
+		header: ({ column }) => (
+			<ActionButton
+				variant='link'
+				size='xs'
+				className='p-0'
+				text={
+					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
+						Códigos
+						{column.getIsSorted() === 'asc' ? (
+							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : column.getIsSorted() === 'desc' ? (
+							<Icons.sortDescendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : null}
+					</div>
+				}
+				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+			/>
+		),
+		cell: ({ row }) => (
+			<div className='flex max-w-96 flex-col truncate'>
+				<span>Interno: {row.original.code}</span>
+				<span>Barras: {row.original.barCode || '-'}</span>
+				<span>SKU: {row.original.sku || '-'}</span>
 			</div>
 		),
 	},
@@ -65,6 +93,28 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 		cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.name}</div>,
 	},
 	{
+		accessorKey: 'tax',
+		header: ({ column }) => (
+			<ActionButton
+				variant='link'
+				size='xs'
+				className='p-0'
+				text={
+					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
+						Impuesto
+						{column.getIsSorted() === 'asc' ? (
+							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : column.getIsSorted() === 'desc' ? (
+							<Icons.sortDescendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : null}
+					</div>
+				}
+				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+			/>
+		),
+		cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.tax}</div>,
+	},
+	{
 		accessorKey: 'price',
 		header: ({ column }) => (
 			<ActionButton
@@ -73,7 +123,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 				className='p-0'
 				text={
 					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
-						Precio base
+						PB
 						{column.getIsSorted() === 'asc' ? (
 							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
 						) : column.getIsSorted() === 'desc' ? (
@@ -87,7 +137,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 		cell: ({ row }) => <div className='max-w-96 truncate'>$ {formatPrice(row.original.price)}</div>,
 	},
 	{
-		accessorKey: 'code',
+		accessorKey: 'price',
 		header: ({ column }) => (
 			<ActionButton
 				variant='link'
@@ -95,7 +145,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 				className='p-0'
 				text={
 					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
-						Código
+						PVP
 						{column.getIsSorted() === 'asc' ? (
 							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
 						) : column.getIsSorted() === 'desc' ? (
@@ -106,29 +156,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 			/>
 		),
-		cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.code}</div>,
-	},
-	{
-		accessorKey: 'barCode',
-		header: ({ column }) => (
-			<ActionButton
-				variant='link'
-				size='xs'
-				className='p-0'
-				text={
-					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
-						Código barras
-						{column.getIsSorted() === 'asc' ? (
-							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
-						) : column.getIsSorted() === 'desc' ? (
-							<Icons.sortDescendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
-						) : null}
-					</div>
-				}
-				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-			/>
-		),
-		cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.barCode || 'N/A'}</div>,
+		cell: ({ row }) => <div className='max-w-96 truncate'>$ {formatPrice(row.original.price)}</div>,
 	},
 	{
 		accessorKey: 'stock',
@@ -150,7 +178,11 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 			/>
 		),
-		cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.stock}</div>,
+		cell: ({ row }) => (
+			<div className={`max-w-96 truncate ${row.original.stock === 0 ? 'text-destructive' : ''}`}>
+				{row.original.stock}
+			</div>
+		),
 	},
 	{
 		accessorKey: 'category.name',

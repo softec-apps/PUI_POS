@@ -9,6 +9,9 @@ import {
   IsBoolean,
   IsPositive,
   IsInt,
+  IsEmpty,
+  IsIn,
+  ValidateIf,
 } from 'class-validator'
 import { FileDto } from '@/modules/files/dto/file.dto'
 import { ProductStatus } from '@/modules/product/status.enum'
@@ -121,6 +124,19 @@ export class UpdateProductDto {
   @IsPositive({ message: 'El stock debe ser un número positivo' })
   stock?: number
 
+  @ApiPropertyOptional({
+    type: Number,
+    example: 0,
+    description: 'Impuesto (debe ser "0" o "15")',
+    default: 0,
+    enum: [0, 15],
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'El impuesto debe ser un número' })
+  @IsInt({ message: 'El impuesto debe ser un número entero' })
+  @IsIn([0, 15], { message: 'El impuesto debe ser 0 (exento) o 15 (con IVA)' })
+  tax?: number = 0
+
   // Foreign Keys - Relaciones opcionales
   @ApiPropertyOptional({
     type: String,
@@ -135,16 +151,6 @@ export class UpdateProductDto {
   @ApiPropertyOptional({
     type: String,
     example: '123e4567-e89b-12d3-a456-426614174000',
-    description: 'ID de la marca del producto',
-    nullable: true,
-  })
-  @IsOptional()
-  @IsUUID('4', { message: 'El ID de la marca debe ser un UUID válido' })
-  brandId?: string | null
-
-  @ApiPropertyOptional({
-    type: String,
-    example: '123e4567-e89b-12d3-a456-426614174000',
     description: 'ID del proveedor del producto',
     nullable: true,
   })
@@ -155,10 +161,27 @@ export class UpdateProductDto {
   @ApiPropertyOptional({
     type: String,
     example: '123e4567-e89b-12d3-a456-426614174000',
-    description:
-      'ID del template que define la estructura de atributos del producto',
+    description: 'ID de la marca del producto',
+    nullable: true,
   })
   @IsOptional()
+  @ValidateIf(
+    (obj, value) => value !== '' && value !== null && value !== undefined,
+  )
+  @IsUUID('4', { message: 'El ID de la marca debe ser un UUID válido' })
+  brandId?: string | null
+
+  @ApiPropertyOptional({
+    type: String,
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    description:
+      'ID del template que define la estructura de atributos del producto',
+    nullable: true,
+  })
+  @IsOptional()
+  @ValidateIf(
+    (obj, value) => value !== '' && value !== null && value !== undefined,
+  )
   @IsUUID('4', { message: 'El ID del template debe ser un UUID válido' })
-  templateId?: string
+  templateId?: string | null
 }

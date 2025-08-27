@@ -39,3 +39,21 @@ export const STATUS_OPTIONS = [
 ]
 
 export type StatusAllow = (typeof STATUS_ALLOW)[keyof typeof STATUS_ALLOW]
+
+// Enum principal
+export enum TaxAllow {
+	EXENTO = 0,
+	CON_IVA = 15,
+}
+
+// Objeto derivado para uso rápido (si necesitas claves literales)
+export const TAX_ALLOW = {
+	EXENTO: TaxAllow.EXENTO,
+	CON_IVA: TaxAllow.CON_IVA,
+} as const
+
+// Labels traducidos
+export const taxLabelsTraslateToEs: Record<TaxAllow, string> = {
+	[TaxAllow.EXENTO]: 'Exentos de IVA',
+	[TaxAllow.CON_IVA]: 'Con IVA',
+}

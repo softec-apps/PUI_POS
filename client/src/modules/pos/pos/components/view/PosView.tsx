@@ -53,7 +53,7 @@ export function PosView() {
 		search: debouncedSearchTerm,
 		filters: selectedCategory !== 'all' ? { categoryId: selectedCategory } : undefined,
 		page,
-		limit: 12,
+		limit: 24,
 	})
 
 	useEffect(() => {
@@ -204,7 +204,7 @@ export function PosView() {
 				</ScrollArea>
 			</div>
 
-			<CartSidebar isOpen={true} onClose={() => {}} onPlaceOrder={handlePlaceOrder} />
+			<CartSidebar onPlaceOrder={handlePlaceOrder} />
 		</div>
 	)
 }

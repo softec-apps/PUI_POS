@@ -1,7 +1,7 @@
 'use client'
 
 import { I_Template } from '@/common/types/modules/template'
-import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
+import { ConfirmationModal } from '@/components/layout/templates/ConfirmationModal'
 
 interface Props {
 	isOpen: boolean

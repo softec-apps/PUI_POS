@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
 import { toast } from 'sonner'
@@ -10,10 +11,9 @@ export function useGenericRefresh(refetchFunction: () => Promise<void>) {
 		try {
 			setIsRefreshing(true)
 			await refetchFunction()
-			toast.info('Registros actualizados exitosamente')
+			//toast.info('Registros actualizados exitosamente')
 		} catch (error) {
-			console.error('Error al refrescar registros:', error)
-			toast.error('Error al refrescar registros')
+			//toast.error('Error al refrescar registros')
 		} finally {
 			setIsRefreshing(false)
 		}

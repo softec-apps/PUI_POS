@@ -138,4 +138,18 @@ export class UsersController {
   ): Promise<ApiResponse> {
     return await this.usersService.hardDelete(param.id, req.user.id)
   }
+
+  /**
+   * Restore a user.
+   * @param RestoreUserDto - Data transfer object for user restore.
+   * @returns The API standard responsea
+   */
+  @Patch(':id/restore')
+  @UserApiDocs.update
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
+  async restore(@Param() param: ParamUserDto): Promise<ApiResponse<User>> {
+    return await this.usersService.restore(param.id)
+  }
 }
