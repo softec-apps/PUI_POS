@@ -74,16 +74,32 @@ export class CreateProductDto {
   @ApiProperty({
     type: Number,
     example: 29.99,
+    description: 'Costo (debe ser un número positivo, máximo 6 decimales)',
+  })
+  @IsNotEmpty({ message: 'El costo es obligatorio' })
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 6 },
+    { message: 'El costo debe ser un número válido (máximo 6 decimales)' },
+  )
+  @IsPositive({ message: 'El costo debe ser un número positivo' })
+  price: number
+
+  @ApiProperty({
+    type: Number,
+    example: 29.99,
     description:
-      'Precio base del producto (debe ser un número positivo, máximo 6 decimales)',
+      'Precio de venta (debe ser un número positivo, máximo 6 decimales)',
   })
   @IsNotEmpty({ message: 'El precio es obligatorio' })
   @IsNumber(
     { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 6 },
-    { message: 'El precio debe ser un número válido (máximo 6 decimales)' },
+    {
+      message:
+        'El precio de venta debe ser un número válido (máximo 6 decimales)',
+    },
   )
-  @IsPositive({ message: 'El precio debe ser un número positivo' })
-  price: number
+  @IsPositive({ message: 'El precio de venta debe ser un número positivo' })
+  pricePublic: number
 
   @ApiPropertyOptional({
     type: String,

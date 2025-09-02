@@ -23,6 +23,24 @@ export const ProductSchema = z.object({
 				message: 'Máximo 6 enteros y 6 decimales',
 			})
 	),
+	pricePublic: z.preprocess(
+		val => {
+			if (val === '' || val === null || val === undefined) return undefined
+			if (typeof val === 'string') {
+				// Si es string, verificar que sea un número válido
+				if (!/^-?\d*\.?\d*$/.test(val)) return NaN // Esto forzará el error de validación
+				return Number(val)
+			}
+			return val
+		},
+		z
+			.number({ required_error: 'Campo requerido' })
+			.positive('Debe ser un número positivo')
+			.max(999999.999999, 'Máximo 6 dígitos y 6 decimales')
+			.refine(val => /^\d{1,6}(\.\d{1,6})?$/.test(val.toString()), {
+				message: 'Máximo 6 enteros y 6 decimales',
+			})
+	),
 	stock: z.preprocess(
 		val => {
 			if (val === '' || val === null || val === undefined) return 0
@@ -44,19 +62,25 @@ export const ProductSchema = z.object({
 		STATUS_ALLOW.DISCONTINUED,
 		STATUS_ALLOW.OUT_OF_STOCK,
 	]),
+	// Cambiar la validación del tax para que maneje strings que se convierten a enum
 	tax: z.preprocess(val => {
-		// Si es string, convertir a número
+		// Si es string, convertir a número y luego al enum
 		if (typeof val === 'string') {
 			const numericValue = Number(val)
-			return isNaN(numericValue) ? val : numericValue
+			if (numericValue === 0) return TaxAllow.EXENTO
+			if (numericValue === 15) return TaxAllow.CON_IVA
+			return val // Si no es un valor válido, dejar que el enum validation falle
+		}
+		// Si ya es un número, convertir al enum
+		if (typeof val === 'number') {
+			if (val === 0) return TaxAllow.EXENTO
+			if (val === 15) return TaxAllow.CON_IVA
 		}
 		return val
 	}, z.nativeEnum(TaxAllow)),
 	photo: z.string().optional(),
-	// removePhoto: z.boolean().optional(),
 	categoryId: z.string().uuid('Selecciona una categoría válida'),
 	supplierId: z.string().uuid('Selecciona un proveedor válida'),
-	// Make brandId and templateId properly optional
 	brandId: z.string().uuid('Selecciona una marca válida').optional().or(z.literal('')),
 	templateId: z.string().uuid('Selecciona una plantilla válida').optional().or(z.literal('')),
 })

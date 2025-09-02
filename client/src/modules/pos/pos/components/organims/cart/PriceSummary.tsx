@@ -32,9 +32,6 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
 	const change = calculateChange()
 	const received = parseFloat(receivedAmount || '0')
 
-	// Mostrar "Recibido" y "Cambio" para todos los métodos de pago cuando hay un método seleccionado Y hay monto recibido
-	const showPaymentDetails = selectedPayment && selectedPayment !== '' && receivedAmount && received > 0
-
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
@@ -42,26 +39,23 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
 			transition={{ delay: 0.2 }}
 			className='bg-popover space-y-1 rounded-2xl p-3'>
 			{/* Mostrar detalles de pago para todos los métodos cuando hay método seleccionado */}
-			{showPaymentDetails && (
-				<>
-					<div className='flex justify-between text-sm'>
-						<Typography variant='small' className='font-medium'>
-							Recibido
-						</Typography>
-						<Typography variant='small' className='text-primary font-medium'>
-							${formatPrice(received)}
-						</Typography>
-					</div>
-					<div className='flex justify-between pb-2 text-sm'>
-						<Typography variant='small' className='font-medium'>
-							Cambio
-						</Typography>
-						<Typography variant='small' className={cn('font-medium', change >= 0 ? 'text-green-600' : 'text-red-600')}>
-							${formatPrice(Math.abs(change))}
-						</Typography>
-					</div>
-				</>
-			)}
+			<div className='flex justify-between text-sm'>
+				<Typography variant='small' className='font-medium'>
+					Recibido
+				</Typography>
+				<Typography variant='small' className='text-primary font-medium'>
+					${formatPrice(received)}
+				</Typography>
+			</div>
+
+			<div className='flex justify-between pb-1 text-sm'>
+				<Typography variant='small' className='font-medium'>
+					Cambio
+				</Typography>
+				<Typography variant='small' className={cn('font-medium', change >= 0 ? 'text-green-600' : 'text-red-600')}>
+					${formatPrice(Math.abs(change))}
+				</Typography>
+			</div>
 
 			<div className='flex justify-between text-sm'>
 				<Typography variant='small'>Subtotal</Typography>
@@ -70,7 +64,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
 				</Typography>
 			</div>
 
-			<div className={cn('flex justify-between text-sm', showPaymentDetails ? '' : 'pb-2')}>
+			<div className={cn('flex justify-between pb-2 text-sm')}>
 				<Typography variant='small'>Impuestos</Typography>
 				<Typography variant='small' className='text-primary font-medium'>
 					${formatPrice(tax)}

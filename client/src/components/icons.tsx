@@ -74,6 +74,7 @@ import {
 	IconCommand,
 	IconCopy,
 	IconCreditCard,
+	IconCurrencyDollar,
 	IconDatabase,
 	IconDeviceFloppy,
 	IconDeviceLaptop,
@@ -189,6 +190,7 @@ import {
 
 export const Icons = {
 	dashboard: IconLayoutDashboard,
+	currencyDollar: IconCurrencyDollar,
 	package: IconPackage,
 	calculator: IconCalculator,
 	sTurnDown: IconSTurnDown,

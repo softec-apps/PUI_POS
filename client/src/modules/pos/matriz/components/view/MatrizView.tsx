@@ -128,9 +128,10 @@ export function MatrizView() {
 		addItem({
 			id: product.id,
 			name: product.name,
-			price: product.price,
+			price: product.pricePublic,
 			image: product?.photo?.path,
 			code: product.code,
+			taxRate: product.tax,
 		})
 
 		toast.info('Producto añadido para venta')
@@ -159,30 +160,84 @@ export function MatrizView() {
 
 	const handlePlaceOrder = async (saleData: SaleData) => {
 		try {
+			console.log('🛒 Datos originales del frontend:', saleData)
+
+			// Solo enviar los datos esenciales - el backend calculará todo lo demás
 			const formattedData = {
 				customerId: saleData.customerId,
-				subtotal: saleData.financials.subtotal,
-				taxRate: saleData.financials.taxRate * 100,
-				taxAmount: saleData.financials.tax,
-				total: saleData.financials.total,
-				totalItems: saleData.financials.totalItems,
 				paymentMethod: saleData.payment.method,
-				receivedAmount: saleData.payment.receivedAmount,
-				change: saleData.payment.change,
+				// Solo incluir receivedAmount si es pago en efectivo
+				...(saleData.payment.method === 'cash' && {
+					receivedAmount: saleData.payment.receivedAmount,
+				}),
+				// Solo enviar productId y quantity - el backend buscará el resto
 				items: saleData.items.map(item => ({
 					productId: item.productId,
-					productName: item.productName,
-					productCode: item.productCode,
 					quantity: item.quantity,
-					unitPrice: item.unitPrice,
-					taxRate: saleData.financials.taxRate * 100,
-					totalPrice: item.totalPrice,
 				})),
 			}
 
-			await createSale(formattedData)
+			console.log('📤 DATA TO BACKEND (simplificado):', formattedData)
+			console.log(
+				'🔍 Items enviados:',
+				formattedData.items.map(item => `${item.productId} x${item.quantity}`)
+			)
+
+			// El backend retornará los totales calculados para verificación
+			const response = await createSale(formattedData)
+
+			console.log('✅ Respuesta del backend:', response)
+
+			// Opcional: Comparar totales calculados por el backend vs frontend
+			if (response.data?.calculatedTotals) {
+				const backendTotals = response.data.calculatedTotals
+				const frontendTotals = saleData.financials
+
+				console.log('📊 Comparación de totales:')
+				console.log('Frontend:', {
+					subtotal: frontendTotals.subtotal,
+					tax: frontendTotals.tax,
+					total: frontendTotals.total,
+					items: frontendTotals.totalItems,
+				})
+				console.log('Backend:', {
+					subtotal: backendTotals.subtotal,
+					tax: backendTotals.taxAmount,
+					total: backendTotals.total,
+					items: backendTotals.totalItems,
+				})
+
+				// Alertar si hay diferencias significativas (más de 1 centavo)
+				const tolerance = 0.01
+				if (Math.abs(frontendTotals.total - backendTotals.total) > tolerance) {
+					console.warn('⚠️ DIFERENCIA EN TOTALES:', {
+						frontend: frontendTotals.total,
+						backend: backendTotals.total,
+						diferencia: Math.abs(frontendTotals.total - backendTotals.total),
+					})
+
+					// Opcional: mostrar notificación al usuario sobre la diferencia
+					// toast.warning(`Total recalculado: $${backendTotals.total} (era $${frontendTotals.total})`)
+				}
+			}
+
+			return response
 		} catch (error) {
 			console.error('❌ Error al procesar la venta:', error)
+
+			// Mejorar el manejo de errores específicos
+			if (error.response?.data?.message) {
+				console.error('💬 Mensaje del servidor:', error.response.data.message)
+			}
+
+			if (error.response?.status === 409) {
+				console.error('🚫 Conflicto (probablemente stock insuficiente)')
+			} else if (error.response?.status === 404) {
+				console.error('🔍 No encontrado (producto o cliente inexistente)')
+			} else if (error.response?.status === 400) {
+				console.error('📝 Datos inválidos')
+			}
+
 			throw error
 		}
 	}
@@ -271,7 +326,7 @@ export function MatrizView() {
 										initial='hidden'
 										animate='visible'
 										className='grid grid-cols-2 gap-4 px-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
-										<ProductCardSkeleton count={16} />
+										<ProductCardSkeleton count={24} />
 									</motion.div>
 								) : allProducts.length === 0 ? (
 									<EmptyState />

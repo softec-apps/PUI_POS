@@ -28,6 +28,8 @@ export interface I_SaleItem {
 /** Body para creación/actualización de venta */
 export interface I_Sale extends I_SaleBase {
 	code: number
+	estado_sri: string
+	clave_acceso: string
 	changeType: number
 	customerId: string
 	items: I_SaleItem[]

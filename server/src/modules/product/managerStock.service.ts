@@ -295,6 +295,60 @@ export class StockDiscountService {
   }
 
   /**
+   * Consulta el/los impuestos de uno o varios productos
+   * @param products Array de productos (mínimo: id del producto)
+   * @returns Promise<{ productId: string; productName?: string; taxRate: number; taxValue: number }[]>
+   */
+  async getProductsTaxes(
+    products: Pick<ProductStockDiscount, 'productId' | 'quantity'>[],
+  ): Promise<
+    {
+      productId: string
+      productName?: string
+      taxRate: number
+      taxValue: number
+      basePrice: number
+    }[]
+  > {
+    const results: {
+      productId: string
+      productName?: string
+      taxRate: number
+      taxValue: number
+      basePrice: number
+    }[] = []
+
+    for (const item of products) {
+      const product = await this.productRepository.findById(item.productId)
+
+      if (!product) {
+        results.push({
+          productId: item.productId,
+          productName: undefined,
+          taxRate: 0,
+          taxValue: 0,
+          basePrice: 0,
+        })
+        continue
+      }
+
+      const basePrice = product.price ?? 0
+      const taxRate = product.tax ?? 0
+      const taxValue = (basePrice * item.quantity * taxRate) / 100
+
+      results.push({
+        productId: item.productId,
+        productName: product.name,
+        taxRate,
+        taxValue,
+        basePrice,
+      })
+    }
+
+    return results
+  }
+
+  /**
    * Verifica stock suficiente para múltiples productos
    * @param discounts Array de productos y cantidades
    * @returns Promise<{ productId: string; hasStock: boolean; currentStock: number; requiredStock: number }[]>

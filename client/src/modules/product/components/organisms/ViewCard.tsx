@@ -74,7 +74,10 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 													{recordData.code}
 												</Typography>
 
-												<ProductStatusBadge status={recordData.status} />
+												<div className='flex items-center gap-1'>
+													<ProductStatusBadge status={recordData.status} />
+													<Badge text={`${recordData.stock} und`} variant='info' />
+												</div>
 											</div>
 
 											<Typography variant='h5' className='line-clamp-1 break-words'>
@@ -85,14 +88,12 @@ export const CardView = ({ recordsData, onEdit, onHardDelete }: Props) => (
 										{/* Precio y Stock */}
 										<div className='flex items-center justify-between'>
 											<div className='flex items-center gap-2'>
-												<Typography variant='h6' className='text-primary font-semibold'>
-													${formatPrice(recordData.price)} USD
-												</Typography>
-												<Badge text={`${recordData.tax || '-'} tax`} variant='outline' />
+												<Typography variant='h6'>${formatPrice(recordData.pricePublic || 0)}</Typography>
+												<Typography variant='small'>${formatPrice(recordData.price || 0)}</Typography>
 											</div>
 
-											<div className='flex items-center gap-1'>
-												<Badge text={`${recordData.stock} und`} variant='info' />
+											<div className='flex items-center gap-2'>
+												<Badge text={`${recordData.tax} tax`} variant='outline' />
 											</div>
 										</div>
 

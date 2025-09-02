@@ -15,9 +15,7 @@ const api = axios.create({
 api.interceptors.request.use(
 	async config => {
 		const session = await getSession()
-		if (session?.token) {
-			config.headers.Authorization = `Bearer ${session.token}`
-		}
+		if (session?.token) config.headers.Authorization = `Bearer ${session.token}`
 		return config
 	},
 	error => Promise.reject(error)

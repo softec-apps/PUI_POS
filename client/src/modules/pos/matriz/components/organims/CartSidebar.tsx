@@ -16,6 +16,15 @@ import { ProcessingScreen } from '@/modules/pos/pos/components/organims/cart/Pro
 import { CustomerSection } from '@/modules/pos/pos/components/organims/checkout/CustomerSection'
 import { Typography } from '@/components/ui/typography'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 // Types
 interface SaleData {
@@ -80,6 +89,9 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 	// Local state for payment details
 	const [transferNumber, setTransferNumber] = useState<string>('')
 	const [receivedAmount, setReceivedAmount] = useState<string>('')
+
+	// Estado para el diálogo de nueva venta
+	const [showNewSaleDialog, setShowNewSaleDialog] = useState<boolean>(false)
 
 	// Referencias para el cálculo dinámico de altura
 	const containerRef = useRef<HTMLDivElement>(null)
@@ -288,88 +300,142 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 		}
 	}
 
+	// Función para manejar el botón "Nueva venta"
+	const handleNewSaleClick = () => {
+		setShowNewSaleDialog(true)
+	}
+
+	// Función para confirmar nueva venta
+	const handleConfirmNewSale = () => {
+		// Limpiar el carrito y todos los datos
+		clearCart()
+		clearCustomer()
+		setTransferNumber('')
+		setReceivedAmount('')
+		setPayment('cash')
+		setShowNewSaleDialog(false)
+	}
+
+	// Función para cancelar nueva venta
+	const handleCancelNewSale = () => setShowNewSaleDialog(false)
+
 	// Full screen processing screen
 	if (cartState === 'processing') return <ProcessingScreen />
 
 	return (
-		<div ref={containerRef} className='flex h-full w-full max-w-[26rem] flex-col overflow-hidden'>
-			{/* Header */}
-			<div ref={headerRef} className='flex-shrink-0'>
-				{orderItems.length !== 0 && (
-					<Typography variant='h6' className='mb-2'>
-						Productos ({totalItems})
-					</Typography>
+		<>
+			<div ref={containerRef} className='flex h-full w-full max-w-[24rem] flex-col overflow-hidden'>
+				{/* Header */}
+				<div ref={headerRef} className='flex-shrink-0'>
+					{orderItems.length !== 0 && (
+						<Typography variant='h6' className='mb-2'>
+							Productos ({totalItems})
+						</Typography>
+					)}
+				</div>
+
+				{/* Contenido principal con scroll dinámico */}
+				<div className='w-full flex-1 overflow-hidden'>
+					<AnimatePresence mode='popLayout'>
+						{orderItems.length > 0 ? (
+							<ScrollArea
+								className='w-full pr-4'
+								style={{
+									height: scrollAreaHeight > 0 ? `${scrollAreaHeight}px` : '50vh',
+									minHeight: '270px',
+									maxHeight: '70vh',
+								}}>
+								<div className='space-y-2'>
+									{orderItems.map((item, index) => (
+										<CartItem
+											key={item.id}
+											item={item}
+											index={index}
+											onUpdateQuantity={updateQuantity}
+											onRemoveItem={removeItem}
+										/>
+									))}
+								</div>
+							</ScrollArea>
+						) : (
+							// Empty State - Contenedor ajustado
+							<div className='flex h-full min-h-[300px] items-center justify-center overflow-hidden'>
+								<CartEmptyState />
+							</div>
+						)}
+					</AnimatePresence>
+				</div>
+
+				{/* Footer con resumen y botón */}
+				{orderItems.length > 0 && (
+					<div ref={footerRef} className='w-full flex-shrink-0 space-y-4 pt-4 pb-6'>
+						{/* Customer Section - Solo si hay items */}
+						<CustomerSection />
+
+						{/* Payment Methods - Solo si hay items y cliente */}
+						{selectedCustomer && (
+							<PaymentMethods
+								selectedPayment={selectedPayment}
+								onSelectPayment={setPayment}
+								transferNumber={transferNumber}
+								onTransferNumberChange={setTransferNumber}
+								receivedAmount={receivedAmount}
+								onReceivedAmountChange={setReceivedAmount}
+								totalAmount={total}
+							/>
+						)}
+
+						<PriceSummary
+							subtotal={subtotal}
+							tax={tax}
+							total={total}
+							receivedAmount={receivedAmount}
+							selectedPayment={selectedPayment}
+						/>
+
+						<div className='flex w-full items-center justify-center gap-4'>
+							<ActionButton
+								size='pos'
+								variant='destructive'
+								disabled={orderItems.length === 0}
+								onClick={handleNewSaleClick}
+								text='Nueva venta'
+								className='basis-1/2 text-lg font-semibold'
+							/>
+
+							<ActionButton
+								size='pos'
+								variant='pos'
+								disabled={!canFinalizeOrder()}
+								onClick={handleFinalizeOrder}
+								text='Finalizar venta'
+								className='basis-1/2 text-lg font-semibold'
+							/>
+						</div>
+					</div>
 				)}
 			</div>
 
-			{/* Contenido principal con scroll dinámico */}
-			<div className='flex-1 overflow-hidden'>
-				<AnimatePresence mode='popLayout'>
-					{orderItems.length > 0 ? (
-						<ScrollArea
-							className='w-full pr-4'
-							style={{
-								height: scrollAreaHeight > 0 ? `${scrollAreaHeight}px` : '50vh',
-								minHeight: '270px',
-								maxHeight: '70vh',
-							}}>
-							<div className='space-y-2'>
-								{orderItems.map((item, index) => (
-									<CartItem
-										key={item.id}
-										item={item}
-										index={index}
-										onUpdateQuantity={updateQuantity}
-										onRemoveItem={removeItem}
-									/>
-								))}
-							</div>
-						</ScrollArea>
-					) : (
-						// Empty State - Contenedor ajustado
-						<div className='flex h-full min-h-[300px] items-center justify-center overflow-hidden'>
-							<CartEmptyState />
-						</div>
-					)}
-				</AnimatePresence>
-			</div>
-
-			{/* Footer con resumen y botón */}
-			{orderItems.length > 0 && (
-				<div ref={footerRef} className='flex-shrink-0 space-y-4 pt-4 pb-6'>
-					{/* Customer Section - Solo si hay items */}
-					<CustomerSection />
-
-					{/* Payment Methods - Solo si hay items y cliente */}
-					{selectedCustomer && (
-						<PaymentMethods
-							selectedPayment={selectedPayment}
-							onSelectPayment={setPayment}
-							transferNumber={transferNumber}
-							onTransferNumberChange={setTransferNumber}
-							receivedAmount={receivedAmount}
-							onReceivedAmountChange={setReceivedAmount}
-							totalAmount={total}
-						/>
-					)}
-
-					<PriceSummary
-						subtotal={subtotal}
-						tax={tax}
-						total={total}
-						receivedAmount={receivedAmount}
-						selectedPayment={selectedPayment}
-					/>
-
-					<ActionButton
-						size='pos'
-						disabled={!canFinalizeOrder()}
-						onClick={handleFinalizeOrder}
-						text='Finalizar Venta'
-						className='w-full text-lg font-semibold'
-					/>
-				</div>
-			)}
-		</div>
+			{/* Diálogo de confirmación para nueva venta */}
+			<Dialog open={showNewSaleDialog} onOpenChange={setShowNewSaleDialog}>
+				<DialogContent className='sm:max-w-xl'>
+					<DialogHeader>
+						<DialogTitle>¿Iniciar nueva venta?</DialogTitle>
+						<DialogDescription>
+							Se perderán todos los productos seleccionados, la información del cliente seleccionado y los datos de pago
+							ingresados. <strong>Esta acción no se puede deshacer.</strong>
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className='flex gap-2'>
+						<Button variant='secondary' onClick={handleCancelNewSale}>
+							Cancelar
+						</Button>
+						<Button variant='destructive' onClick={handleConfirmNewSale}>
+							Confirmar
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</>
 	)
 }

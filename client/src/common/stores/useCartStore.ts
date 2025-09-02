@@ -10,12 +10,20 @@ export interface OrderItem {
 	category?: string
 	image?: I_Photo
 	code?: string
+	taxRate: number // Agregado taxRate específico por producto
 }
 
 interface CartState {
 	orderItems: OrderItem[]
 	selectedPayment: string
-	addItem: (product: { id: string; name: string; price: number; code?: string; image?: string }) => void
+	addItem: (product: {
+		id: string
+		name: string
+		price: number
+		code?: string
+		image?: string
+		taxRate: number // Agregado taxRate en el parámetro
+	}) => void
 	updateQuantity: (id: string, change: number) => void
 	removeItem: (id: string) => void
 	setPayment: (paymentId: string) => void
@@ -24,6 +32,10 @@ interface CartState {
 	getTax: () => number
 	getTotal: () => number
 	getTotalItems: () => number
+	// Nuevas funciones para cálculos por item
+	getItemSubtotal: (item: OrderItem) => number
+	getItemTax: (item: OrderItem) => number
+	getItemTotal: (item: OrderItem) => number
 }
 
 export const useCartStore = create<CartState>()(
@@ -52,6 +64,7 @@ export const useCartStore = create<CartState>()(
 									price: product.price,
 									quantity: 1,
 									code: product.code,
+									taxRate: product.taxRate, // Usar el taxRate específico del producto
 								},
 							],
 						}
@@ -80,15 +93,26 @@ export const useCartStore = create<CartState>()(
 
 			clearCart: () => set({ orderItems: [], selectedPayment: 'cash' }),
 
+			// Subtotal sin impuestos
 			getSubtotal: () => {
 				const { orderItems } = get()
-				return orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+				return orderItems.reduce((sum, item) => {
+					const itemSubtotal = item.price * item.quantity
+					return sum + itemSubtotal
+				}, 0)
 			},
 
+			// Total de impuestos calculado por cada producto
 			getTax: () => {
-				return get().getSubtotal() * 0.16
+				const { orderItems } = get()
+				return orderItems.reduce((sum, item) => {
+					const itemSubtotal = item.price * item.quantity
+					const itemTax = itemSubtotal * (item.taxRate / 100)
+					return sum + itemTax
+				}, 0)
 			},
 
+			// Total incluyendo impuestos
 			getTotal: () => {
 				return get().getSubtotal() + get().getTax()
 			},
@@ -96,6 +120,22 @@ export const useCartStore = create<CartState>()(
 			getTotalItems: () => {
 				const { orderItems } = get()
 				return orderItems.reduce((sum, item) => sum + item.quantity, 0)
+			},
+
+			// Funciones auxiliares para cálculos por item
+			getItemSubtotal: (item: OrderItem) => {
+				return item.price * item.quantity
+			},
+
+			getItemTax: (item: OrderItem) => {
+				const itemSubtotal = item.price * item.quantity
+				return itemSubtotal * (item.taxRate / 100)
+			},
+
+			getItemTotal: (item: OrderItem) => {
+				const itemSubtotal = item.price * item.quantity
+				const itemTax = itemSubtotal * (item.taxRate / 100)
+				return itemSubtotal + itemTax
 			},
 		}),
 		{

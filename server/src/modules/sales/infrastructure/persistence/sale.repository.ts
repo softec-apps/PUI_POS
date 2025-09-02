@@ -3,6 +3,7 @@ import { Sale } from '@/modules/sales/domain/sale'
 import { NullableType } from '@/utils/types/nullable.type'
 import { IPaginationOptions } from '@/utils/types/pagination-options'
 import { SortSaleDto, FilterSaleDto } from '@/modules/sales/dto/query-sale.dto'
+import { DeepPartial } from '@/utils/types/deep-partial.type'
 
 export abstract class SaleRepository {
   abstract findManyWithPagination({
@@ -28,6 +29,12 @@ export abstract class SaleRepository {
 
   abstract create(
     data: Omit<Sale, 'id' | 'createdAt'>,
+    entityManager: EntityManager,
+  ): Promise<Sale>
+
+  abstract update(
+    id: Sale['id'],
+    payload: DeepPartial<Sale>,
     entityManager: EntityManager,
   ): Promise<Sale>
 }

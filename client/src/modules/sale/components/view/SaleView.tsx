@@ -93,8 +93,6 @@ export function SaleView() {
 
 	if (saleData.data.hasError) return <ErrorState type='fatal' />
 
-	if (saleData.data.isEmpty) return
-
 	return (
 		<div className='flex flex-1 flex-col space-y-6'>
 			{saleData.data.isEmpty ? (

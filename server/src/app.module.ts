@@ -1,6 +1,6 @@
 import path from 'path'
-
 import { Module } from '@nestjs/common'
+import { RouterModule } from '@nestjs/core'
 import appConfig from '@/config/app.config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { HeaderResolver, I18nModule } from 'nestjs-i18n'
@@ -33,8 +33,11 @@ import { ImportProductModule } from '@/modules/product/import.module'
 import { SaleModule } from '@/modules/sales/sale.module'
 import { SupplierModule } from '@/modules/suppliers/supplier.module'
 import { EstablishmentModule } from '@/modules/establishment/establishment.module'
+import { BillingModule } from '@/modules/factuZen/billing.module'
 import { AuthGoogleModule } from '@/modules/auth-google/auth-google.module'
 import { TemplateProductModule } from '@/modules/template/templates.module'
+import { QueuesModule } from '@/modules/queues/queues.module'
+import redisConfig from '@/config/redis.config'
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -71,10 +74,15 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
         mailConfig,
         fileConfig,
         googleConfig,
+        redisConfig,
       ],
       envFilePath: ['.env'],
     }),
     infrastructureDatabaseModule,
+
+    // QueuesModule debe ir ANTES de otros módulos que usen colas
+    QueuesModule,
+
     I18nModule.forRootAsync({
       useFactory: (configService: ConfigService<AllConfigType>) => ({
         fallbackLanguage: configService.getOrThrow('app.fallbackLanguage', {
@@ -95,7 +103,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
           inject: [ConfigService],
         },
       ],
-      imports: [ConfigModule],
+      imports: [ConfigModule, QueuesModule],
       inject: [ConfigService],
     }),
     UsersModule,
@@ -117,6 +125,20 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     TemplateProductModule,
     CustomerModule,
     SaleModule,
+    BillingModule,
+
+    // Configuración de rutas para el panel de administración
+    RouterModule.register([
+      {
+        path: 'admin',
+        children: [
+          {
+            path: 'queues',
+            module: QueuesModule,
+          },
+        ],
+      },
+    ]),
   ],
 })
 export class AppModule {}

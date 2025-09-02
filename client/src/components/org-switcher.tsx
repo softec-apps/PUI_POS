@@ -46,7 +46,7 @@ export function OrgSwitcher({
 							className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'>
 							<div className='flex aspect-square size-8 items-center justify-center'>
 								<ImageControl
-									recordData={dataRecord}
+									imageUrl={dataRecord?.photo?.path}
 									enableHover={false}
 									enableClick={false}
 									imageHeight={35}

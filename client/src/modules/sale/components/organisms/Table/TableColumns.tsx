@@ -8,12 +8,7 @@ import { Actions } from '@/modules/sale/components/organisms/Actions'
 import { InfoDate } from '@/modules/sale/components/atoms/InfoDate'
 import { formatPrice } from '@/common/utils/formatPrice-util'
 import { MethodPaymentBadge } from '@/modules/sale/components/atoms/MethodPaymentBadge'
-import { Button } from '@/components/ui/button'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { ImageControl } from '@/components/layout/organims/ImageControl'
-import { Typography } from '@/components/ui/typography'
-import { ROUTE_PATH } from '@/common/constants/routes-const'
-import Link from 'next/link'
+import { Badge } from '@/components/layout/atoms/Badge'
 
 const createHeader = (column: Column<I_Sale>, label: string) => {
 	return (
@@ -22,14 +17,14 @@ const createHeader = (column: Column<I_Sale>, label: string) => {
 			size='xs'
 			className='p-0'
 			text={
-				<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
+				<span className='text-muted-foreground hover:text-primary/95 flex items-center'>
 					{label}
 					{column.getIsSorted() === 'asc' ? (
 						<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
 					) : column.getIsSorted() === 'desc' ? (
 						<Icons.sortDescendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
 					) : null}
-				</div>
+				</span>
 			}
 			onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 		/>
@@ -38,84 +33,62 @@ const createHeader = (column: Column<I_Sale>, label: string) => {
 
 export const createTableColumns = (): ColumnDef<I_Sale>[] => [
 	{
+		accessorKey: 'clave_acceso',
+		header: ({ column }) => createHeader(column, 'Clave acceso (SRI)'),
+		cell: ({ row }) => {
+			const clave = row.original?.clave_acceso || '-'
+			if (clave === '-') return <span>-</span>
+
+			const start = clave?.slice(0, 8) // primeros 8 caracteres
+			const end = clave?.slice(-8) // últimos 8 caracteres
+
+			return <span>{`${start}........${end}`}</span>
+		},
+	},
+	{
+		accessorKey: 'estado_sri',
+		header: ({ column }) => createHeader(column, 'Estado (SRI)'),
+		cell: ({ row }) => {
+			// Mostrar solo si hay clave_acceso
+			if (!row.original?.clave_acceso) return '-'
+
+			const estado = row.original.estado_sri
+
+			let variant: 'default' | 'destructive' | 'warning' | 'success' = 'default'
+			if (estado === 'AUTHORIZED') variant = 'success'
+			else if (estado === 'PENDING') variant = 'warning'
+
+			return (
+				<Badge
+					variant={variant}
+					text={estado === 'AUTHORIZED' ? 'Autorizado' : estado === 'PENDING' ? 'Pendiente' : estado || '-'}
+				/>
+			)
+		},
+	},
+	{
 		accessorKey: 'code',
-		header: ({ column }) => createHeader(column, 'Código'),
+		header: ({ column }) => createHeader(column, 'Código interno'),
+		cell: ({ row }) => <span>{row.original.code}</span>,
+	},
+	{
+		accessorKey: 'customer.firstName',
+		header: ({ column }) => createHeader(column, 'Cliente'),
 		cell: ({ row }) => (
-			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				{row.original.code}
-			</div>
+			<span>
+				{row.original?.customer?.firstName} {row.original?.customer?.lastName?.charAt(0)}
+			</span>
 		),
 	},
 	{
 		accessorKey: 'paymentMethod',
 		header: ({ column }) => createHeader(column, 'Método'),
-		cell: ({ row }) => (
-			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				<MethodPaymentBadge type={row.original.paymentMethod} />
-			</div>
-		),
-	},
-	{
-		accessorKey: 'customer.identificationNumber',
-		header: ({ column }) => createHeader(column, 'Cliente'),
-		cell: ({ row }) => (
-			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				{row.original.customer.firstName} {row.original.customer.lastName}
-			</div>
-		),
-	},
-	{
-		accessorKey: 'totalItems',
-		header: ({ column }) => createHeader(column, 'Productos'),
-		cell: ({ row }) => (
-			<HoverCard>
-				<HoverCardTrigger asChild>
-					<Button variant='ghost' size='xs'>
-						{row.original.totalItems} {row.original.totalItems > 1 ? 'items' : 'item'} <Icons.infoCircle />
-					</Button>
-				</HoverCardTrigger>
-
-				<HoverCardContent className='w-72 p-0'>
-					<ul className='divide-border divide-y'>
-						{row.original.items.map((item, idx) => (
-							<li key={idx}>
-								<Link
-									href={`${ROUTE_PATH.ADMIN.PRODUCT}/${item.product?.id ?? ''}`}
-									className='hover:bg-muted/50 flex items-center gap-3 p-3 transition-colors'>
-									{/* Imagen del producto */}
-									{item.product?.photo && (
-										<ImageControl
-											recordData={item.product.photo}
-											enableHover={false}
-											enableClick={false}
-											imageHeight={40}
-											imageWidth={40}
-											className='rounded-md border'
-										/>
-									)}
-
-									{/* Info */}
-									<div className='flex flex-col'>
-										<Typography variant='span' className='text-primary'>
-											{item.product?.name ?? item.productName}
-										</Typography>
-
-										<Typography variant='span'>
-											{item.quantity} × ${formatPrice(item.unitPrice)} = ${formatPrice(item.totalPrice)}
-										</Typography>
-									</div>
-								</Link>
-							</li>
-						))}
-					</ul>
-				</HoverCardContent>
-			</HoverCard>
-		),
+		cell: ({ row }) => <MethodPaymentBadge type={row.original.paymentMethod} />,
 	},
 	{
 		accessorKey: 'subtotal',
 		header: ({ column }) => createHeader(column, 'Subtotal'),
-		cell: ({ row }) => <span>${row.original.subtotal.toFixed(2)}</span>,
+		cell: ({ row }) => <span>${formatPrice(row.original?.subtotal)}</span>,
 	},
 	{
 		accessorKey: 'taxAmount',
@@ -129,15 +102,15 @@ export const createTableColumns = (): ColumnDef<I_Sale>[] => [
 	},
 	{
 		accessorKey: 'createdAt',
-		header: () => <div className='text-muted-foreground'>Información</div>,
+		header: () => <span className='text-muted-foreground'>Información</span>,
 		cell: ({ row }) => <InfoDate recordData={row.original} />,
 	},
 	{
 		id: 'actions',
 		cell: ({ row }) => (
-			<div className='flex justify-end'>
+			<span className='flex justify-end'>
 				<Actions recordData={row.original} />
-			</div>
+			</span>
 		),
 	},
 ]

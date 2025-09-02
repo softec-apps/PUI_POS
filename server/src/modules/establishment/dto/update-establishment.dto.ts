@@ -69,53 +69,13 @@ export class UpdateEstablishmentDto {
   parentEstablishmentAddress?: string
 
   @ApiPropertyOptional({
-    type: String,
-    example: 'Av. Principal 456 y Calle Secundaria',
-    description: 'Dirección del establecimiento emisor',
-    maxLength: 300,
-  })
-  @IsOptional()
-  @IsString({ message: 'La dirección emisor debe ser texto' })
-  @MaxLength(300, {
-    message: 'La dirección emisor debe tener máximo 300 caracteres',
-  })
-  addressIssuingEstablishment?: string
-
-  @ApiPropertyOptional({
-    type: 'number',
-    example: 1,
-    description: 'Código del establecimiento emisor (3 dígitos)',
-  })
-  @IsOptional()
-  @IsNumber({}, { message: 'El código de establecimiento debe ser un número' })
-  issuingEstablishmentCode?: number
-
-  @ApiPropertyOptional({
-    type: 'number',
-    example: 1,
-    description: 'Código punto de emisión (3 dígitos)',
-  })
-  @IsOptional()
-  @IsNumber({}, { message: 'El código de punto de emisión debe ser un número' })
-  issuingPointCode?: number
-
-  @ApiPropertyOptional({
-    type: 'number',
-    example: 12345,
-    description: 'Número de resolución (5 dígitos)',
-  })
-  @IsOptional()
-  @IsNumber({}, { message: 'El número de resolución debe ser un número' })
-  resolutionNumber?: number
-
-  @ApiPropertyOptional({
     enum: Accounting,
     example: Accounting.YES,
     description: 'Obligado a llevar contabilidad (SI/NO)',
   })
   @IsOptional()
   @IsEnum(Accounting, {
-    message: `La contabilidad debe ser: ${Object.values(Accounting).join(' o ')}`,
+    message: `La contabilidad debe ser: ${Object.values(Accounting)}`,
   })
   accounting?: Accounting
 
@@ -136,15 +96,4 @@ export class UpdateEstablishmentDto {
     message: `El tipo de ambiente debe ser: ${Object.values(EnvironmentType).join(' o ')}`,
   })
   environmentType?: EnvironmentType
-
-  @ApiPropertyOptional({
-    enum: TypeOfIssue,
-    example: TypeOfIssue.ISSUSE_NORMAL,
-    description: 'Tipo de emisión',
-  })
-  @IsOptional()
-  @IsEnum(TypeOfIssue, {
-    message: `El tipo de emisión debe ser: ${Object.values(TypeOfIssue).join(' o ')}`,
-  })
-  typeIssue?: TypeOfIssue
 }

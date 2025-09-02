@@ -1,4 +1,5 @@
 'use client'
+
 import { Icons } from '@/components/icons'
 import { Control } from 'react-hook-form'
 import { ProductFormData } from '@/modules/product/types/product-form'
@@ -10,17 +11,11 @@ interface EconomicSectionProps {
 	control: Control<ProductFormData>
 }
 
-// Crear las opciones correctamente - los valores deben ser numbers, no strings
-const typeOptions = Object.entries(taxLabelsTraslateToEs).map(([key, label]) => ({
-	value: Number(key), // Convertir la clave a número
-	label,
-}))
-
-// O alternativamente, usar directamente los valores del enum:
-// const typeOptions = [
-// 	{ value: TaxAllow.EXENTO, label: taxLabelsTraslateToEs[TaxAllow.EXENTO] },
-// 	{ value: TaxAllow.CON_IVA, label: taxLabelsTraslateToEs[TaxAllow.CON_IVA] },
-// ]
+// Crear las opciones usando directamente los valores del enum como strings
+const typeOptions = [
+	{ value: TaxAllow.EXENTO.toString(), label: taxLabelsTraslateToEs[TaxAllow.EXENTO] },
+	{ value: TaxAllow.CON_IVA.toString(), label: taxLabelsTraslateToEs[TaxAllow.CON_IVA] },
+]
 
 export function EconomicSection({ control }: EconomicSectionProps) {
 	return (
@@ -47,11 +42,11 @@ export function EconomicSection({ control }: EconomicSectionProps) {
 					<UniversalFormField
 						required
 						control={control}
-						name='stock'
+						name='pricePublic'
 						type='number'
-						label='Stock'
-						placeholder='Ej: 666'
-						description='Stock inicial del producto'
+						label='Precio de venta'
+						placeholder='Ej: 7.123456'
+						description='Precio de venta'
 					/>
 					<UniversalFormField
 						required
@@ -60,18 +55,25 @@ export function EconomicSection({ control }: EconomicSectionProps) {
 						type='select'
 						options={typeOptions}
 						label='Impuesto'
-						description='Impuesto del producto'
 					/>
 				</div>
 				{/* Fila 2: SKU, Código de barras */}
-				<div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
-					<UniversalFormField control={control} name='sku' type='text' label='SKU' placeholder='Ej: SKU-12345' />
+				<div className='grid grid-cols-1 gap-6 sm:grid-cols-3'>
 					<UniversalFormField
 						control={control}
 						name='barCode'
 						type='text'
 						label='Código de barras'
 						placeholder='Ej: 1234567890123'
+					/>
+					<UniversalFormField control={control} name='sku' type='text' label='SKU' placeholder='Ej: SKU-12345' />
+					<UniversalFormField
+						required
+						control={control}
+						name='stock'
+						type='number'
+						label='Stock'
+						placeholder='Ej: 666'
 					/>
 				</div>
 			</CardContent>

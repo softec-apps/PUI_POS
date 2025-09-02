@@ -52,7 +52,7 @@ export default async function RootLayout({
 				<NextTopLoader showSpinner={false} color='#a1a1a1' />
 				<Providers activeThemeValue={activeThemeValue as string}>
 					<Toaster position='top-center' richColors expand />
-					<main className='bg-background font-sans antialiased'>{children}</main>
+					<main className='bg-popover font-sans antialiased'>{children}</main>
 				</Providers>
 			</body>
 		</html>

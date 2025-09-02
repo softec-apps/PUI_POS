@@ -54,6 +54,6 @@ export const TAX_ALLOW = {
 
 // Labels traducidos
 export const taxLabelsTraslateToEs: Record<TaxAllow, string> = {
-	[TaxAllow.EXENTO]: 'Exentos de IVA',
-	[TaxAllow.CON_IVA]: 'Con IVA',
+	[TaxAllow.EXENTO]: 'Exentos de IVA: 0%',
+	[TaxAllow.CON_IVA]: 'Con IVA: 15%',
 }

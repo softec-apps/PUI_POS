@@ -124,4 +124,25 @@ export class SaleEntity extends EntityRelationalHelper {
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    comment: 'Estado comprobante',
+  })
+  estado_sri?: string | null
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    comment: 'Clave de acceso comprobante SRI',
+  })
+  clave_acceso?: string | null
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    comment: 'UUID del comprobante de Factu Zen',
+  })
+  comprobante_id?: string | null
 }

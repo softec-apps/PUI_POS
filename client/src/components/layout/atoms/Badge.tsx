@@ -65,7 +65,7 @@ const dotColors: Record<BadgeVariant, string> = {
 export function Badge({ variant = 'default', text, decor = false }: Props) {
 	return (
 		<BadgeUI className={`rounded-full focus-visible:outline-none ${variantStyles[variant]}`}>
-			{decor && <span className={`mr-1.5 size-1.5 rounded-full ${dotColors[variant]}`} />}
+			{decor && <span className={`mr-0.5 size-1.5 rounded-full ${dotColors[variant]}`} />}
 			{text}
 		</BadgeUI>
 	)

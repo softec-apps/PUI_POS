@@ -22,6 +22,7 @@ export class ProductMapper {
     domainEntity.name = raw.name
     domainEntity.description = raw.description
     domainEntity.price = Number(raw.price)
+    domainEntity.pricePublic = Number(raw.pricePublic)
     domainEntity.status = raw.status
     domainEntity.sku = raw.sku
     domainEntity.barCode = raw.barCode
@@ -82,6 +83,7 @@ export class ProductMapper {
     persistenceEntity.name = domainEntity.name
     persistenceEntity.description = domainEntity.description
     persistenceEntity.price = domainEntity.price
+    persistenceEntity.pricePublic = domainEntity.pricePublic
     persistenceEntity.status = domainEntity.status
     persistenceEntity.sku = domainEntity.sku
     persistenceEntity.barCode = domainEntity.barCode

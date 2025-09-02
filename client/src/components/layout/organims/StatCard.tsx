@@ -11,20 +11,62 @@ interface StatCardProps {
 	icon?: ReactElement
 	footerText?: string
 	footerIcon?: ReactElement
-	variant?: 'success' | 'destructive' | 'default'
+	variant?:
+		| 'success'
+		| 'destructive'
+		| 'default'
+		| 'info'
+		| 'warning'
+		| 'neutral'
+		| 'primary'
+		| 'secondary'
+		| 'purple'
+		| 'pink'
+		| 'indigo'
+		| 'teal'
+		| 'orange'
+		| 'lime'
+		| 'fuchsia'
+		| 'amber'
 }
 
 export function StatCard({ title, value, icon, footerText, footerIcon, variant = 'default' }: StatCardProps) {
 	const variantColor = {
+		info: 'text-sky-500 dark:text-sky-400',
+		warning: 'text-amber-500 dark:text-amber-400',
 		success: 'text-emerald-500 dark:text-emerald-400',
-		destructive: 'text-destructive',
+		destructive: 'text-destructive dark:text-destructive',
 		default: 'text-muted-foreground',
+		neutral: 'text-neutral-500 dark:text-neutral-400',
+		primary: 'text-primary dark:text-primary',
+		secondary: 'text-secondary dark:text-secondary',
+		purple: 'text-purple-500 dark:text-purple-400',
+		pink: 'text-pink-500 dark:text-pink-400',
+		indigo: 'text-indigo-500 dark:text-indigo-400',
+		teal: 'text-teal-500 dark:text-teal-400',
+		orange: 'text-orange-500 dark:text-orange-400',
+		lime: 'text-lime-500 dark:text-lime-400',
+		fuchsia: 'text-fuchsia-500 dark:text-fuchsia-400',
+		amber: 'text-amber-500 dark:text-amber-400',
 	}[variant]
 
 	const gradientBg = {
+		info: 'from-sky-300/10 to-card dark:from-sky-300/15',
+		warning: 'from-amber-300/10 to-card dark:from-amber-300/15',
 		success: 'from-emerald-300/10 to-card dark:from-emerald-300/15',
 		destructive: 'from-destructive/10 to-card dark:from-destructive/15',
 		default: 'from-primary/5 to-card dark:from-popover',
+		neutral: 'from-neutral-300/10 to-card dark:from-neutral-300/15',
+		primary: 'from-primary/10 to-card dark:from-primary/15',
+		secondary: 'from-secondary/10 to-card dark:from-secondary/15',
+		purple: 'from-purple-300/10 to-card dark:from-purple-300/15',
+		pink: 'from-pink-300/10 to-card dark:from-pink-300/15',
+		indigo: 'from-indigo-300/10 to-card dark:from-indigo-300/15',
+		teal: 'from-teal-300/10 to-card dark:from-teal-300/15',
+		orange: 'from-orange-300/10 to-card dark:from-orange-300/15',
+		lime: 'from-lime-300/10 to-card dark:from-lime-300/15',
+		fuchsia: 'from-fuchsia-300/10 to-card dark:from-fuchsia-300/15',
+		amber: 'from-amber-300/10 to-card dark:from-amber-300/15',
 	}[variant]
 
 	return (

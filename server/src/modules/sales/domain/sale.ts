@@ -99,4 +99,25 @@ export class Sale {
     description: 'Fecha de creación de la venta',
   })
   createdAt: Date
+
+  @ApiPropertyOptional({
+    type: 'string',
+    example: 'procesando',
+    description: 'Estado comprobante',
+  })
+  estado_sri: string | null
+
+  @ApiPropertyOptional({
+    type: 'string',
+    example: '0101011010111110454414',
+    description: 'Clave de acceso comprobante SRI',
+  })
+  clave_acceso: string | null
+
+  @ApiPropertyOptional({
+    type: 'string',
+    example: 'a57c798c-3809-4fb2-8331-5a03926ac158',
+    description: 'UUID del comprobante de Factu Zen',
+  })
+  comprobante_id?: string | null
 }

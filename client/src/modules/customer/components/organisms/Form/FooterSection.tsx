@@ -1,7 +1,7 @@
 'use client'
 
 import { Icons } from '@/components/icons'
-import { SheetFooter } from '@/components/ui/sheet'
+import { DialogFooter } from '@/components/ui/dialog'
 import { I_Customer } from '@/common/types/modules/customer'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 
@@ -29,7 +29,7 @@ export function FormFooter({ formState, isFormValid, currentRecord, onClose, onS
 	}
 
 	return (
-		<SheetFooter className='bg-muted/20 border-t'>
+		<DialogFooter className='bg-muted/20 border-t p-4'>
 			<div className='flex w-full items-center justify-between gap-4'>
 				<span className={`${getStatusColor()} flex items-center gap-1 text-sm`}>
 					<Icons.infoCircle className='h-4 w-4' />
@@ -61,6 +61,6 @@ export function FormFooter({ formState, isFormValid, currentRecord, onClose, onS
 					/>
 				</div>
 			</div>
-		</SheetFooter>
+		</DialogFooter>
 	)
 }

@@ -13,4 +13,5 @@ export const ENDPOINT_API = {
 	ESTABLISHMENT: 'establishment',
 	CUSTOMER: 'customer',
 	SALE: 'sale',
+	BILLING: 'billing',
 }

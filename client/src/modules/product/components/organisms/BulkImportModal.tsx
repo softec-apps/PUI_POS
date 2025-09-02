@@ -710,7 +710,7 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 	return (
 		<Sheet open={open} onOpenChange={handleClose}>
 			<SheetContent className='flex h-screen min-w-full flex-col rounded-none px-6 py-4'>
-				<SheetHeader className='flex-shrink-0'>
+				<SheetHeader className='flex-shrink-0 pt-0 pb-0'>
 					<DialogTitle className='flex items-center gap-2'>Importar productos desde Excel</DialogTitle>
 					<DialogDescription>
 						Importa múltiples productos a través de un archivo Excel (.xlsx o .xls).
@@ -753,8 +753,8 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 														<strong>15</strong> con IVA (15%) o <strong>0</strong> exentos de IVA.
 													</li>
 													<li>
-														<strong>Categoría/Compañía (Proveedor)</strong>: Si no existe en el sistema, se creará
-														automáticamente.
+														<strong>Categoría/Compañía/Proveedor (Proveedor)</strong>: Si no existe en el sistema, se
+														creará automáticamente.
 													</li>
 												</ul>
 											</div>
@@ -944,9 +944,9 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 																		<TableHead>Código UPC/EAN</TableHead>
 																		<TableHead>Nombre</TableHead>
 																		<TableHead>Categoría</TableHead>
-																		<TableHead>Compañía</TableHead>
-																		<TableHead>Precio Mayorista</TableHead>
-																		<TableHead>Precio Venta</TableHead>
+																		<TableHead>Compañía/Proveedor</TableHead>
+																		<TableHead>Costo</TableHead>
+																		<TableHead>PVP</TableHead>
 																		<TableHead>Stock</TableHead>
 																		<TableHead>Impuesto %</TableHead>
 																		<TableHead>Acciones</TableHead>
@@ -965,8 +965,12 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 																			<TableCell className='max-w-[200px] truncate'>
 																				{DataNormalizer.getDisplayValue(item, 'itemName')}
 																			</TableCell>
-																			<TableCell>{DataNormalizer.getDisplayValue(item, 'category')}</TableCell>
-																			<TableCell>{DataNormalizer.getDisplayValue(item, 'companyName')}</TableCell>
+																			<TableCell className='max-w-[200px] truncate'>
+																				{DataNormalizer.getDisplayValue(item, 'category')}
+																			</TableCell>
+																			<TableCell className='max-w-[200px] truncate'>
+																				{DataNormalizer.getDisplayValue(item, 'companyName')}
+																			</TableCell>
 																			<TableCell>${DataNormalizer.getDisplayValue(item, 'wholesalePrice')}</TableCell>
 																			<TableCell>${DataNormalizer.getDisplayValue(item, 'unitPrice')}</TableCell>
 																			<TableCell>{DataNormalizer.getDisplayValue(item, 'stockQuantity')}</TableCell>
@@ -1123,8 +1127,8 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 											required
 											control={form.control}
 											name='companyName'
-											label='Compañía'
-											placeholder='Nombre de la compañía'
+											label='Compañía/Proveedor'
+											placeholder='Nombre de la compañía/Proveedor'
 											type='text'
 										/>
 									</div>
@@ -1134,7 +1138,7 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 											required
 											control={form.control}
 											name='wholesalePrice'
-											label='Precio Mayorista'
+											label='Costo'
 											type='number'
 											step='0.000001'
 											placeholder='0.00'
@@ -1144,7 +1148,7 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 											control={form.control}
 											required
 											name='unitPrice'
-											label='Precio Venta'
+											label='PVP'
 											type='number'
 											step='0.000001'
 											placeholder='0.00'

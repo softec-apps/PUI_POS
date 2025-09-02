@@ -668,18 +668,101 @@ export function UniversalFormField<T extends FieldValues>({
 											<Input
 												placeholder={placeholder}
 												{...field}
-												type={type === 'password' && showPassword ? 'text' : type}
+												type={type === 'password' ? (showPassword ? 'text' : 'password') : 'text'}
+												inputMode={type === 'number' ? 'decimal' : 'text'}
 												className={inputClasses}
 												min={min}
 												max={max}
 												step={step}
 												disabled={disabled}
 												onChange={e => {
-													const rawValue = e.target.value
+													let rawValue = e.target.value
 													let value: any = rawValue
-													if (type === 'number') value = value === '' ? null : Number(value)
+
+													// Validación especial para campos numéricos
+													if (type === 'number') {
+														// Permitir solo números y un punto decimal
+														rawValue = rawValue.replace(/[^0-9.]/g, '')
+
+														// Validar que solo haya un punto decimal
+														const dotCount = (rawValue.match(/\./g) || []).length
+														if (dotCount > 1) {
+															// Si hay más de un punto, mantener solo el primero
+															const parts = rawValue.split('.')
+															rawValue = parts[0] + '.' + parts.slice(1).join('').replace(/\./g, '')
+														}
+
+														// Si el punto está al principio, agregar 0 antes
+														if (rawValue.startsWith('.')) {
+															rawValue = '0' + rawValue
+														}
+
+														// Limitar a 6 dígitos enteros y 6 decimales
+														if (rawValue.includes('.')) {
+															const [integerPart, decimalPart] = rawValue.split('.')
+															if (integerPart.length > 6) {
+																rawValue = integerPart.slice(0, 6) + '.' + decimalPart
+															}
+															if (decimalPart && decimalPart.length > 6) {
+																rawValue = integerPart + '.' + decimalPart.slice(0, 6)
+															}
+														} else if (rawValue.length > 6) {
+															rawValue = rawValue.slice(0, 6)
+														}
+
+														// Actualizar el valor del input
+														e.target.value = rawValue
+
+														// Para campos numéricos, mantener como string para que Zod lo procese
+														value = rawValue === '' ? null : rawValue
+													}
+
 													field.onChange(value)
 													onChange?.(value)
+												}}
+												onBlur={e => {
+													// Al salir del campo, formatear el valor para que tenga siempre 2 decimales
+													if (type === 'number' && e.target.value && e.target.value.includes('.')) {
+														const [integerPart, decimalPart] = e.target.value.split('.')
+														let formattedValue = integerPart
+
+														if (decimalPart) {
+															// Completar con ceros si tiene menos de 2 decimales
+															formattedValue += '.' + decimalPart.padEnd(2, '0').slice(0, 2)
+														} else {
+															formattedValue += '.00'
+														}
+
+														e.target.value = formattedValue
+														field.onChange(formattedValue)
+														onChange?.(formattedValue)
+													}
+												}}
+												onKeyDown={e => {
+													// Prevenir caracteres no numéricos solo para tipo number
+													if (type === 'number') {
+														if (
+															// Permitir: números (0-9), punto, teclas de navegación
+															!/[0-9.]/.test(e.key) &&
+															![
+																'Backspace',
+																'Tab',
+																'Enter',
+																'ArrowLeft',
+																'ArrowRight',
+																'Delete',
+																'Home',
+																'End',
+															].includes(e.key)
+														) {
+															e.preventDefault()
+														}
+
+														// Prevenir múltiples puntos decimales
+														if (e.key === '.' && e.currentTarget.value.includes('.')) {
+															e.preventDefault()
+														}
+													}
 												}}
 												value={field.value ?? ''}
 											/>

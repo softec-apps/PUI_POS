@@ -78,6 +78,10 @@ export class SaleMapper {
         ? raw.items.map((item) => SaleItemMapper.toDomain(item))
         : [],
       createdAt: raw.createdAt,
+      // Campos de factus zen
+      estado_sri: raw.estado_sri,
+      comprobante_id: raw.comprobante_id,
+      clave_acceso: raw.clave_acceso,
     })
     return domainEntity
   }
@@ -98,6 +102,10 @@ export class SaleMapper {
       receivedAmount: domainEntity.receivedAmount,
       change: domainEntity.change,
       createdAt: domainEntity.createdAt ?? new Date(),
+
+      estado_sri: domainEntity.estado_sri,
+      comprobante_id: domainEntity.comprobante_id,
+      clave_acceso: domainEntity.clave_acceso,
     })
 
     if (domainEntity.customer) {

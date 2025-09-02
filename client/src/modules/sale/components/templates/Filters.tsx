@@ -104,6 +104,8 @@ export function Filters({
 						)}
 					</div>
 
+					<span className='text-muted-foreground'>|</span>
+
 					<div className='relative flex items-center gap-2'>
 						<DateFiltersDropdown
 							dateFilters={dateFilters}

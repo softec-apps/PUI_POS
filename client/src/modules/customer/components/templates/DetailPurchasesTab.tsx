@@ -40,20 +40,6 @@ interface PurchasesTabProps {
 export function PurchasesTab({ recordsData, isRefreshing, onRefresh }: PurchasesTabProps) {
 	return (
 		<Card className='border-none bg-transparent p-0 shadow-none'>
-			<CardHeader className='p-0'>
-				<div className='flex items-center justify-between'>
-					<CardTitle>Historial de Compras</CardTitle>
-
-					<ActionButton
-						icon={isRefreshing ? <Icons.refresh className='animate-spin' /> : <Icons.refresh />}
-						onClick={onRefresh}
-						disabled={isRefreshing}
-						text={isRefreshing ? 'Refrescando...' : 'Refrescar'}
-						variant='secondary'
-					/>
-				</div>
-			</CardHeader>
-
 			<CardContent className='p-0'>
 				<div className='overflow-x-auto'>
 					<Table>

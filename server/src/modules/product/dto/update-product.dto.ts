@@ -75,16 +75,32 @@ export class UpdateProductDto {
   @ApiPropertyOptional({
     type: Number,
     example: 29.99,
-    description:
-      'Precio del producto (debe ser un número positivo, máximo 6 decimales)',
+    description: 'Costo (debe ser un número positivo, máximo 6 decimales)',
   })
   @IsOptional()
   @IsNumber(
     { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 6 },
-    { message: 'El precio debe ser un número válido (máximo 6 decimales)' },
+    { message: 'El costo debe ser un número válido (máximo 6 decimales)' },
   )
-  @IsPositive({ message: 'El precio debe ser un número positivo' })
+  @IsPositive({ message: 'El costo debe ser un número positivo' })
   price?: number
+
+  @ApiPropertyOptional({
+    type: Number,
+    example: 29.99,
+    description:
+      'Precio de venta (debe ser un número positivo, máximo 6 decimales)',
+  })
+  @IsOptional()
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 6 },
+    {
+      message:
+        'El precio de venta debe ser un número válido (máximo 6 decimales)',
+    },
+  )
+  @IsPositive({ message: 'El precio de venta debe ser un número positivo' })
+  pricePublic?: number
 
   @ApiPropertyOptional({
     type: String,

@@ -71,11 +71,6 @@ export class BulkProductImportService {
               'El nombre del producto es obligatorio',
             )
 
-          if (!productData.unitPrice || productData.unitPrice <= 0)
-            throw new BadRequestException(
-              'El precio unitario debe ser mayor a 0',
-            )
-
           const resolvedIds = await this.resolveRelationships(
             productData,
             importDto,
@@ -100,7 +95,8 @@ export class BulkProductImportService {
           const productEntity: Partial<Product> = {
             ...(existingProduct || {}),
             name: productData.itemName.trim(),
-            price: Number(productData.unitPrice),
+            price: Number(productData.costPrice),
+            pricePublic: Number(productData.unitPrice),
             status: productData.status || ProductStatus.ACTIVE,
             sku: productData.sku?.trim() || existingProduct?.sku,
             barCode:
@@ -209,9 +205,8 @@ export class BulkProductImportService {
         })
 
         // Guardar entradas de Kardex en lote usando el método del repository
-        if (kardexEntries.length > 0) {
+        if (kardexEntries.length > 0)
           await this.kardexRepository.bulkCreate(kardexEntries, entityManager)
-        }
 
         savedProducts.forEach((prod, i) => {
           results.push({
@@ -365,7 +360,7 @@ export class BulkProductImportService {
   }
 
   /**
-   * Genera un RUC único para nuevos proveedores
+   * Genera un RUC único para nuevos proveedores - fake
    */
   private generateUniqueRuc(): string {
     const timestamp = Date.now().toString()
@@ -422,7 +417,6 @@ export class BulkProductImportService {
 
   /**
    * Parsea un archivo Excel y lo convierte en BulkProductImportDto
-   * Solo maneja los 10 campos específicos del Excel
    */
   async parseExcelToImportDto(
     excelBuffer: Buffer,
@@ -447,9 +441,8 @@ export class BulkProductImportService {
       const worksheet = workbook.Sheets[sheetName]
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
 
-      if (jsonData.length === 0) {
+      if (jsonData.length === 0)
         throw new BadRequestException('El archivo Excel está vacío')
-      }
 
       // Obtener headers (primera fila)
       const headers = jsonData[0] as string[]
@@ -486,9 +479,7 @@ export class BulkProductImportService {
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i] as any[]
 
-        if (!row || row.length === 0 || row.every((cell) => !cell)) {
-          continue // Saltar filas vacías
-        }
+        if (!row || row.length === 0 || row.every((cell) => !cell)) continue // Saltar filas vacías
 
         // Mapear solo los campos específicos del Excel
         const product: BulkProductImportItemDto = {

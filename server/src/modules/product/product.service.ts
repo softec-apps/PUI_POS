@@ -121,6 +121,7 @@ export class ProductService {
           name: createProductDto.name,
           description: createProductDto.description || null,
           price: createProductDto.price,
+          pricePublic: createProductDto.pricePublic,
           status: createProductDto.status || ProductStatus.DRAFT,
           sku: createProductDto.sku || null,
           barCode: createProductDto.barCode || null,
@@ -145,7 +146,7 @@ export class ProductService {
         }
 
         // Calculate financial values for the initial stock
-        const unitCost = createProductDto.price || 0
+        const unitCost = createProductDto.pricePublic || 0
         const taxRate = 15
         const subtotal = parseFloat((initialStock * unitCost).toFixed(6))
         const taxAmount = parseFloat(((subtotal * taxRate) / 100).toFixed(6))
@@ -266,6 +267,10 @@ export class ProductService {
       // Actualización de propiedades numéricas
       if (updateProductDto.price !== undefined)
         updateData.price = updateProductDto.price
+
+      // Actualización de propiedades numéricas
+      if (updateProductDto.pricePublic !== undefined)
+        updateData.pricePublic = updateProductDto.pricePublic
 
       // *** STOCK MANAGEMENT WITH KARDEX INTEGRATION ***
       let shouldCreateKardexEntry = false
@@ -407,7 +412,7 @@ export class ProductService {
         if (!user) throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.USER)
 
         // Calculate financial values for the stock movement
-        const unitCost = updateProductDto.price || existingProduct.price || 0
+        const unitCost = updateProductDto.pricePublic || 0
         const taxRate = 15
         const subtotal = parseFloat(
           (stockMovementData.quantity * unitCost).toFixed(6),

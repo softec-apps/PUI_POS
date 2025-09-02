@@ -25,7 +25,6 @@ import { StatusSection } from '../Form/StatusSection'
 import { TaxAllow } from '@/modules/product/constants/product.constants'
 
 export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: ProductFormProps) {
-	console.log(currentRecord)
 	const { getProductById } = useProduct()
 	const [productData, setProductData] = useState(null)
 	const [loadingProduct, setLoadingProduct] = useState(false)
@@ -64,26 +63,22 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 	} = useProductForm(productData)
 
 	// Helper function to format tax value properly
-	const formatTaxValue = (taxValue: any): TaxAllow => {
-		if (taxValue === null || taxValue === undefined || taxValue === '') {
-			return TaxAllow.EXENTO // Default to exempt if no value
-		}
+	const formatTaxValue = (taxValue: any): string => {
+		if (taxValue === null || taxValue === undefined || taxValue === '') return TaxAllow.EXENTO.toString() // Return as string for form
 
-		// Convert number to TaxAllow enum
+		// Convert number to string representation
 		const numericValue = Number(taxValue)
 		if (numericValue === 15) {
-			return TaxAllow.CON_IVA
+			return TaxAllow.CON_IVA.toString()
 		} else if (numericValue === 0) {
-			return TaxAllow.EXENTO
+			return TaxAllow.EXENTO.toString()
 		}
 
-		// If it's already a valid enum value, return it
-		if (Object.values(TaxAllow).includes(taxValue)) {
-			return taxValue
-		}
+		// If it's already a valid enum value, convert to string
+		if (Object.values(TaxAllow).includes(taxValue)) return taxValue.toString()
 
 		// Default fallback
-		return TaxAllow.EXENTO
+		return TaxAllow.EXENTO.toString()
 	}
 
 	// Fetch complete product data when modal opens with an existing product
@@ -123,14 +118,15 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 				photo: dataToUse?.photo || '',
 				removePhoto: false,
 				price: dataToUse?.price || '',
+				pricePublic: dataToUse?.pricePublic || '',
 				sku: dataToUse?.sku || '',
 				barCode: dataToUse?.barCode || '',
 				stock: dataToUse?.stock || '',
-				tax: formatTaxValue(dataToUse?.tax), // Format tax value properly
+				tax: formatTaxValue(dataToUse?.tax), // Esto ahora retorna string
 				categoryId: dataToUse?.category?.id || '',
-				brandId: dataToUse?.brand?.id || '', // Make optional - empty string when null
+				brandId: dataToUse?.brand?.id || '',
 				supplierId: dataToUse?.supplier?.id || '',
-				templateId: dataToUse?.template?.id || '', // Make optional - empty string when null
+				templateId: dataToUse?.template?.id || '',
 			})
 		}
 	}, [isOpen, loadingProduct, productData, currentRecord, form])

@@ -13,7 +13,7 @@ interface SelectedCustomerProps {
 }
 
 export const SelectedCustomer: React.FC<SelectedCustomerProps> = ({ customer, onDeselect }) => (
-	<Card className='bg-muted border-border/50 dark:bg-accent/15 rounded-2xl p-1 shadow-none transition-colors duration-500'>
+	<Card className='bg-popover border-border/50 rounded-2xl p-1 shadow-none transition-colors duration-500'>
 		<CardContent className='flex items-center justify-between p-1'>
 			<div>
 				<div className='flex items-center gap-2'>

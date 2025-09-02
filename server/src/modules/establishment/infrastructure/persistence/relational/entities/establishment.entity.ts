@@ -10,7 +10,6 @@ import {
 } from 'typeorm'
 import {
   Accounting,
-  TypeOfIssue,
   EnvironmentType,
 } from '@/modules/establishment/establishment.enum'
 import { PATH_SOURCE } from '@/common/constants/pathSource.const'
@@ -20,7 +19,6 @@ import { FileEntity } from '@/modules/files/infrastructure/persistence/relationa
 @Entity({ name: PATH_SOURCE.ESTABLISHMENT })
 @Index(['ruc'])
 @Index(['tradeName'])
-@Index(['resolutionNumber'])
 export class EstablishmentEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn('uuid')
   id: string
@@ -57,33 +55,6 @@ export class EstablishmentEntity extends EntityRelationalHelper {
   parentEstablishmentAddress: string
 
   @Column({
-    type: 'varchar',
-    length: 300,
-    comment: 'Dirección del establecimiento emisor',
-  })
-  addressIssuingEstablishment: string
-
-  @Column({
-    type: 'int',
-    nullable: false,
-    comment: 'Código del establecimiento emisor',
-  })
-  issuingEstablishmentCode: number
-
-  @Column({
-    type: 'int',
-    nullable: false,
-    comment: 'Código punto de emisión',
-  })
-  issuingPointCode: number
-
-  @Column({
-    type: 'int',
-    comment: 'Contribuyente especial (Número de resolución)',
-  })
-  resolutionNumber: number
-
-  @Column({
     type: 'enum',
     enum: Accounting,
     comment: 'Obligatorio a llevar contabilidad (Opciones SI o NO)',
@@ -104,14 +75,6 @@ export class EstablishmentEntity extends EntityRelationalHelper {
     comment: 'Tipo de ambiente',
   })
   environmentType: EnvironmentType
-
-  @Column({
-    type: 'enum',
-    enum: TypeOfIssue,
-    nullable: false,
-    comment: 'Tipo de emisión',
-  })
-  typeIssue: number
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date

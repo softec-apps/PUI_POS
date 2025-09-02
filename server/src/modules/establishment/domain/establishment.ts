@@ -1,4 +1,5 @@
 import {
+  IsEmpty,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -14,7 +15,7 @@ import {
   EnvironmentType,
 } from '@/modules/establishment/establishment.enum'
 import { FileType } from '@/modules/files/domain/file'
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsEcuadorianRUC } from '@/common/validators/ecuadorian.validator'
 
 export class Establishment {
@@ -77,46 +78,6 @@ export class Establishment {
   parentEstablishmentAddress?: string | null
 
   @ApiProperty({
-    type: String,
-    example: 'Av. Principal 456 y Calle Secundaria',
-    description: 'Dirección del establecimiento emisor',
-    maxLength: 300,
-  })
-  @IsNotEmpty({ message: 'La dirección emisor es obligatorio' })
-  @IsString({ message: 'La dirección emisor debe ser texto' })
-  @MaxLength(300, {
-    message: 'La dirección emisor debe tener máximo 300 caracteres',
-  })
-  addressIssuingEstablishment: string
-
-  @ApiProperty({
-    type: 'number',
-    example: 1,
-    description: 'Código del establecimiento emisor (3 dígitos)',
-  })
-  @IsOptional()
-  @IsNumber({}, { message: 'El código de establecimiento debe ser un número' })
-  issuingEstablishmentCode: number
-
-  @ApiProperty({
-    type: 'number',
-    example: 1,
-    description: 'Código punto de emisión (3 dígitos)',
-  })
-  @IsOptional()
-  @IsNumber({}, { message: 'El código de punto de emisión debe ser un número' })
-  issuingPointCode: number
-
-  @ApiProperty({
-    type: 'number',
-    example: 12345,
-    description: 'Número de resolución (5 dígitos)',
-  })
-  @IsNotEmpty({ message: 'El número de resolución es obligatorio' })
-  @IsNumber({}, { message: 'El número de resolución debe ser un número' })
-  resolutionNumber: number
-
-  @ApiProperty({
     enum: Accounting,
     example: Accounting.YES,
     description: 'Obligado a llevar contabilidad (SI/NO)',
@@ -132,27 +93,16 @@ export class Establishment {
   })
   photo?: FileType | null
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     enum: EnvironmentType,
     example: EnvironmentType.PRODUCTION,
     description: 'Tipo de ambiente',
   })
-  @IsNotEmpty({ message: 'El tipo de ambiente es obligatorio' })
+  @IsEmpty()
   @IsEnum(EnvironmentType, {
     message: `El tipo de ambiente debe ser: ${Object.values(EnvironmentType).join(' o ')}`,
   })
-  environmentType: EnvironmentType
-
-  @ApiProperty({
-    enum: TypeOfIssue,
-    example: TypeOfIssue.ISSUSE_NORMAL,
-    description: 'Tipo de emisión',
-  })
-  @IsNotEmpty({ message: 'El tipo de emisión es obligatorio' })
-  @IsEnum(TypeOfIssue, {
-    message: `El tipo de emisión debe ser: ${Object.values(TypeOfIssue).join(' o ')}`,
-  })
-  typeIssue: TypeOfIssue
+  environmentType?: EnvironmentType | null
 
   @ApiProperty({
     type: Date,

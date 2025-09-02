@@ -103,7 +103,7 @@ export default function AppSidebar() {
 	const shouldShowSkeleton = isLoading || (navItems.length === 0 && isLoading !== false)
 
 	return (
-		<Sidebar collapsible='icon' variant='inset'>
+		<Sidebar collapsible='icon' variant='sidebar'>
 			<SidebarHeader>
 				{shouldShowSkeleton ? (
 					<div className='p-2'>

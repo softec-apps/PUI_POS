@@ -3,12 +3,10 @@
 import { z } from 'zod'
 import React, { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Icons } from '@/components/icons'
 import { useForm, FormProvider } from 'react-hook-form'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { Icons } from '@/components/icons'
-import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FormFooter } from '@/modules/customer/components/organisms/Form/FooterSection'
 import {
 	validateCedula,
@@ -16,6 +14,14 @@ import {
 	validateEntidadPublica,
 	validatePersonaJuridica,
 } from '@/common/utils/ecValidation-util'
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog'
 
 const customerSchema = z
 	.object({
@@ -24,9 +30,7 @@ const customerSchema = z
 		identificationNumber: z.string().min(1, 'Número de identificación es requerido'),
 		firstName: z.string().min(1, 'Nombre es requerido'),
 		lastName: z.string().optional(),
-		address: z.string().optional(),
 		email: z.string().email('Email no válido').optional().or(z.literal('')),
-		phone: z.string().optional(),
 	})
 	.refine(
 		data => {
@@ -73,9 +77,7 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 			identificationNumber: '',
 			firstName: '',
 			lastName: '',
-			address: '',
 			email: '',
-			phone: '',
 			...defaultValues,
 		},
 	})
@@ -96,9 +98,7 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 				identificationNumber: '',
 				firstName: '',
 				lastName: '',
-				address: '',
 				email: '',
-				phone: '',
 				...defaultValues,
 			})
 		}
@@ -127,13 +127,13 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 	if (!isOpen) return null
 
 	return (
-		<Sheet open={isOpen} onOpenChange={handleClose}>
-			<SheetContent className='z-50 flex max-h-screen min-w-xl flex-col [&>button]:hidden'>
-				<SheetHeader className='bg-background supports-[backdrop-filter]:bg-background/80 sticky top-0 z-10 border-b supports-[backdrop-filter]:backdrop-blur-sm'>
+		<Dialog open={isOpen} onOpenChange={handleClose}>
+			<DialogContent className='z-50 flex max-h-screen min-w-2xl flex-col p-0 [&>button]:hidden'>
+				<DialogHeader className='bg-background supports-[backdrop-filter]:bg-background/80 sticky top-0 z-10 rounded-t-2xl border-b p-4 supports-[backdrop-filter]:backdrop-blur-sm'>
 					<div className='flex items-center justify-between'>
-						<SheetTitle>{currentCustomer?.id ? 'Editar Cliente' : 'Crear Cliente'}</SheetTitle>
+						<DialogTitle>{currentCustomer?.id ? 'Editar Cliente' : 'Crear Cliente'}</DialogTitle>
 
-						<SheetClose>
+						<DialogClose>
 							<ActionButton
 								type='button'
 								variant='ghost'
@@ -141,26 +141,18 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 								disabled={formState.isSubmitting}
 								icon={<Icons.x className='h-4 w-4' />}
 							/>
-						</SheetClose>
+						</DialogClose>
 					</div>
 
-					<SheetDescription>Completa los datos del cliente</SheetDescription>
-				</SheetHeader>
+					<DialogDescription>Completa los datos del cliente</DialogDescription>
+				</DialogHeader>
 
 				<div className='flex-1 space-y-4 overflow-auto p-4'>
 					<FormProvider {...methods}>
 						<form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-4'>
 							<div className='space-y-8'>
 								{/* Información de identificación */}
-								<div className='space-y-4'>
-									<CardHeader className='p-0'>
-										<CardTitle className='flex items-center gap-2 text-lg'>
-											<Icons.id className='h-4 w-4' />
-											Información de Identificación
-										</CardTitle>
-										<CardDescription>Datos de identificación del cliente</CardDescription>
-									</CardHeader>
-
+								<div className='space-y-8'>
 									<div className='grid grid-cols-2 gap-4'>
 										<UniversalFormField
 											control={control}
@@ -189,69 +181,37 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 								</div>
 
 								{/* Información personal */}
-								<div className='space-y-4'>
-									<CardHeader className='p-0'>
-										<CardTitle className='flex items-center gap-2 text-lg'>
-											<Icons.user className='h-4 w-4' />
-											Información Personal
-										</CardTitle>
-										<CardDescription>Datos personales del cliente</CardDescription>
-									</CardHeader>
-
-									<div className='grid grid-cols-2 gap-4'>
-										<UniversalFormField
-											control={control}
-											name='firstName'
-											label='Nombres'
-											placeholder='Ingresa el nombre'
-											type='text'
-											required
-											showValidationIcons
-										/>
-
-										<UniversalFormField
-											control={control}
-											name='lastName'
-											label='Apellidos'
-											placeholder='Ingresa el apellido'
-											type='text'
-											showValidationIcons
-											required
-										/>
-									</div>
+								<div className='grid grid-cols-2 gap-4'>
+									<UniversalFormField
+										control={control}
+										name='firstName'
+										label='Nombres'
+										placeholder='Ingresa el nombre'
+										type='text'
+										required
+										showValidationIcons
+									/>
 
 									<UniversalFormField
 										control={control}
-										name='address'
-										label='Dirección'
-										placeholder='Ingresa la dirección'
+										name='lastName'
+										label='Apellidos'
+										placeholder='Ingresa el apellido'
 										type='text'
 										showValidationIcons
 										required
 									/>
-
-									<div className='grid grid-cols-2 gap-4'>
-										<UniversalFormField
-											control={control}
-											name='email'
-											label='Email'
-											placeholder='email@ejemplo.com'
-											type='email'
-											showValidationIcons
-											required
-										/>
-
-										<UniversalFormField
-											control={control}
-											name='phone'
-											label='Teléfono'
-											placeholder='099 123 4567'
-											type='text'
-											showValidationIcons
-											required
-										/>
-									</div>
 								</div>
+
+								<UniversalFormField
+									control={control}
+									name='email'
+									label='Email'
+									placeholder='email@ejemplo.com'
+									type='email'
+									showValidationIcons
+									required
+								/>
 							</div>
 						</form>
 					</FormProvider>
@@ -259,14 +219,12 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 
 				<FormFooter
 					formState={formState}
-					errors={errors}
-					isValid={isValid}
-					isDirty={isDirty}
-					currentTemplate={currentCustomer}
+					isFormValid={isValid} // <-- antes pasabas isValid pero el prop se llama isFormValid
+					currentRecord={currentCustomer} // <-- antes usabas currentTemplate
 					onClose={handleClose}
 					onSubmit={handleSubmit(handleFormSubmit)}
 				/>
-			</SheetContent>
-		</Sheet>
+			</DialogContent>
+		</Dialog>
 	)
 }

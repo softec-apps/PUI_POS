@@ -152,45 +152,33 @@ export function Header({ onCreateClick, onRefresh, totalRecords }: HeaderProps) 
 			totalRecords={totalRecords}
 			loading={loading}
 			actionContent={
-				<>
-					<ExportButton
-						data={consumerData}
-						totalRecords={totalRecords}
-						loading={loading}
-						onExport={handleExport}
-						onSheetOpen={handleExportSheetOpen}
-						config={{
-							text: 'Exportar',
-							size: 'lg',
-							variant: 'ghost',
-							disabled: !hasRecords || loading,
-						}}
-						exportConfig={{
-							columnLabels: EXPORT_CONFIG.columnLabels,
-							columnTypes: EXPORT_CONFIG.columnTypes,
-							excludeColumns: EXPORT_CONFIG.excludeColumns,
-							columnGroups: EXPORT_CONFIG.columnGroups,
-							customGroupConfig: EXPORT_CONFIG.customGroupConfig,
-						}}
-						dateFiltersConfig={{
-							enabled: true,
-							defaultFilters: exportDateFilters,
-							availableFilters: ['createdAt'],
-							onDateFilterChange: handleDateFilterChange,
-							onClearDateFilter: handleClearDateFilter,
-						}}
-					/>
-
-					<CreateButton
-						onClick={onCreateClick}
-						config={{
-							text: 'Nuevo cliente',
-							icon: <Icons.plus />,
-							size: 'lg',
-							disabled: loading,
-						}}
-					/>
-				</>
+				<ExportButton
+					data={consumerData}
+					totalRecords={totalRecords}
+					loading={loading}
+					onExport={handleExport}
+					onSheetOpen={handleExportSheetOpen}
+					config={{
+						text: 'Exportar',
+						size: 'lg',
+						variant: 'ghost',
+						disabled: !hasRecords || loading,
+					}}
+					exportConfig={{
+						columnLabels: EXPORT_CONFIG.columnLabels,
+						columnTypes: EXPORT_CONFIG.columnTypes,
+						excludeColumns: EXPORT_CONFIG.excludeColumns,
+						columnGroups: EXPORT_CONFIG.columnGroups,
+						customGroupConfig: EXPORT_CONFIG.customGroupConfig,
+					}}
+					dateFiltersConfig={{
+						enabled: true,
+						defaultFilters: exportDateFilters,
+						availableFilters: ['createdAt'],
+						onDateFilterChange: handleDateFilterChange,
+						onClearDateFilter: handleClearDateFilter,
+					}}
+				/>
 			}
 		/>
 	)

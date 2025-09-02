@@ -2,7 +2,6 @@ import {
   IsIn,
   IsNumber,
   IsString,
-  IsBoolean,
   IsOptional,
   ValidateNested,
   IsUUID,
@@ -20,6 +19,14 @@ export class FilterSaleDto {
   @IsOptional()
   @IsUUID(4, { message: 'El ID de cliente debe ser un UUID válido' })
   customerId?: string
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por ID de cliente',
+    example: 'd7a2d85d-453c-4ed0-a2cf-c2099aafdfe4',
+  })
+  @IsOptional()
+  @IsString({ message: 'Debe ser un estado valido' })
+  estado_sri?: string
 
   @ApiPropertyOptional({
     description: 'Filtrar por método de pago (cash, digital, card)',

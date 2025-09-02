@@ -17,6 +17,8 @@ import { ROUTE_PATH } from '@/common/constants/routes-const'
 import { formatPrice } from '@/common/utils/formatPrice-util'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/layout/atoms/Badge'
 
 interface CardViewProps {
 	recordsData: ReactTable<I_Sale>
@@ -72,70 +74,36 @@ export const CardView = ({ recordsData }: CardViewProps) => {
 											</div>
 										</div>
 
-										{/* Productos con HoverCard */}
-										<HoverCard>
-											<HoverCardTrigger asChild>
-												<Button variant='outline' size='lg' className='flex w-full justify-between rounded-xl'>
-													<Typography variant='small' className='font-medium'>
-														Productos
-													</Typography>
-
-													<span className='flex text-xs'>
-														{recordData.totalItems} {recordData.totalItems > 1 ? 'items' : 'item'}
-														<Icons.chevronDown className='ml-1 h-3 w-3 transition-transform group-hover:rotate-180' />
-													</span>
-												</Button>
-											</HoverCardTrigger>
-
-											<HoverCardContent align='center' className='w-80 overflow-hidden p-0 shadow-xl'>
-												<ul className='divide-border divide-y'>
-													{recordData.items.map((item, idx) => (
-														<motion.li
-															key={idx}
-															initial={{ opacity: 0, y: 10 }}
-															animate={{ opacity: 1, y: 0 }}
-															transition={{ delay: idx * 0.05 }}>
-															<Link
-																href={`${ROUTE_PATH.ADMIN.PRODUCT}/${item.product?.id ?? ''}`}
-																className='hover:bg-muted/50 flex items-center gap-3 p-3 transition-colors'>
-																{/* Imagen del producto */}
-																{item.product?.photo && (
-																	<div className='relative flex-shrink-0 overflow-hidden rounded-md border'>
-																		<ImageControl
-																			recordData={item.product.photo}
-																			enableHover={false}
-																			enableClick={false}
-																			imageHeight={45}
-																			imageWidth={45}
-																			className='object-cover'
-																		/>
-																	</div>
-																)}
-
-																{/* Info */}
-																<div className='flex flex-1 flex-col overflow-hidden'>
-																	<Typography variant='span' className='truncate font-medium'>
-																		{item.product?.name ?? item.productName}
-																	</Typography>
-
-																	<div className='flex items-center justify-between'>
-																		<Typography variant='muted' className='text-xs'>
-																			{item.quantity} × ${formatPrice(item.unitPrice)}
-																		</Typography>
-																		<Typography variant='span' className='font-semibold'>
-																			${formatPrice(item.totalPrice)}
-																		</Typography>
-																	</div>
-																</div>
-															</Link>
-														</motion.li>
-													))}
-												</ul>
-											</HoverCardContent>
-										</HoverCard>
-
 										{/* Totales */}
 										<div className='space-y-2.5 pt-2'>
+											{recordData?.clave_acceso && (
+												<div className='flex items-center justify-between border-b border-dashed pb-2.5'>
+													<Typography variant='muted' className='text-sm'>
+														Estado SRI:
+													</Typography>
+													{(() => {
+														const estado = row.original?.estado_sri
+
+														let variant: 'default' | 'destructive' | 'warning' | 'success' = 'default'
+														if (estado === 'AUTHORIZED') variant = 'success'
+														else if (estado === 'PENDING') variant = 'warning'
+
+														return (
+															<Badge
+																variant={variant}
+																text={
+																	estado === 'AUTHORIZED'
+																		? 'Autorizado'
+																		: estado === 'PENDING'
+																			? 'Pendiente'
+																			: estado || '-'
+																}
+															/>
+														)
+													})()}
+												</div>
+											)}
+
 											<div className='flex items-center justify-between'>
 												<Typography variant='muted' className='text-sm'>
 													Método:

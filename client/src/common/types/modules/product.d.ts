@@ -17,6 +17,7 @@ export interface I_Product {
 	status: ProductStatus
 	photo?: I_Photo
 	price: number
+	pricePublic: number
 	sku: string | null
 	barCode: string | null
 	stock: number

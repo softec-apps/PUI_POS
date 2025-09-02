@@ -38,7 +38,13 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 		),
 		cell: ({ row }) => (
 			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				<ImageControl recordData={row.original.photo} enableHover={false} enableClick={false} />
+				<ImageControl
+					recordData={row.original.photo}
+					enableHover={false}
+					enableClick={false}
+					imageHeight={50}
+					imageWidth={50}
+				/>
 			</div>
 		),
 	},
@@ -123,7 +129,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 				className='p-0'
 				text={
 					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
-						PB
+						Costo
 						{column.getIsSorted() === 'asc' ? (
 							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
 						) : column.getIsSorted() === 'desc' ? (
@@ -134,10 +140,10 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 			/>
 		),
-		cell: ({ row }) => <div className='max-w-96 truncate'>$ {formatPrice(row.original.price)}</div>,
+		cell: ({ row }) => <div className='max-w-96 truncate'>${formatPrice(row.original.price)}</div>,
 	},
 	{
-		accessorKey: 'price',
+		accessorKey: 'pricePublic',
 		header: ({ column }) => (
 			<ActionButton
 				variant='link'
@@ -156,7 +162,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 			/>
 		),
-		cell: ({ row }) => <div className='max-w-96 truncate'>$ {formatPrice(row.original.price)}</div>,
+		cell: ({ row }) => <div className='max-w-96 truncate'>${formatPrice(row.original.pricePublic || 0)}</div>,
 	},
 	{
 		accessorKey: 'stock',
@@ -183,6 +189,28 @@ export const createTableColumns = ({ onEdit, onHardDelete }: Props): ColumnDef<I
 				{row.original.stock}
 			</div>
 		),
+	},
+	{
+		accessorKey: 'category.name',
+		header: ({ column }) => (
+			<ActionButton
+				variant='link'
+				size='xs'
+				className='p-0'
+				text={
+					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
+						Categoría
+						{column.getIsSorted() === 'asc' ? (
+							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : column.getIsSorted() === 'desc' ? (
+							<Icons.sortDescendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : null}
+					</div>
+				}
+				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+			/>
+		),
+		cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.category?.name || 'N/A'}</div>,
 	},
 	{
 		accessorKey: 'category.name',

@@ -109,21 +109,6 @@ export function SigningView() {
 									<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}>
 										<SignInForm />
 									</motion.div>
-
-									<motion.div
-										initial={{ opacity: 0 }}
-										animate={{ opacity: 1 }}
-										transition={{ delay: 1 }}
-										className='mt-4 flex flex-col gap-2 space-y-2 text-center text-sm'>
-										<span className='text-muted-foreground'>
-											¿No tienes una cuenta?{' '}
-											<Link
-												href='/signup'
-												className='text-primary hover:text-primary/80 font-medium underline underline-offset-4 transition-all duration-300 hover:underline-offset-2'>
-												Crear cuenta
-											</Link>
-										</span>
-									</motion.div>
 								</CardContent>
 							</Card>
 						</motion.div>

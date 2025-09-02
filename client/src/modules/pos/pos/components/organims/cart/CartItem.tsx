@@ -8,6 +8,7 @@ import { OrderItem } from '@/common/stores/useCartStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { ImageControl } from '@/components/layout/organims/ImageControl'
+import { formatPrice } from '@/common/utils/formatPrice-util'
 
 interface CartItemProps {
 	item: OrderItem
@@ -47,7 +48,7 @@ export const CartItem: React.FC<CartItemProps> = ({ item, index, onUpdateQuantit
 			layout
 			custom={index}
 			className='py-1'>
-			<Card className='bg-muted border-border/50 dark:bg-accent/15 rounded-2xl p-1 pr-2 shadow-none transition-colors duration-500'>
+			<Card className='border-border/50 bg-popover rounded-2xl p-1 pr-2 shadow-none transition-colors duration-500'>
 				<CardContent className='p-0'>
 					<div className='flex items-start gap-3'>
 						<div className='min-w-0 flex-1'>
@@ -69,8 +70,8 @@ export const CartItem: React.FC<CartItemProps> = ({ item, index, onUpdateQuantit
 
 									<div className='flex items-center justify-between gap-4'>
 										<Typography variant='overline' className='line-clamp-1 flex gap-2 font-medium break-words'>
-											{item.quantity} x ${item.price.toFixed(2)} ={' '}
-											<strong>${(item.quantity * item.price).toFixed(2)}</strong>
+											{item.quantity} x ${formatPrice(item.price)} ={' '}
+											<strong>${formatPrice(item.quantity * item.price)}</strong>
 										</Typography>
 									</div>
 								</div>

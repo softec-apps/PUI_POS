@@ -102,4 +102,12 @@ export const API_TAGS_CONFIG = [
       url: '',
     },
   },
+  {
+    name: PATH_SOURCE.BILLING,
+    description: 'facturacion SRI',
+    externalDocs: {
+      description: '',
+      url: '',
+    },
+  },
 ]
