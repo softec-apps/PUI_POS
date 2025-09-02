@@ -1,17 +1,17 @@
 'use client'
 
-import { Brand_I } from '@/common/types/modules/attribute'
-import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
+import { I_Brand } from '@/common/types/modules/brand'
+import { ConfirmationModal } from '@/components/layout/templates/ConfirmationModal'
 
-interface Props {
+interface SoftDeleteModalProps {
 	isOpen: boolean
-	brand: Brand_I | null
-	isSoftDeleting: boolean
+	currentRecord: I_Brand | null
+	isAction: boolean
 	onClose: () => void
 	onConfirm: () => Promise<void>
 }
 
-export function SoftDeleteModal({ isOpen, brand, isSoftDeleting, onClose, onConfirm }: Props) {
+export function SoftDeleteModal({ isOpen, currentRecord, isAction, onClose, onConfirm }: SoftDeleteModalProps) {
 	return (
 		<ConfirmationModal
 			isOpen={isOpen}
@@ -20,17 +20,22 @@ export function SoftDeleteModal({ isOpen, brand, isSoftDeleting, onClose, onConf
 			description='Esta acción se puede deshacer'
 			message={
 				<>
-					¿Estás seguro de que deseas remover la marca{' '}
-					<span className='text-foreground font-semibold'>{brand?.name}</span>? Todos los productos asociados a esta
-					marca perderán su clasificación.
+					¿Deseas remover temporalmente la marca{' '}
+					<span className='text-foreground font-semibold'>{currentRecord?.name}</span>?
 				</>
 			}
-			alertMessage='Esta acción removerá la marca de la base de datos pero no sera elimiando de forma permanente.'
-			isProcessing={isSoftDeleting}
+			alertMessage={
+				<>
+					<p className='text-amber-600 dark:text-amber-400'>
+						La marca no estara disponible en el sistema de forma temporal.
+					</p>
+				</>
+			}
+			isProcessing={isAction}
 			onClose={onClose}
 			onConfirm={onConfirm}
-			confirmText='Ok, remover'
-			cancelText='No, cancelar'
+			confirmText='Remover'
+			cancelText='Cancelar'
 		/>
 	)
 }

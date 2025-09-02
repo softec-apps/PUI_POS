@@ -12,16 +12,17 @@ import { Icons } from '@/components/icons'
 import { FormFooter } from '@/modules/product/components/organisms/Form/FormFooter'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet'
 
-import { AlertMessage } from '@/components/layout/atoms/Alert'
+import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { MediaSection } from '@/modules/product/components/organisms/Form/MediaSection'
 import { BrandSelector } from '@/modules/product/components/organisms/Form/BrandSelector'
-import { Supplierlector } from '@/modules/product/components/organisms/Form/SupplierSelector'
+import { EconomicSection } from '@/modules/product/components/organisms/Form/EconomicSection'
+import { SupplierSelector } from '@/modules/product/components/organisms/Form/SupplierSelector'
 import { CategorySelector } from '@/modules/product/components/organisms/Form/CategorySelector'
 import { BasicInfoSection } from '@/modules/product/components/organisms/Form/BasicInfoSection'
-import { EconomicSection } from '@/modules/product/components/organisms/Form/EconomicSection'
-import { MediaSection } from '@/modules/product/components/organisms/Form/MediaSection'
 import { TemplateSelector } from '@/modules/product/components/organisms/Form/TemplateSelector'
-import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
+import { StatusSection } from '../Form/StatusSection'
+import { TaxAllow } from '@/modules/product/constants/product.constants'
 
 export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: ProductFormProps) {
 	const { getProductById } = useProduct()
@@ -59,7 +60,26 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 		setTemplateSearch,
 		templateOpen,
 		setTemplateOpen,
-	} = useProductForm(productData || currentRecord)
+	} = useProductForm(productData)
+
+	// Helper function to format tax value properly
+	const formatTaxValue = (taxValue: any): string => {
+		if (taxValue === null || taxValue === undefined || taxValue === '') return TaxAllow.EXENTO.toString() // Return as string for form
+
+		// Convert number to string representation
+		const numericValue = Number(taxValue)
+		if (numericValue === 15) {
+			return TaxAllow.CON_IVA.toString()
+		} else if (numericValue === 0) {
+			return TaxAllow.EXENTO.toString()
+		}
+
+		// If it's already a valid enum value, convert to string
+		if (Object.values(TaxAllow).includes(taxValue)) return taxValue.toString()
+
+		// Default fallback
+		return TaxAllow.EXENTO.toString()
+	}
 
 	// Fetch complete product data when modal opens with an existing product
 	useEffect(() => {
@@ -98,9 +118,11 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 				photo: dataToUse?.photo || '',
 				removePhoto: false,
 				price: dataToUse?.price || '',
+				pricePublic: dataToUse?.pricePublic || '',
 				sku: dataToUse?.sku || '',
 				barCode: dataToUse?.barCode || '',
 				stock: dataToUse?.stock || '',
+				tax: formatTaxValue(dataToUse?.tax), // Esto ahora retorna string
 				categoryId: dataToUse?.category?.id || '',
 				brandId: dataToUse?.brand?.id || '',
 				supplierId: dataToUse?.supplier?.id || '',
@@ -128,7 +150,7 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 
 	return (
 		<Sheet open={isOpen} onOpenChange={handleClose}>
-			<SheetContent className='z-50 flex max-h-screen min-w-xl flex-col [&>button]:hidden'>
+			<SheetContent className='z-50 flex max-h-screen min-w-full flex-col [&>button]:hidden'>
 				<SheetHeader className='bg-background supports-[backdrop-filter]:bg-background/80 sticky top-0 z-10 border-b supports-[backdrop-filter]:backdrop-blur-sm'>
 					<div className='flex items-center justify-between'>
 						<SheetTitle>{currentRecord?.id ? 'Editar producto' : 'Nuevo producto'}</SheetTitle>
@@ -145,7 +167,7 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 					</div>
 
 					<SheetDescription>
-						{currentRecord?.id ? 'Modifica los detalles de tu producto existente' : 'Crea un nuevo producto'}
+						{currentRecord?.id ? 'Actualiza los detalles de este producto' : 'Agrega un nuevo producto'}
 					</SheetDescription>
 				</SheetHeader>
 
@@ -156,76 +178,76 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 							<SpinnerLoader text='Cargando... Por favor espera' />
 						</div>
 					) : (
-						<>
-							<AlertMessage
-								message={
-									currentRecord
-										? 'Modifica los campos necesarios y guarda los cambios para actualizar el producto en el sistema.'
-										: 'Completa la información requerida para crear un nuevo producto.'
-								}
-								variant='info'
-							/>
-
-							<Form {...form}>
-								<form onSubmit={form.handleSubmit(handleFormSubmit)}>
-									<div className='space-y-12'>
+						<Form {...form}>
+							<form onSubmit={form.handleSubmit(handleFormSubmit)}>
+								<div className='space-y-8'>
+									{/* First Row - Basic Info + Economic */}
+									<div className='grid grid-cols-1 gap-12 md:grid-cols-2'>
 										<BasicInfoSection control={form.control} />
-
 										<EconomicSection control={form.control} />
+									</div>
+
+									{/* Third Row - Brand + Supplier */}
+									<div className='grid grid-cols-1 gap-8 md:grid-cols-2'>
+										<div className='grid grid-cols-2 gap-8'>
+											<CategorySelector
+												control={form.control}
+												setValue={form.setValue}
+												watch={form.watch}
+												categories={categoriesData}
+												loadingCategories={loadingCategories}
+												categorySearch={categorySearch}
+												setCategorySearch={setCategorySearch}
+												categoryOpen={categoryOpen}
+												setCategoryOpen={setCategoryOpen}
+											/>
+
+											<SupplierSelector
+												control={form.control}
+												setValue={form.setValue}
+												watch={form.watch}
+												suppliers={suppliersData}
+												loadingSupplier={loadingSuppliers}
+												supplierSearch={supplierSearch}
+												setSupplierSearch={setSupplierSearch}
+												supplierOpen={supplierOpen}
+												setSupplierOpen={setSupplierOpen}
+											/>
+										</div>
+
+										<div className='grid grid-cols-2 gap-8'>
+											<BrandSelector
+												control={form.control}
+												setValue={form.setValue}
+												watch={form.watch}
+												brands={brandsData}
+												loadingBrand={loadingBrands}
+												brandSearch={brandSearch}
+												setBrandSearch={setBrandSearch}
+												brandOpen={brandOpen}
+												setBrandOpen={setBrandOpen}
+											/>
+
+											<TemplateSelector
+												control={form.control}
+												setValue={form.setValue}
+												watch={form.watch}
+												templates={templatesData}
+												loadingTemplates={loadingTemplates}
+												templateSearch={templateSearch}
+												setTemplateSearch={setTemplateSearch}
+												templateOpen={templateOpen}
+												setTemplateOpen={setTemplateOpen}
+											/>
+										</div>
 
 										<MediaSection control={form.control} setValue={form.setValue} watch={form.watch} />
 
-										<CategorySelector
-											control={form.control}
-											setValue={form.setValue}
-											watch={form.watch}
-											categories={categoriesData}
-											loadingCategories={loadingCategories}
-											categorySearch={categorySearch}
-											setCategorySearch={setCategorySearch}
-											categoryOpen={categoryOpen}
-											setCategoryOpen={setCategoryOpen}
-										/>
-
-										<BrandSelector
-											control={form.control}
-											setValue={form.setValue}
-											watch={form.watch}
-											brands={brandsData}
-											loadingBrand={loadingBrands}
-											brandSearch={brandSearch}
-											setBrandSearch={setBrandSearch}
-											brandsOpen={brandOpen}
-											setBrandOpen={setBrandOpen}
-										/>
-
-										<Supplierlector
-											control={form.control}
-											setValue={form.setValue}
-											watch={form.watch}
-											supplier={suppliersData}
-											loadingSupplier={loadingSuppliers}
-											supplierSearch={supplierSearch}
-											setSupplierSearch={setSupplierSearch}
-											supplierOpen={supplierOpen}
-											setSupplierOpen={setSupplierOpen}
-										/>
-
-										<TemplateSelector
-											control={form.control}
-											setValue={form.setValue}
-											watch={form.watch}
-											templates={templatesData}
-											loadingTemplates={loadingTemplates}
-											templateSearch={templateSearch}
-											setTemplateSearch={setTemplateSearch}
-											templateOpen={templateOpen}
-											setTemplateOpen={setTemplateOpen}
-										/>
+										<StatusSection control={form.control} />
 									</div>
-								</form>
-							</Form>
-						</>
+								</div>
+							</form>
+						</Form>
 					)}
 				</div>
 

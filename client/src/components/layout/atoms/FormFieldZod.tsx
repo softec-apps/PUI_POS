@@ -10,13 +10,13 @@ import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Separator } from '@/components/ui/separator'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Control, FieldPath, FieldValues } from 'react-hook-form'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
 
 type IconOption = {
 	value: string
@@ -31,7 +31,18 @@ type UniversalFormFieldProps<T extends FieldValues> = {
 	label?: string
 	placeholder?: string
 	description?: string | ReactNode
-	type?: 'text' | 'number' | 'email' | 'password' | 'textarea' | 'switch' | 'checkbox' | 'select' | 'command' | 'hidden'
+	type?:
+		| 'text'
+		| 'number'
+		| 'email'
+		| 'password'
+		| 'textarea'
+		| 'switch'
+		| 'checkbox'
+		| 'select'
+		| 'command'
+		| 'multi-command'
+		| 'hidden'
 	required?: boolean
 	className?: string
 	options?: IconOption[]
@@ -44,8 +55,20 @@ type UniversalFormFieldProps<T extends FieldValues> = {
 	switchContainerClass?: string
 	showValidationIcons?: boolean
 	showIconsInSelect?: boolean
-	commandEmptyMessage?: string
+	commandEmptyMessage?: React.ReactNode
 	groupByCategory?: boolean
+	// Props específicos para command con búsqueda externa
+	commandOpen?: boolean
+	setCommandOpen?: (open: boolean) => void
+	commandSearchValue?: string
+	setCommandSearchValue?: (search: string) => void
+	shouldFilter?: boolean
+	// Props específicos para multi-command
+	maxSelections?: number
+	showSelectedCount?: boolean
+	allowClearAll?: boolean
+	// Nueva prop para controlar el layout estable
+	stableLayout?: boolean
 }
 
 export function UniversalFormField<T extends FieldValues>({
@@ -56,7 +79,7 @@ export function UniversalFormField<T extends FieldValues>({
 	description,
 	type = 'text',
 	required = false,
-	className = 'transition-all duration-200 focus:ring-2',
+	className = 'transition-all duration-500 focus:ring-2 placeholder:text-muted-foreground/50 dark:bg-popover bg-accent/80 border-none shadow-none',
 	options,
 	min,
 	max,
@@ -68,9 +91,25 @@ export function UniversalFormField<T extends FieldValues>({
 	showIconsInSelect = false,
 	commandEmptyMessage = 'No se encontraron resultados.',
 	groupByCategory = false,
+	commandOpen,
+	setCommandOpen,
+	commandSearchValue,
+	setCommandSearchValue,
+	shouldFilter = true,
+	maxSelections = 20,
+	showSelectedCount = true,
+	allowClearAll = true,
+	stableLayout = true, // Por defecto activamos el layout estable
 }: UniversalFormFieldProps<T>) {
-	const [commandOpen, setCommandOpen] = React.useState(false)
+	const [internalCommandOpen, setInternalCommandOpen] = React.useState(false)
+	const [internalSearchValue, setInternalSearchValue] = React.useState('')
 	const [showPassword, setShowPassword] = React.useState(false)
+
+	// Usar estados externos si se proporcionan, sino usar internos
+	const isCommandOpen = commandOpen !== undefined ? commandOpen : internalCommandOpen
+	const handleSetCommandOpen = setCommandOpen || setInternalCommandOpen
+	const searchValue = commandSearchValue !== undefined ? commandSearchValue : internalSearchValue
+	const handleSetSearchValue = setCommandSearchValue || setInternalSearchValue
 
 	// Para campos hidden, no mostrar ningún UI
 	if (type === 'hidden') {
@@ -118,9 +157,34 @@ export function UniversalFormField<T extends FieldValues>({
 			name={name}
 			render={({ field, fieldState }) => {
 				const hasError = !!fieldState.error
-				const hasValue = field.value !== undefined && field.value !== null && field.value !== ''
+				const hasValue =
+					field.value !== undefined &&
+					field.value !== null &&
+					(Array.isArray(field.value) ? field.value.length > 0 : field.value !== '')
 				const isValid = !hasError && hasValue
 				const isDirty = fieldState.isDirty
+
+				// Componente personalizado para FormMessage con altura fija
+				const StableFormMessage = () => {
+					if (!stableLayout) return <FormMessage />
+
+					return (
+						<div className='min-h-[20px]'>
+							<FormMessage />
+						</div>
+					)
+				}
+
+				// Contenedor de descripción con layout estable
+				const StableFormDescription = ({ children }: { children?: string | ReactNode }) => {
+					if (!children) return null
+
+					return (
+						<FormDescription className={cn(hasError && 'text-muted-foreground', isValid && 'text-muted-foreground')}>
+							{children}
+						</FormDescription>
+					)
+				}
 
 				// Función para renderizar el icono de validación
 				const renderValidationIcon = () => {
@@ -170,7 +234,7 @@ export function UniversalFormField<T extends FieldValues>({
 
 					if (type === 'select') {
 						return (
-							<div className='flex items-center gap-2'>
+							<div className='text-primary flex items-center gap-2'>
 								<SelectValue placeholder={placeholder} />
 							</div>
 						)
@@ -178,43 +242,40 @@ export function UniversalFormField<T extends FieldValues>({
 
 					// Para command
 					return (
-						<div className='flex items-center gap-2'>
+						<div className='text-primary flex items-center gap-2'>
 							{IconComponent && <IconComponent className='h-4 w-4' />}
 							{selectedOption?.label || placeholder}
 						</div>
 					)
 				}
 
-				// Renderizar el badge del valor seleccionado para command
-				const renderSelectedBadge = () => {
-					if (type !== 'command') return null
+				// Renderizar valores múltiples seleccionados para multi-command
+				const renderMultiSelectedValues = () => {
+					const selectedValues = Array.isArray(field.value) ? field.value : []
 
-					const selectedOption = options?.find(opt => opt.value === field.value)
-					if (!selectedOption) return null
+					if (selectedValues.length === 0) return <span className='text-muted-foreground'>{placeholder}</span>
 
-					const IconComponent = selectedOption.icon
+					if (selectedValues.length === 1) {
+						const selectedOption = options?.find(opt => opt.value === selectedValues[0])
+						return selectedOption?.label || selectedValues[0]
+					}
 
 					return (
-						<Badge variant='outline' className='flex items-center gap-1'>
-							{IconComponent && <IconComponent className='h-3 w-3' />}
-							{selectedOption.label}
-							<button
-								type='button'
-								onClick={e => {
-									e.stopPropagation()
-									field.onChange('')
-								}}
-								className='hover:bg-muted ml-1 rounded-full p-0.5'>
-								<Icons.x className='h-3 w-3' />
-							</button>
-						</Badge>
+						<div className='flex items-center gap-1'>
+							<span>{selectedValues.length} elementos seleccionados</span>
+							{showSelectedCount && (
+								<Badge variant='secondary' className='ml-1'>
+									{selectedValues.length}
+								</Badge>
+							)}
+						</div>
 					)
 				}
 
 				return type === 'switch' ? (
 					<FormItem
 						className={`bg-muted/20 flex flex-row items-center justify-between rounded-lg border p-4 ${switchContainerClass}`}>
-						<div className='space-y-0.5'>
+						<div className='text-primary space-y-0.5'>
 							<FormLabel>{label}</FormLabel>
 							{description && <FormDescription>{description}</FormDescription>}
 						</div>
@@ -233,39 +294,228 @@ export function UniversalFormField<T extends FieldValues>({
 							</div>
 						</FormControl>
 					</FormItem>
-				) : type === 'command' ? (
+				) : type === 'multi-command' ? (
 					<FormItem>
+						<div className='text-primary flex items-center gap-1'>
+							<FormLabel>{label}</FormLabel>
+							<span className={`text-destructive ${required ? 'opacity-100' : 'opacity-0'}`}>*</span>
+						</div>
+
 						<FormControl>
 							<div className='relative'>
-								<Popover open={commandOpen} onOpenChange={setCommandOpen}>
+								<Popover open={isCommandOpen} onOpenChange={handleSetCommandOpen}>
 									<PopoverTrigger asChild>
 										<Button
 											variant='outline'
 											role='combobox'
-											aria-expanded={commandOpen}
-											className={cn('w-full justify-between', inputClasses, !field.value && 'text-muted-foreground')}
+											aria-expanded={isCommandOpen}
+											className={cn('w-full justify-between', inputClasses, !hasValue && 'text-muted-foreground')}
 											disabled={disabled}>
-											{field.value ? renderSelectedBadge() : renderSelectedValue()}
+											{renderMultiSelectedValues()}
 											<Icons.chevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
 										</Button>
 									</PopoverTrigger>
 
-									<PopoverContent className='w-full p-0'>
-										<Command>
-											<CommandInput placeholder={placeholder} />
-											<CommandEmpty>{commandEmptyMessage}</CommandEmpty>
+									<PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0' align='start'>
+										<Command shouldFilter={shouldFilter}>
+											<div className='flex items-center justify-between border-b p-2'>
+												<CommandInput
+													placeholder={placeholder}
+													value={searchValue}
+													onValueChange={handleSetSearchValue}
+													className='flex-1'
+												/>
+												{allowClearAll && hasValue && (
+													<Button
+														variant='ghost'
+														size='sm'
+														onClick={() => {
+															field.onChange([])
+															onChange?.([])
+														}}
+														className='ml-2 h-8 px-2'>
+														<Icons.x className='h-4 w-4' />
+													</Button>
+												)}
+											</div>
 
-											{groupByCategory && groupedOptions ? (
-												Object.entries(groupedOptions).map(([category, categoryOptions]) => (
-													<CommandGroup key={category} heading={category}>
-														<CommandList>
+											<CommandList>
+												<CommandEmpty>{commandEmptyMessage}</CommandEmpty>
+												{groupByCategory && groupedOptions ? (
+													Object.entries(groupedOptions).map(([category, categoryOptions]) => (
+														<CommandGroup key={category} heading={category}>
+															{categoryOptions.map(option => {
+																const isSelected = Array.isArray(field.value) && field.value.includes(option.value)
+																const canSelect =
+																	!isSelected && (!Array.isArray(field.value) || field.value.length < maxSelections)
+
+																return (
+																	<CommandItem
+																		key={option.value}
+																		value={option.value}
+																		onSelect={() => {
+																			const currentValue = Array.isArray(field.value) ? field.value : []
+																			let newValue: string[]
+
+																			if (isSelected) {
+																				// Remover elemento
+																				newValue = currentValue.filter(v => v !== option.value)
+																			} else if (canSelect) {
+																				// Agregar elemento
+																				newValue = [...currentValue, option.value]
+																			} else {
+																				return // No hacer nada si no se puede seleccionar
+																			}
+
+																			field.onChange(newValue)
+																			onChange?.(newValue)
+																		}}
+																		className={cn(
+																			'flex cursor-pointer items-center gap-2',
+																			!canSelect && !isSelected && 'cursor-not-allowed opacity-50'
+																		)}
+																		disabled={!canSelect && !isSelected}>
+																		{option.icon && <option.icon className='h-4 w-4' />}
+																		{option.label}
+																		{isSelected && <Icons.check className='text-primary ml-auto h-4 w-4' />}
+																	</CommandItem>
+																)
+															})}
+														</CommandGroup>
+													))
+												) : (
+													<CommandGroup>
+														{options?.map(option => {
+															const isSelected = Array.isArray(field.value) && field.value.includes(option.value)
+															const canSelect =
+																!isSelected && (!Array.isArray(field.value) || field.value.length < maxSelections)
+
+															return (
+																<CommandItem
+																	key={option.value}
+																	value={option.value}
+																	onSelect={() => {
+																		const currentValue = Array.isArray(field.value) ? field.value : []
+																		let newValue: string[]
+
+																		if (isSelected) {
+																			// Remover elemento
+																			newValue = currentValue.filter(v => v !== option.value)
+																		} else if (canSelect) {
+																			// Agregar elemento
+																			newValue = [...currentValue, option.value]
+																		} else {
+																			return // No hacer nada si no se puede seleccionar
+																		}
+
+																		field.onChange(newValue)
+																		onChange?.(newValue)
+																	}}
+																	className={cn(
+																		'flex cursor-pointer items-center gap-2',
+																		!canSelect && !isSelected && 'cursor-not-allowed opacity-50'
+																	)}
+																	disabled={!canSelect && !isSelected}>
+																	{option.icon && <option.icon className='h-4 w-4' />}
+																	{option.label}
+																	{isSelected && <Icons.check className='text-primary ml-auto h-4 w-4' />}
+																</CommandItem>
+															)
+														})}
+													</CommandGroup>
+												)}
+											</CommandList>
+										</Command>
+
+										{/* Mostrar elementos seleccionados */}
+										{hasValue && (
+											<div className='border-t p-2'>
+												<div className='text-muted-foreground mb-2 text-sm'>
+													Seleccionados ({Array.isArray(field.value) ? field.value.length : 0}/{maxSelections})
+												</div>
+												<div className='flex max-h-20 flex-wrap gap-1 overflow-y-auto'>
+													{Array.isArray(field.value) &&
+														field.value.map(value => {
+															const option = options?.find(opt => opt.value === value)
+															return (
+																<Badge key={value} variant='secondary' className='flex items-center gap-1 text-xs'>
+																	{option?.label || value}
+																	<button
+																		onClick={e => {
+																			e.preventDefault()
+																			e.stopPropagation()
+																			const newValue = field.value.filter((v: string) => v !== value)
+																			field.onChange(newValue)
+																			onChange?.(newValue)
+																		}}
+																		className='hover:bg-destructive hover:text-destructive-foreground ml-1 rounded-full'>
+																		<Icons.x className='h-3 w-3' />
+																	</button>
+																</Badge>
+															)
+														})}
+												</div>
+											</div>
+										)}
+									</PopoverContent>
+								</Popover>
+								{renderValidationIcon()}
+							</div>
+						</FormControl>
+						{description && (
+							<StableFormDescription>
+								<div className='flex items-center justify-between'>
+									<StableFormMessage />
+									{description}
+								</div>
+							</StableFormDescription>
+						)}
+					</FormItem>
+				) : type === 'command' ? (
+					<FormItem>
+						{label && (
+							<div className='text-primary flex items-center gap-1'>
+								<FormLabel>{label}</FormLabel>
+								<span className={`text-destructive ${required ? 'opacity-100' : 'opacity-0'}`}>*</span>
+							</div>
+						)}
+
+						<FormControl>
+							<div className='relative'>
+								<Popover open={isCommandOpen} onOpenChange={handleSetCommandOpen}>
+									<PopoverTrigger asChild>
+										<Button
+											variant='outline'
+											role='combobox'
+											aria-expanded={isCommandOpen}
+											className={cn('w-full justify-between', inputClasses, !field.value && 'text-muted-foreground')}
+											disabled={disabled}>
+											{field.value
+												? options?.find(option => option.value === field.value)?.label || '---'
+												: placeholder}
+											<Icons.chevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+										</Button>
+									</PopoverTrigger>
+
+									<PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0' align='start'>
+										<Command shouldFilter={shouldFilter}>
+											<CommandInput
+												placeholder={placeholder}
+												value={searchValue}
+												onValueChange={handleSetSearchValue}
+											/>
+											<CommandList>
+												<CommandEmpty>{commandEmptyMessage}</CommandEmpty>
+												{groupByCategory && groupedOptions ? (
+													Object.entries(groupedOptions).map(([category, categoryOptions]) => (
+														<CommandGroup key={category} heading={category}>
 															{categoryOptions.map(option => (
 																<CommandItem
 																	key={option.value}
 																	value={option.value}
 																	onSelect={() => {
 																		field.onChange(option.value)
-																		setCommandOpen(false)
+																		handleSetCommandOpen(false)
 																		onChange?.(option.value)
 																	}}
 																	className='flex cursor-pointer items-center gap-2'>
@@ -276,19 +526,17 @@ export function UniversalFormField<T extends FieldValues>({
 																	)}
 																</CommandItem>
 															))}
-														</CommandList>
-													</CommandGroup>
-												))
-											) : (
-												<CommandGroup>
-													<CommandList>
+														</CommandGroup>
+													))
+												) : (
+													<CommandGroup>
 														{options?.map(option => (
 															<CommandItem
 																key={option.value}
 																value={option.value}
 																onSelect={() => {
 																	field.onChange(option.value)
-																	setCommandOpen(false)
+																	handleSetCommandOpen(false)
 																	onChange?.(option.value)
 																}}
 																className='flex cursor-pointer items-center gap-2'>
@@ -299,21 +547,30 @@ export function UniversalFormField<T extends FieldValues>({
 																)}
 															</CommandItem>
 														))}
-													</CommandList>
-												</CommandGroup>
-											)}
+													</CommandGroup>
+												)}
+											</CommandList>
 										</Command>
 									</PopoverContent>
 								</Popover>
 								{renderValidationIcon()}
 							</div>
 						</FormControl>
+
+						{description && (
+							<StableFormDescription>
+								<div className='flex items-center justify-between'>
+									<StableFormMessage />
+									{description}
+								</div>
+							</StableFormDescription>
+						)}
 					</FormItem>
 				) : (
 					<FormItem>
-						<div className='flex items-center gap-1'>
+						<div className='text-primary flex items-center gap-1'>
 							<FormLabel>{label}</FormLabel>
-							{required && <span className='text-destructive'>*</span>}
+							<span className={`text-destructive ${required ? 'opacity-100' : 'opacity-0'}`}>*</span>
 						</div>
 
 						<FormControl>
@@ -402,6 +659,7 @@ export function UniversalFormField<T extends FieldValues>({
 												)}
 											</SelectContent>
 										</Select>
+
 										{renderValidationIcon()}
 									</>
 								) : (
@@ -410,18 +668,101 @@ export function UniversalFormField<T extends FieldValues>({
 											<Input
 												placeholder={placeholder}
 												{...field}
-												type={type === 'password' && showPassword ? 'text' : type}
+												type={type === 'password' ? (showPassword ? 'text' : 'password') : 'text'}
+												inputMode={type === 'number' ? 'decimal' : 'text'}
 												className={inputClasses}
 												min={min}
 												max={max}
 												step={step}
 												disabled={disabled}
 												onChange={e => {
-													const rawValue = e.target.value
+													let rawValue = e.target.value
 													let value: any = rawValue
-													if (type === 'number') value = value === '' ? null : Number(value)
+
+													// Validación especial para campos numéricos
+													if (type === 'number') {
+														// Permitir solo números y un punto decimal
+														rawValue = rawValue.replace(/[^0-9.]/g, '')
+
+														// Validar que solo haya un punto decimal
+														const dotCount = (rawValue.match(/\./g) || []).length
+														if (dotCount > 1) {
+															// Si hay más de un punto, mantener solo el primero
+															const parts = rawValue.split('.')
+															rawValue = parts[0] + '.' + parts.slice(1).join('').replace(/\./g, '')
+														}
+
+														// Si el punto está al principio, agregar 0 antes
+														if (rawValue.startsWith('.')) {
+															rawValue = '0' + rawValue
+														}
+
+														// Limitar a 6 dígitos enteros y 6 decimales
+														if (rawValue.includes('.')) {
+															const [integerPart, decimalPart] = rawValue.split('.')
+															if (integerPart.length > 6) {
+																rawValue = integerPart.slice(0, 6) + '.' + decimalPart
+															}
+															if (decimalPart && decimalPart.length > 6) {
+																rawValue = integerPart + '.' + decimalPart.slice(0, 6)
+															}
+														} else if (rawValue.length > 6) {
+															rawValue = rawValue.slice(0, 6)
+														}
+
+														// Actualizar el valor del input
+														e.target.value = rawValue
+
+														// Para campos numéricos, mantener como string para que Zod lo procese
+														value = rawValue === '' ? null : rawValue
+													}
+
 													field.onChange(value)
 													onChange?.(value)
+												}}
+												onBlur={e => {
+													// Al salir del campo, formatear el valor para que tenga siempre 2 decimales
+													if (type === 'number' && e.target.value && e.target.value.includes('.')) {
+														const [integerPart, decimalPart] = e.target.value.split('.')
+														let formattedValue = integerPart
+
+														if (decimalPart) {
+															// Completar con ceros si tiene menos de 2 decimales
+															formattedValue += '.' + decimalPart.padEnd(2, '0').slice(0, 2)
+														} else {
+															formattedValue += '.00'
+														}
+
+														e.target.value = formattedValue
+														field.onChange(formattedValue)
+														onChange?.(formattedValue)
+													}
+												}}
+												onKeyDown={e => {
+													// Prevenir caracteres no numéricos solo para tipo number
+													if (type === 'number') {
+														if (
+															// Permitir: números (0-9), punto, teclas de navegación
+															!/[0-9.]/.test(e.key) &&
+															![
+																'Backspace',
+																'Tab',
+																'Enter',
+																'ArrowLeft',
+																'ArrowRight',
+																'Delete',
+																'Home',
+																'End',
+															].includes(e.key)
+														) {
+															e.preventDefault()
+														}
+
+														// Prevenir múltiples puntos decimales
+														if (e.key === '.' && e.currentTarget.value.includes('.')) {
+															e.preventDefault()
+														}
+													}
 												}}
 												value={field.value ?? ''}
 											/>
@@ -442,15 +783,12 @@ export function UniversalFormField<T extends FieldValues>({
 
 						{/* Solo mostrar descripción y mensaje de error para campos visibles */}
 						{type !== 'hidden' && (
-							<div className='flex items-center justify-between'>
-								{description && (
-									<FormDescription
-										className={cn(hasError && 'text-muted-foreground', isValid && 'text-muted-foreground')}>
-										{description}
-									</FormDescription>
-								)}
-								<FormMessage />
-							</div>
+							<StableFormDescription>
+								<div className='flex items-center justify-between'>
+									{description}
+									<StableFormMessage />
+								</div>
+							</StableFormDescription>
 						)}
 					</FormItem>
 				)

@@ -37,6 +37,7 @@ import { ProductAttributeValueEntity } from '@/modules/product/infrastructure/pe
 @Index(['sku']) // Búsquedas por SKU
 @Index(['barCode']) // Búsquedas por código de barras
 @Check(`"price" >= 0`) // Validación de precio
+@Check(`"pricePublic" >= 0`) // Validación de precio de venta
 @Check(`"stock" >= 0`) // Validación de stock
 export class ProductEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn('uuid')
@@ -91,6 +92,14 @@ export class ProductEntity extends EntityRelationalHelper {
   price: number
 
   @Column({
+    type: 'decimal',
+    precision: 13,
+    scale: 6,
+    nullable: false,
+  })
+  pricePublic: number
+
+  @Column({
     type: 'enum',
     enum: ProductStatus,
     default: ProductStatus.DRAFT,
@@ -117,6 +126,13 @@ export class ProductEntity extends EntityRelationalHelper {
     default: 0,
   })
   stock: number
+
+  @Column({
+    type: 'int',
+    nullable: true,
+    default: 0,
+  })
+  tax: number
 
   // ✅ RELACIONES - Solo para productos base (no variantes)
   @Column({ type: 'uuid', nullable: true })

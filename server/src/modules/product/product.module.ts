@@ -1,5 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common'
 import { ProductService } from '@/modules/product/product.service'
+import { StockDiscountService } from '@/modules/product/managerStock.service'
 import { ProductController } from '@/modules/product/product.controller'
 import { SupplierModule } from '@/modules/suppliers/supplier.module'
 import { BrandModule } from '@/modules/brand/brand.module'
@@ -22,9 +23,14 @@ const infrastructurePersistenceModule = RelationalProductPersistenceModule
     forwardRef(() => UsersModule),
     forwardRef(() => CategoriesModule),
     forwardRef(() => TemplateProductModule),
+    forwardRef(() => KardexModule),
   ],
   controllers: [ProductController],
-  providers: [ProductService],
-  exports: [ProductService, infrastructurePersistenceModule],
+  providers: [ProductService, StockDiscountService],
+  exports: [
+    ProductService,
+    StockDiscountService,
+    infrastructurePersistenceModule,
+  ],
 })
 export class ProductModule {}

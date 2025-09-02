@@ -2,7 +2,7 @@ import { useGenericApi } from '@/common/hooks/useGenericApi'
 import { USER_ENDPOINTS_CONFIG } from '@/common/configs/api/user-endpoints.config'
 import { I_CreateUser, I_User, I_UpdateUser, I_UserResponse } from '@/common/types/modules/user'
 
-interface UseUserParamsProps {
+export interface UseUserParamsProps {
 	page?: number
 	limit?: number
 	search?: string
@@ -11,7 +11,7 @@ interface UseUserParamsProps {
 }
 
 export const useUser = (paginationParams: UseUserParamsProps = {}) => {
-	const genericApi = useGenericApi<I_UserResponse, I_CreateUser, I_UpdateUser>(USER_ENDPOINTS_CONFIG)
+	const api = useGenericApi<I_UserResponse, I_CreateUser, I_UpdateUser>(USER_ENDPOINTS_CONFIG)
 
 	// ✅ Construir queryParams correctamente
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,37 +41,34 @@ export const useUser = (paginationParams: UseUserParamsProps = {}) => {
 	if (paginationParams.search && paginationParams.search.trim()) queryParams.search = paginationParams.search.trim()
 
 	// ✅ Usa el query dinámico con los parámetros de paginación
-	const query = genericApi.buildQuery(queryParams)
+	const query = api.buildQuery(queryParams)
 
 	return {
-		// ✅ Datos del query - manteniendo los mismos nombres
+		// Datos del query
 		recordsData: query.data,
 		loading: query.isLoading,
 		error: query.error?.message,
 
-		// ✅ Funciones de consulta
+		// Funciones
 		refetchRecords: query.refetch,
 
-		// ✅ Funciones CRUD completas según USER_ENDPOINTS_CONFIG
-		getById: genericApi.getById, // GET /:id
-		createRecord: genericApi.create, // POST /
-		updateRecord: genericApi.update, // PATCH /:id
-		softDeleteRecord: genericApi.delete, // DELETE /:id (soft delete)
-		restoreRecord: genericApi.restore, // PATCH /:id/restore
-		hardDeleteRecord: genericApi.hardDelete, // DELETE /:id/hard-delete
+		// Funciones CRUD
+		createRecord: api.create,
+		updateRecord: api.update,
+		restoreRecord: api.restore,
+		softDeleteRecord: api.delete,
+		hardDeleteRecord: api.hardDelete,
 
-		// ✅ Estados granulares de loading
-		isCreating: genericApi.isCreating,
-		isUpdating: genericApi.isUpdating,
-		isRestoring: genericApi.isRestoring,
-		isSoftDeleting: genericApi.isDeleting,
-		isHardDeleting: genericApi.isHardDeleting,
+		// Estados granulares de loading
+		isCreating: api.isCreating,
+		isUpdating: api.isUpdating,
+		isHardDeleting: api.isHardDeleting,
 
-		// ✅ Mutations para control avanzado
-		mutations: genericApi.mutations, // Contiene todas las mutations configuradas
+		// Mutations para control avanzado - ahora completamente dinámicas
+		mutations: api.mutations, // Contiene todas las mutations configuradas
 
-		// ✅ Funciones adicionales del API genérico
-		executeCustomEndpoint: genericApi.executeCustomEndpoint,
-		apiService: genericApi.apiService,
+		// Funciones adicionales del API genérico
+		executeCustomEndpoint: api.executeCustomEndpoint,
+		apiService: api.apiService,
 	}
 }

@@ -5,12 +5,12 @@ import { UtilBanner } from '@/components/UtilBanner'
 import { Card, CardContent } from '@/components/ui/card'
 
 export const EmptyState = () => (
-	<Card className='dark:bg-accent/20 bg-accent/40 border-none shadow-none'>
+	<Card className='dark:bg-popover bg-muted border-none shadow-none'>
 		<CardContent className='py-16'>
 			<UtilBanner
-				icon={<Icons.archive className='h-10 w-10' />}
-				title='Lo sentimos, cero coincidencias'
-				description='No hay registros disponibles actualmente. ¿Quieres probar otra cosa?'
+				icon={<Icons.search className='h-10 w-10' />}
+				title='Ups... no encontramos nada'
+				description='Por ahora no hay registros que coincidan. ¿Quieres buscar algo distinto?'
 			/>
 		</CardContent>
 	</Card>

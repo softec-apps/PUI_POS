@@ -1,149 +1,134 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 
-import { Icons } from '@/components/icons'
-import { Card } from '@/components/ui/card'
-import { useKardex } from '@/common/hooks/useKardex'
-import { UtilBanner } from '@/components/UtilBanner'
+import { useKardexData } from '@/modules/kardex/hooks/useData'
 import { usePagination } from '@/modules/kardex/hooks/usePagination'
 import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
-import { KardexHeader } from '@/modules/kardex/components/templates/Header'
-import { KardexFilters } from '@/modules/kardex/components/templates/Filters'
-import { TableKardex } from '@/modules/kardex/components/organisms/Table/TableKardex'
-import { PaginationControls } from '@/modules/kardex/components/templates/Pagination'
-import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
-import { ViewType } from '@/modules/kardex/components/molecules/ViewSelector'
+
+import { ViewType } from '@/components/layout/organims/ViewSelector'
+import { Header } from '@/modules/kardex/components/templates/Header'
+import { Filters } from '@/modules/kardex/components/templates/Filters'
+import { EmptyState } from '@/modules/kardex/components/templates/EmptyState'
+import { ErrorState } from '@/components/layout/templates/ErrorState'
+import { PaginationControls } from '@/components/layout/organims/Pagination'
+import { TableData } from '@/modules/kardex/components/organisms/Table/TableData'
+
+const SEARCH_DELAY = 500
+const MAX_RETRIES = 3
 
 export function KardexView() {
-	const [retryCount, setRetryCount] = useState(0)
 	const [viewType, setViewType] = useState<ViewType>('table')
+	const [debouncedSearch, setDebouncedSearch] = useState('')
+	const [retryCount, setRetryCount] = useState(0)
+	const [totalRealRecords, setTotalRealRecords] = useState(0)
 
-	// ✅ URL-synced pagination hooks
-	const {
-		pagination,
-		searchTerm,
-		currentSort,
-		currentMovementType,
-		handleMovementTypeChange,
-		handleNextPage,
-		handlePrevPage,
-		handleLimitChange,
-		handleSearchChange,
-		handleSort,
-		handleResetAll,
-		handlePageChange,
-	} = usePagination()
+	// Hooks
+	const pagination = usePagination()
 
-	// ✅ Memoizar parámetros de paginación para evitar recreaciones
-	const paginationParams = useMemo(
+	// Debounce search
+	useEffect(() => {
+		const timer = setTimeout(() => setDebouncedSearch(pagination.searchTerm), SEARCH_DELAY)
+		return () => clearTimeout(timer)
+	}, [pagination.searchTerm])
+
+	// Data parameters (updated to include date filters)
+	const dataParams = useMemo(() => {
+		const cleanedDateFilters = Object.fromEntries(
+			Object.entries(pagination.dateFilters).filter(([_, range]) => range && (range.startDate || range.endDate))
+		)
+
+		return {
+			search: debouncedSearch,
+			page: pagination.pagination.page,
+			limit: pagination.pagination.limit,
+			sort: pagination.currentSort ? [pagination.currentSort] : undefined,
+			filters: {
+				movementType: pagination.currentMovementType || undefined,
+				...cleanedDateFilters,
+			},
+		}
+	}, [debouncedSearch, pagination])
+
+	// Data parameters para obtener el total real (sin filtros)
+	const totalParams = useMemo(
 		() => ({
-			page: pagination.page,
-			limit: pagination.limit,
-			search: searchTerm,
-			filters: currentMovementType ? { movementType: currentMovementType } : undefined,
-			sort: currentSort ? [currentSort] : undefined,
+			search: '',
+			page: 1,
+			limit: 1,
+			filters: {},
 		}),
-
-		[pagination.page, pagination.limit, searchTerm, currentMovementType, currentSort]
+		[]
 	)
 
-	// ✅ Main kardex hook con parámetros memoizados
-	const {
-		lastedRecords: records,
-		loadingLasted: loading,
-		errorLasted: error,
-		refetchLasted,
-	} = useKardex(paginationParams)
+	// Data and actions
+	const kardexData = useKardexData(dataParams)
+	const totalKardexData = useKardexData(totalParams)
+	const { isRefreshing, handleRefresh } = useGenericRefresh(kardexData.refetchLasted)
 
-	// ✅ Data refresh hook
-	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchLasted)
+	// Actualizar el total real cuando se obtengan los datos
+	useEffect(() => {
+		if (totalKardexData.lastedData.pagination?.totalRecords)
+			setTotalRealRecords(totalKardexData.lastedData.pagination.totalRecords)
+	}, [totalKardexData.lastedData.pagination?.totalRecords])
 
-	// ✅ Optimized next page handler
-	const handleNext = useCallback(() => {
-		handleNextPage(records?.data?.pagination?.hasNextPage)
-	}, [handleNextPage, records?.data?.pagination?.hasNextPage])
+	// Handler para refrescar datos
+	const handleFiltersRefresh = useCallback(async () => {
+		await handleRefresh()
+		totalKardexData.refetchRecords()
+	}, [handleRefresh, totalKardexData])
 
-	// ✅ Memoizar datos derivados
-	const kardexData = useMemo(
-		() => ({
-			items: records?.data?.items || [],
-			pagination: records?.data?.pagination,
-			hasNextPage: records?.data?.pagination?.hasNextPage,
-		}),
-		[records?.data]
-	)
-
-	// Función para reintentar la carga
 	const handleRetry = useCallback(() => {
 		setRetryCount(prev => prev + 1)
-		refetchLasted()
-	}, [refetchLasted])
+		kardexData.refetchRecords()
+	}, [kardexData])
 
-	if (error && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
+	const handleNextPage = useCallback(() => {
+		pagination.handleNextPage(kardexData.lastedData.pagination?.hasNextPage)
+	}, [pagination, kardexData.lastedData.pagination?.hasNextPage])
 
-	if (error)
-		return (
-			<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
-				<FatalErrorState />
-			</Card>
-		)
+	// Render states
+	if (kardexData.lastedData.hasError && retryCount < MAX_RETRIES)
+		return <ErrorState onRetry={handleRetry} type='retry' />
+
+	if (kardexData.lastedData.hasError) return <ErrorState type='fatal' />
+
+	if (kardexData.lastedData.isEmpty) return <EmptyState />
 
 	return (
 		<div className='flex flex-1 flex-col space-y-6'>
-			{kardexData?.pagination?.totalRecords === 0 ? (
-				<Card className='flex h-screen items-center justify-center border-none bg-transparent shadow-none'>
-					<UtilBanner
-						icon={<Icons.dataBase />}
-						title='Sin registros'
-						description='No hay datos disponibles.
-						'
-					/>
-				</Card>
-			) : (
-				<>
-					{/* Header */}
-					<KardexHeader title='Kardex' subtitle='Gestiona los movimientos de tus productos' />
+			<Header onRefresh={handleFiltersRefresh} totalRecords={totalRealRecords} />
 
-					{/* Filters and search */}
-					<KardexFilters
-						searchValue={searchTerm}
-						currentSort={currentSort}
-						currentMovementType={currentMovementType}
-						onMovementTypeChange={handleMovementTypeChange}
-						isRefreshing={isRefreshing}
-						onSearchChange={handleSearchChange}
-						onSort={handleSort}
-						onRefresh={handleRefresh}
-						onResetAll={handleResetAll}
-						viewType={viewType}
-						onViewChange={setViewType}
-					/>
+			<Filters
+				searchValue={pagination.searchTerm}
+				currentSort={pagination.currentSort}
+				currentMovementType={pagination.currentMovementType}
+				dateFilters={pagination.dateFilters}
+				isRefreshing={isRefreshing}
+				onRefresh={handleFiltersRefresh}
+				onMovementTypeChange={pagination.handleMovementTypeChange}
+				onSearchChange={pagination.handleSearchChange}
+				onSort={pagination.handleSort}
+				onDateFilterChange={pagination.handleDateFilterChange}
+				onClearDateFilter={pagination.clearDateFilter}
+				onResetAll={pagination.handleResetAll}
+				viewType={viewType}
+				onViewChange={setViewType}
+			/>
 
-					{/* Table */}
-					<TableKardex
-						recordData={kardexData.items}
-						loading={loading}
-						viewType={viewType}
-						showResponsible={false}
-						showSubtotal={false}
-						showTaxRate={false}
-						showTaxAmount={false}
-						showStockBefore={false}
-					/>
+			<TableData recordsData={kardexData.lastedData.items} loading={kardexData.loading} viewType={viewType} />
 
-					{/* Pagination controls */}
-					<PaginationControls
-						loading={loading}
-						pagination={pagination}
-						onPrevPage={handlePrevPage}
-						onPageChange={handlePageChange}
-						onNextPage={handleNext}
-						onLimitChange={handleLimitChange}
-						metaDataPagination={records?.data?.pagination}
-					/>
-				</>
-			)}
+			<PaginationControls
+				loading={kardexData.loading}
+				pagination={pagination.pagination}
+				onPrevPage={pagination.handlePrevPage}
+				onPageChange={pagination.handlePageChange}
+				onNextPage={handleNextPage}
+				onLimitChange={pagination.handleLimitChange}
+				metaDataPagination={kardexData.lastedData.pagination}
+			/>
 		</div>
 	)
 }

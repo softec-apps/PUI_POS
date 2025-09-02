@@ -11,12 +11,13 @@ import {
   HttpStatus,
   Controller,
   SerializeOptions,
+  Patch,
 } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { Roles } from '@/modules/roles/roles.decorator'
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger'
 import { RolesGuard } from '@/modules/roles/roles.guard'
-import { RoleEnum } from '@/common/constants/roles-const'
+import { RoleEnum, ROLES } from '@/common/constants/roles-const'
 import { Brand } from '@/modules/brand/domain/brand'
 import { ApiResponse } from '@/utils/types/request-response.type'
 import { PATH_SOURCE } from '@/common/constants/pathSource.const'
@@ -100,15 +101,45 @@ export class BrandController {
   }
 
   /**
+   * Soft delete a brand (hard delete)
+   * @param param - Parameter containing the brand ID to delete
+   * @returns The API standard response confirming deletion
+   * @warning This action is irreversible and will soft remove the brand
+   */
+  @Delete(':id')
+  //@BrandApiDocs.hardDelete
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
+  async softDelete(@Param() param: ParamBrandDto): Promise<ApiResponse> {
+    return await this.brandService.softDelete(param.id)
+  }
+
+  /**
+   * Restore a brand.
+   * @param RestoreBrandDto - Data transfer object for brand restore.
+   * @returns The API standard responsea
+   */
+  @Patch(':id/restore')
+  //@BrandApiDocs.update
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
+  async restore(@Param() param: ParamBrandDto): Promise<ApiResponse<Brand>> {
+    return await this.brandService.restore(param.id)
+  }
+
+  /**
    * Permanently delete a brand (hard delete)
    * @param param - Parameter containing the brand ID to delete
    * @returns The API standard response confirming deletion
    * @warning This action is irreversible and will permanently remove the brand
    */
   @Delete(':id/hard-delete')
-  @HttpCode(HttpStatus.OK)
-  @SerializeOptions({ groups: ['admin'] })
   @BrandApiDocs.hardDelete
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
   hardDelete(@Param() param: ParamBrandDto): Promise<ApiResponse> {
     return this.brandService.hardDelete(param.id)
   }

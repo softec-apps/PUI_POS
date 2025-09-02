@@ -174,6 +174,33 @@ export class BrandService {
     })
   }
 
+  async softDelete(id: Brand['id']): Promise<ApiResponse<void>> {
+    return this.dataSource.transaction(async (entityManager) => {
+      const user = await this.brandRepository.findById(id)
+
+      if (!user) {
+        throw new NotFoundException({
+          message: MESSAGE_RESPONSE.NOT_FOUND.ID,
+        })
+      }
+
+      await this.brandRepository.update(
+        id,
+        {
+          status: BrandStatus.INACTIVE,
+        },
+        entityManager,
+      )
+
+      await this.brandRepository.softDelete(id, entityManager)
+
+      return deletedResponse({
+        resource: PATH_SOURCE.BRAND,
+        message: MESSAGE_RESPONSE.DELETED.SOFT,
+      })
+    })
+  }
+
   async restore(id: Brand['id']): Promise<ApiResponse<void>> {
     return this.dataSource.transaction(async (entityManager) => {
       const brand = await this.brandRepository.findById(id)
@@ -195,7 +222,7 @@ export class BrandService {
       await this.brandRepository.restore(id, entityManager)
 
       return updatedResponse({
-        resource: PATH_SOURCE.BRAND,
+        resource: PATH_SOURCE.SUPPLIER,
         message: MESSAGE_RESPONSE.RESTORED,
       })
     })

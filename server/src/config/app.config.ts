@@ -55,6 +55,10 @@ class EnvironmentVariablesValidator {
   @IsString()
   @IsOptional()
   APP_CORS_ALLOWED_HEADERS: string
+
+  @IsUrl({ require_tld: false })
+  @IsOptional()
+  BILLING_API_BASE_URL: string
 }
 
 export default registerAs<AppConfig>('app', () => {
@@ -79,5 +83,6 @@ export default registerAs<AppConfig>('app', () => {
       allowedHeaders:
         process.env.APP_CORS_ALLOWED_HEADERS || 'Content-Type, Authorization',
     },
+    apiFactusZen: process.env.BILLING_API_BASE_URL || 'http://127.0.0.1:8000',
   }
 })

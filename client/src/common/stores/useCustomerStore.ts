@@ -1,94 +1,82 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-
-export interface Customer {
-	id: string
-	name: string
-	email?: string
-	phone?: string
-}
+import { I_Customer, I_CreateCustomer } from '@/common/types/modules/customer'
+import { CustomerType, IdentificationType } from '@/common/enums/customer.enum'
 
 interface CustomerState {
-	selectedCustomer: Customer | null
+	selectedCustomer: I_Customer | null
 	searchCustomer: string
+	debouncedSearchCustomer: string
 	showNewCustomerForm: boolean
-	newCustomer: {
-		name: string
-		email: string
-		phone: string
-	}
-	mockCustomers: Customer[]
-	setSelectedCustomer: (customer: Customer | null) => void
+	shouldAutoSelect: boolean
+	newCustomer: I_CreateCustomer
+	setSelectedCustomer: (customer: I_Customer | null) => void
 	setSearchCustomer: (search: string) => void
+	setDebouncedSearchCustomer: (search: string) => void
 	setShowNewCustomerForm: (show: boolean) => void
-	setNewCustomer: (customer: { name: string; email: string; phone: string }) => void
-	createCustomer: () => void
-	getFilteredCustomers: () => Customer[]
+	setShouldAutoSelect: (should: boolean) => void
+	setNewCustomer: (customer: I_CreateCustomer) => void
+	updateNewCustomer: (updates: Partial<I_CreateCustomer>) => void
 	clearCustomer: () => void
+	resetNewCustomer: () => void
 }
 
-const initialCustomers: Customer[] = [
-	{ id: '1', name: 'Juan Pérez', email: 'juan@email.com', phone: '+593 99 123 4567' },
-	{ id: '2', name: 'María García', email: 'maria@email.com', phone: '+593 98 765 4321' },
-	{ id: '3', name: 'Carlos López', email: 'carlos@email.com', phone: '+593 97 111 2222' },
-	{ id: '4', name: 'Ana Rodríguez', email: 'ana@email.com', phone: '+593 96 333 4444' },
-]
+const initialNewCustomer: I_CreateCustomer = {
+	customerType: CustomerType.REGULAR,
+	identificationType: IdentificationType.IDENTIFICATION_CARD,
+	identificationNumber: '',
+	firstName: '',
+	lastName: '',
+	address: '',
+	phone: '',
+	email: '',
+}
+
+// Los datos reales vienen del hook useCustomer, no necesitamos datos mock
 
 export const useCustomerStore = create<CustomerState>()(
 	persist(
-		(set, get) => ({
+		set => ({
 			selectedCustomer: null,
 			searchCustomer: '',
+			debouncedSearchCustomer: '',
 			showNewCustomerForm: false,
-			newCustomer: { name: '', email: '', phone: '' },
-			mockCustomers: initialCustomers,
+			shouldAutoSelect: false,
+			newCustomer: { ...initialNewCustomer },
 
 			setSelectedCustomer: customer => set({ selectedCustomer: customer }),
+
 			setSearchCustomer: search => set({ searchCustomer: search }),
+
+			setDebouncedSearchCustomer: search => set({ debouncedSearchCustomer: search }),
+
 			setShowNewCustomerForm: show => set({ showNewCustomerForm: show }),
+
+			setShouldAutoSelect: should => set({ shouldAutoSelect: should }),
+
 			setNewCustomer: customer => set({ newCustomer: customer }),
 
-			createCustomer: () => {
-				const { newCustomer, mockCustomers } = get()
-				const customer: Customer = {
-					id: Date.now().toString(),
-					name: newCustomer.name,
-					email: newCustomer.email,
-					phone: newCustomer.phone,
-				}
-				set({
-					selectedCustomer: customer,
-					showNewCustomerForm: false,
-					newCustomer: { name: '', email: '', phone: '' },
-					mockCustomers: [...mockCustomers, customer],
-				})
-			},
+			updateNewCustomer: updates =>
+				set(state => ({
+					newCustomer: { ...state.newCustomer, ...updates },
+				})),
 
-			getFilteredCustomers: () => {
-				const { mockCustomers, searchCustomer } = get()
-				return mockCustomers.filter(
-					customer =>
-						customer.name.toLowerCase().includes(searchCustomer.toLowerCase()) ||
-						customer.email?.toLowerCase().includes(searchCustomer.toLowerCase()) ||
-						customer.phone?.includes(searchCustomer)
-				)
-			},
+			resetNewCustomer: () => set({ newCustomer: { ...initialNewCustomer } }),
 
-			clearCustomer: () => {
+			clearCustomer: () =>
 				set({
 					selectedCustomer: null,
 					searchCustomer: '',
+					debouncedSearchCustomer: '',
 					showNewCustomerForm: false,
-					newCustomer: { name: '', email: '', phone: '' },
-					mockCustomers: initialCustomers,
-				})
-			},
+					shouldAutoSelect: false,
+					newCustomer: { ...initialNewCustomer },
+				}),
 		}),
 		{
 			name: 'customer-storage',
 			partialize: state => ({
 				selectedCustomer: state.selectedCustomer,
-				mockCustomers: state.mockCustomers,
 			}),
 		}
 	)

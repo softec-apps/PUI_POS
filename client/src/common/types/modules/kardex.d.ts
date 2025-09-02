@@ -1,22 +1,26 @@
-import { I_Product } from '@/common/types/modules/product'
 import { I_User } from '@/common/types/modules/user'
+import { I_Product } from '@/common/types/modules/product'
 import { MetaDataPagination, MetaResponse } from '@/common/types/pagination'
+
+/** Enum para movimientos del Kardex */
+export enum KardexMovementTypeEnum {
+	PURCHASE = 'purchase',
+	RETURN_IN = 'return_in',
+	TRANSFER_IN = 'transfer_in',
+	SALE = 'sale',
+	RETURN_OUT = 'return_out',
+	TRANSFER_OUT = 'transfer_out',
+	ADJUSTMENT_IN = 'adjustment_in',
+	ADJUSTMENT_OUT = 'adjustment_out',
+	DAMAGED = 'damaged',
+	EXPIRED = 'expired',
+}
 
 /** Propiedades base del Kardex */
 interface I_BaseKardex {
 	product: I_Product
 	user: I_User
-	movementType:
-		| 'purchase'
-		| 'return_in'
-		| 'transfer_in'
-		| 'sale'
-		| 'return_out'
-		| 'transfer_out'
-		| 'adjustment_in'
-		| 'adjustment_out'
-		| 'damaged'
-		| 'expired'
+	movementType: KardexMovementType
 	quantity: number
 	unitCost: number
 	subtotal: number

@@ -9,6 +9,7 @@ import { Supplier } from '@/modules/suppliers/domain/supplier'
 import { SupplierStatus } from '@/modules/suppliers/status.enum'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Transform, Type, plainToInstance } from 'class-transformer'
+import { DateRangeDto } from '@/utils/dto/DateRangeDto'
 
 export class FilterSupplierDto {
   @ApiPropertyOptional({
@@ -20,6 +21,33 @@ export class FilterSupplierDto {
     message: `El estado debe ser uno de: ${Object.values(SupplierStatus).join(', ')}`,
   })
   status?: SupplierStatus
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de creación',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  createdAt?: DateRangeDto | null
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de actualización',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  updatedAt?: DateRangeDto | null
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de eliminación',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  deletedAt?: DateRangeDto | null
 }
 
 export class SortSupplierDto {

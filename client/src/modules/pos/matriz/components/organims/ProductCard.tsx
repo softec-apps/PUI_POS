@@ -10,6 +10,7 @@ import { Typography } from '@/components/ui/typography'
 import { Card, CardContent } from '@/components/ui/card'
 import { I_Product } from '@/common/types/modules/product'
 import { ProductDetailDialog } from './ProductDetailDialog'
+import { formatPrice } from '@/common/utils/formatPrice-util'
 
 const itemVariants = {
 	hidden: { opacity: 0, y: 20 },
@@ -100,7 +101,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
 
 							{/* Precio */}
 							<Typography variant='overline' className='text-primary/90 text-sm'>
-								${product.price.toFixed(2)}
+								${formatPrice(product.pricePublic)}
 							</Typography>
 						</div>
 					</CardContent>
@@ -135,13 +136,10 @@ export const ProductCardSkeleton: React.FC<ProductCardSkeletonProps> = ({ count 
 					<Card className='overflow-hidden border-2 p-0 shadow-none'>
 						<CardContent className='p-0'>
 							{/* Image skeleton */}
-							<div className='bg-muted relative flex aspect-square w-full items-center justify-center'>
-								<Skeleton className='h-full w-full' />
-
+							<div className='bg-muted relative flex aspect-square h-24 w-full items-center justify-center'>
 								{/* Action buttons skeleton */}
-								<div className='absolute top-2 right-2 flex gap-1'>
-									<Skeleton className='h-6 w-6 rounded-full' />
-									<Skeleton className='h-6 w-6 rounded-full' />
+								<div className='absolute top-2 left-2 flex gap-1'>
+									<Skeleton className='h-5 w-16 rounded-full' />
 								</div>
 							</div>
 
@@ -149,8 +147,7 @@ export const ProductCardSkeleton: React.FC<ProductCardSkeletonProps> = ({ count 
 							<div className='space-y-2 p-3'>
 								<Skeleton className='h-4 w-full' />
 								<Skeleton className='h-4 w-3/4' />
-								<Skeleton className='mx-auto h-4 w-16 rounded' />
-								<Skeleton className='mx-auto h-5 w-20' />
+								<Skeleton className='h-4 w-3/4' />
 							</div>
 						</CardContent>
 					</Card>

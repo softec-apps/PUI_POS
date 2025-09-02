@@ -31,9 +31,17 @@ export abstract class ProductRepository {
   ): Promise<NullableType<Product>>
 
   abstract create(
-    data: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | ' deletedAt'>,
+    data: Omit<
+      Product,
+      'id' | 'code' | 'createdAt' | 'updatedAt' | ' deletedAt'
+    >,
     entityManager: EntityManager,
   ): Promise<Product>
+
+  abstract bulkCreate(
+    data: Partial<Product>[],
+    entityManager: EntityManager,
+  ): Promise<Product[]>
 
   abstract update(
     id: Product['id'],

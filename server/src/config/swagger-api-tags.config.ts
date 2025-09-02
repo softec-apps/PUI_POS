@@ -86,4 +86,28 @@ export const API_TAGS_CONFIG = [
       url: '',
     },
   },
+  {
+    name: PATH_SOURCE.CUSTOMER,
+    description: 'clientes',
+    externalDocs: {
+      description: '',
+      url: '',
+    },
+  },
+  {
+    name: PATH_SOURCE.SALE,
+    description: 'sales',
+    externalDocs: {
+      description: '',
+      url: '',
+    },
+  },
+  {
+    name: PATH_SOURCE.BILLING,
+    description: 'facturacion SRI',
+    externalDocs: {
+      description: '',
+      url: '',
+    },
+  },
 ]

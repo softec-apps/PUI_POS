@@ -11,6 +11,8 @@ import {
   HttpStatus,
   Controller,
   SerializeOptions,
+  Patch,
+  Request,
 } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger'
@@ -105,6 +107,21 @@ export class CategoryController {
   }
 
   /**
+   * Soft delete a category (hard delete)
+   * @param param - Parameter containing the category ID to delete
+   * @returns The API standard response confirming deletion
+   * @warning This action is irreversible and will soft remove the category
+   */
+  @Delete(':id')
+  //@CategoryApiDocs.hardDelete
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
+  async softDelete(@Param() param: ParamCategoryDto): Promise<ApiResponse> {
+    return await this.categoriesService.softDelete(param.id)
+  }
+
+  /**
    * Permanently delete a category (hard delete)
    * @param param - Parameter containing the category ID to delete
    * @returns The API standard response confirming deletion
@@ -117,5 +134,21 @@ export class CategoryController {
   @HttpCode(HttpStatus.OK)
   hardDelete(@Param() param: ParamCategoryDto): Promise<ApiResponse> {
     return this.categoriesService.hardDelete(param.id)
+  }
+
+  /**
+   * Restore a user.
+   * @param RestoreUserDto - Data transfer object for user restore.
+   * @returns The API standard responsea
+   */
+  @Patch(':id/restore')
+  @CategoryApiDocs.update
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
+  async restore(
+    @Param() param: ParamCategoryDto,
+  ): Promise<ApiResponse<Category>> {
+    return await this.categoriesService.restore(param.id)
   }
 }

@@ -1,23 +1,21 @@
 'use client'
-
-import { ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { Skeleton } from '@/components/ui/skeleton'
+import { ReactNode, useEffect, useState } from 'react'
 import { Typography } from '@/components/ui/typography'
 import { numberHumanize } from '@/common/utils/numberHumanize-util'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export interface ModuleHeaderProps {
 	title: string
 	totalRecords: number
-	loading: boolean
 	actionContent: ReactNode
+	loading: boolean
 	animation?: {
 		disabled?: boolean
 		duration?: number
 	}
 }
 
-// Configuración de animación por defecto
 const DEFAULT_ANIMATION = {
 	duration: 0.4,
 	easing: [0.23, 1, 0.32, 1] as const,
@@ -26,11 +24,14 @@ const DEFAULT_ANIMATION = {
 export function ModuleHeader({
 	title,
 	totalRecords,
-	loading,
 	actionContent,
+	loading,
 	animation = DEFAULT_ANIMATION,
 }: ModuleHeaderProps) {
-	// Props de animación condicionales
+	const [displayedTotal, setDisplayedTotal] = useState(totalRecords)
+
+	useEffect(() => setDisplayedTotal(totalRecords), [totalRecords])
+
 	const motionProps = animation.disabled
 		? {}
 		: {
@@ -44,21 +45,19 @@ export function ModuleHeader({
 
 	return (
 		<motion.section {...motionProps} className='flex items-center justify-between'>
-			{/* Sección de título y contador */}
 			<div className='flex items-center gap-2'>
 				<Typography variant='h3' className='font-bold'>
 					{title}
 				</Typography>
-				{loading ? (
-					<Skeleton className='h-9 w-9 rounded-xl' />
-				) : (
-					<Typography variant='overline' className='bg-accent rounded-xl px-2.5 py-1.5 text-base font-bold'>
-						{numberHumanize(totalRecords)}
-					</Typography>
-				)}
-			</div>
 
-			{/* Sección de acciones */}
+				<div className='flex items-center gap-2'>
+					<Typography
+						variant='overline'
+						className='bg-accent text-primary rounded-xl px-2.5 py-1.5 text-sm font-medium'>
+						{loading ? <Skeleton className='h-5 w-5 rounded-xl' /> : <>{numberHumanize(displayedTotal)}</>}
+					</Typography>
+				</div>
+			</div>
 			<div className='flex gap-2'>{actionContent}</div>
 		</motion.section>
 	)

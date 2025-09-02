@@ -50,6 +50,7 @@ export class EstablishmentController {
   async create(
     @Body() createEstablishmentDto: CreateEstablishmentDto,
   ): Promise<ApiResponse<Establishment>> {
+    console.log(createEstablishmentDto)
     return await this.establishmentService.create(createEstablishmentDto)
   }
 

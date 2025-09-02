@@ -2,12 +2,13 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Minus, Trash2 } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Icons } from '@/components/icons'
 import { Typography } from '@/components/ui/typography'
 import { OrderItem } from '@/common/stores/useCartStore'
+import { Card, CardContent } from '@/components/ui/card'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { Icons } from '@/components/icons'
+import { ImageControl } from '@/components/layout/organims/ImageControl'
+import { formatPrice } from '@/common/utils/formatPrice-util'
 
 interface CartItemProps {
 	item: OrderItem
@@ -36,68 +37,77 @@ const itemVariants = {
 	},
 }
 
-export const CartItem: React.FC<CartItemProps> = ({ item, index, onUpdateQuantity, onRemoveItem }) => (
-	<motion.div
-		key={item.id}
-		variants={itemVariants}
-		initial='hidden'
-		animate='visible'
-		exit='exit'
-		layout
-		custom={index}
-		className='group py-2'>
-		<Card className='bg-card dark:bg-accent/15 border-none p-0 shadow-none transition-colors duration-500'>
-			<CardContent className='p-4'>
-				<div className='flex items-start gap-3'>
-					<div className='min-w-0 flex-1'>
-						<div className='flex items-center justify-between gap-4'>
-							<div className='flex flex-col gap-2'>
-								<ActionButton
-									variant='secondary'
-									size='sm'
-									tooltip='Aumentar'
-									onClick={() => onUpdateQuantity(item.id, 1)}
-									icon={<Plus className='h-4 w-4' />}
-								/>
-								<ActionButton
-									variant='secondary'
-									size='sm'
-									tooltip='Disminuir'
-									disabled={item.quantity === 1}
-									onClick={() => onUpdateQuantity(item.id, -1)}
-									icon={<Minus className='h-4 w-4' />}
-								/>
-							</div>
+export const CartItem: React.FC<CartItemProps> = ({ item, index, onUpdateQuantity, onRemoveItem }) => {
+	return (
+		<motion.div
+			key={item.id}
+			variants={itemVariants}
+			initial='hidden'
+			animate='visible'
+			exit='exit'
+			layout
+			custom={index}
+			className='py-1'>
+			<Card className='border-border/50 bg-popover rounded-2xl p-1 pr-2 shadow-none transition-colors duration-500'>
+				<CardContent className='p-0'>
+					<div className='flex items-start gap-3'>
+						<div className='min-w-0 flex-1'>
+							<div className='flex items-center justify-between gap-4'>
+								<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
+									<ImageControl
+										imageUrl={item?.image}
+										enableHover={false}
+										enableClick={false}
+										imageHeight={45}
+										imageWidth={45}
+									/>
+								</div>
 
-							<div className='flex-1 space-y-2'>
-								<Typography variant='h6' className='line-clamp-1 break-words'>
-									{item.name}
-								</Typography>
-
-								<Typography variant='overline' className='line-clamp-1 flex gap-2 font-medium break-words'>
-									# {item?.code || 'N/A'}
-								</Typography>
-
-								<div className='flex items-center justify-between gap-4'>
-									<Typography variant='overline' className='line-clamp-1 flex gap-2 font-medium break-words'>
-										{item.quantity} x ${item.price.toFixed(2)} ={' '}
-										<strong>${(item.quantity * item.price).toFixed(2)}</strong>
+								<div className='flex-1 space-y-2'>
+									<Typography variant='span' className='text-primary line-clamp-1 break-words'>
+										{item.name}
 									</Typography>
+
+									<div className='flex items-center justify-between gap-4'>
+										<Typography variant='overline' className='line-clamp-1 flex gap-2 font-medium break-words'>
+											{item.quantity} x ${formatPrice(item.price)} ={' '}
+											<strong>${formatPrice(item.quantity * item.price)}</strong>
+										</Typography>
+									</div>
+								</div>
+
+								<div className='flex gap-2'>
+									<ActionButton
+										variant='secondary'
+										size='icon'
+										tooltip='Disminuir'
+										disabled={item.quantity === 1}
+										onClick={() => onUpdateQuantity(item.id, -1)}
+										icon={<Icons.minus className='h-4 w-4' />}
+									/>
+
+									<ActionButton
+										variant='secondary'
+										size='icon'
+										tooltip='Aumentar'
+										onClick={() => onUpdateQuantity(item.id, 1)}
+										icon={<Icons.plus className='h-4 w-4' />}
+									/>
+
+									<ActionButton
+										variant='secondary'
+										size='icon'
+										tooltip='Remover'
+										className='bg-destructive/20 text-destructive hover:bg-destructive/30'
+										onClick={() => onRemoveItem(item.id)}
+										icon={<Icons.trash className='h-4 w-4' />}
+									/>
 								</div>
 							</div>
-
-							<ActionButton
-								variant='secondary'
-								size='pos'
-								tooltip='Remover'
-								className='bg-destructive/20 text-destructive hover:bg-destructive/30'
-								onClick={() => onRemoveItem(item.id)}
-								icon={<Icons.x className='h-4 w-4' />}
-							/>
 						</div>
 					</div>
-				</div>
-			</CardContent>
-		</Card>
-	</motion.div>
-)
+				</CardContent>
+			</Card>
+		</motion.div>
+	)
+}

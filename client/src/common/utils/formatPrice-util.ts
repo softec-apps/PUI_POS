@@ -3,6 +3,6 @@ export const formatPrice = (value: number): string => {
 		style: 'decimal',
 		useGrouping: true,
 		minimumFractionDigits: 2,
-		maximumFractionDigits: 6,
+		maximumFractionDigits: 2,
 	}).format(value)
 }

@@ -1,5 +1,5 @@
 import { Role } from '@/modules/roles/domain/role'
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Status } from '@/statuses/domain/status'
 import { Exclude, Expose } from 'class-transformer'
 import { FileType } from '@/modules/files/domain/file'
@@ -17,6 +17,13 @@ export class User {
   })
   @Expose({ groups: ['me', 'admin'] })
   email: string | null
+
+  @ApiPropertyOptional({
+    type: String,
+    example: '0212876659',
+  })
+  @Expose({ groups: ['me', 'admin'] })
+  dni?: string | null
 
   @Exclude({ toPlainOnly: true })
   password?: string

@@ -11,7 +11,7 @@ export const NavbarPOSMatriz = () => {
 	const dataRecord = recordsData?.data.items[0]
 
 	return (
-		<header className='flex h-14 shrink-0 items-center justify-between gap-2 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-14'>
+		<header className='flex shrink-0 items-center justify-between gap-2 p-0 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-14'>
 			<div className='flex aspect-square size-8 items-center justify-center'>
 				<ImageControl
 					recordData={dataRecord}

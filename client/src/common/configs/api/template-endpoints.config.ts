@@ -3,7 +3,7 @@ import { ENDPOINT_API } from '@/common/constants/APIEndpoint-const'
 
 export const TEMPLATE_ENDPOINTS_CONFIG: ApiConfig = {
 	baseEndpoint: `/${ENDPOINT_API.TEMPLATE}`,
-	queryKey: [ENDPOINT_API.TEMPLATE],
+	queryKey: [ENDPOINT_API.PRODUCT],
 	extraInvalidateKeys: [],
 	endpoints: {
 		list: { path: '', method: 'GET' },

@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { I_Category } from '@/common/types/modules/category'
 
 const itemVariants = {
-	hidden: { opacity: 0, y: 20 },
+	hidden: { opacity: 0, y: 8 },
 	visible: { opacity: 1, y: 0 },
 }
 
@@ -21,26 +21,33 @@ export const CategoryCard: React.FC<CardProps> = ({ category, isSelected = false
 	const IconComponent = category?.photo
 
 	return (
-		<motion.div variants={itemVariants} whileHover={{ scale: 1 }} whileTap={{ scale: 0.95 }}>
+		<motion.div
+			variants={itemVariants}
+			initial='hidden'
+			animate='visible'
+			whileHover={{ scale: 1.02 }}
+			whileTap={{ scale: 0.98 }}
+			transition={{ duration: 0.15 }}>
 			<Card
+				onClick={onSelect}
 				className={cn(
-					'bg-card dark:bg-accent/10 cursor-pointer border-none p-0 shadow-none transition-all duration-500',
-					isSelected ? 'bg-accent dark:bg-accent/50' : ''
-				)}
-				onClick={onSelect}>
-				<CardContent className='p-0'>
-					<div className='flex items-center gap-2 px-4 py-3 lg:gap-3'>
-						<div
-							className={cn(
-								'flex h-8 w-8 items-center justify-center rounded-lg lg:h-10 lg:w-10',
-								isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'
-							)}>
-							<IconComponent className='h-4 w-4 lg:h-5 lg:w-5' />
-						</div>
-						<div className='min-w-0 flex-1'>
-							<h3 className='truncate text-xs font-semibold lg:text-sm'>{category?.name}</h3>
-							<p className='text-muted-foreground text-xs'>{category?.itemCount} items</p>
-						</div>
+					'cursor-pointer rounded-xl border transition-all duration-200',
+					isSelected ? 'border-primary bg-primary/5 shadow-sm' : 'border-border hover:bg-accent/40'
+				)}>
+				<CardContent className='flex items-center gap-4 p-4'>
+					<div
+						className={cn(
+							'flex h-12 w-12 items-center justify-center rounded-lg transition-colors',
+							isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+						)}>
+						<IconComponent className='h-6 w-6' />
+					</div>
+
+					<div className='min-w-0 flex-1'>
+						<p className={cn('truncate text-sm font-medium', isSelected && 'text-primary')}>{category?.name}</p>
+						<span className='text-muted-foreground text-xs'>
+							{category?.itemCount} {category?.itemCount === 1 ? 'item' : 'items'}
+						</span>
 					</div>
 				</CardContent>
 			</Card>
@@ -56,14 +63,12 @@ export const CategoryCardSkeleton: React.FC<SkeletonCardProps> = ({ count = 6 })
 	return (
 		<>
 			{Array.from({ length: count }).map((_, i) => (
-				<Card key={i} className='border-border bg-muted/20 p-0'>
-					<CardContent className='p-0'>
-						<div className='flex items-center gap-2 px-4 py-3 lg:gap-3'>
-							<Skeleton className='h-8 w-8 rounded-lg lg:h-10 lg:w-10' />
-							<div className='min-w-0 flex-1 space-y-1'>
-								<Skeleton className='h-3 w-3/4' />
-								<Skeleton className='h-2 w-1/2' />
-							</div>
+				<Card key={i} className='rounded-xl border p-0'>
+					<CardContent className='flex items-center gap-4 p-4'>
+						<Skeleton className='h-12 w-12 rounded-lg' />
+						<div className='min-w-0 flex-1 space-y-2'>
+							<Skeleton className='h-4 w-3/4' />
+							<Skeleton className='h-3 w-1/2' />
 						</div>
 					</CardContent>
 				</Card>

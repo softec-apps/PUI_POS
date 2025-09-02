@@ -10,6 +10,8 @@ import {
   IsBoolean,
   IsPositive,
   IsInt,
+  ValidateIf,
+  IsIn,
 } from 'class-validator'
 import { FileDto } from '@/modules/files/dto/file.dto'
 import { ProductStatus } from '@/modules/product/status.enum'
@@ -72,16 +74,32 @@ export class CreateProductDto {
   @ApiProperty({
     type: Number,
     example: 29.99,
+    description: 'Costo (debe ser un número positivo, máximo 6 decimales)',
+  })
+  @IsNotEmpty({ message: 'El costo es obligatorio' })
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 6 },
+    { message: 'El costo debe ser un número válido (máximo 6 decimales)' },
+  )
+  @IsPositive({ message: 'El costo debe ser un número positivo' })
+  price: number
+
+  @ApiProperty({
+    type: Number,
+    example: 29.99,
     description:
-      'Precio base del producto (debe ser un número positivo, máximo 6 decimales)',
+      'Precio de venta (debe ser un número positivo, máximo 6 decimales)',
   })
   @IsNotEmpty({ message: 'El precio es obligatorio' })
   @IsNumber(
     { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 6 },
-    { message: 'El precio debe ser un número válido (máximo 6 decimales)' },
+    {
+      message:
+        'El precio de venta debe ser un número válido (máximo 6 decimales)',
+    },
   )
-  @IsPositive({ message: 'El precio debe ser un número positivo' })
-  price: number
+  @IsPositive({ message: 'El precio de venta debe ser un número positivo' })
+  pricePublic: number
 
   @ApiPropertyOptional({
     type: String,
@@ -109,6 +127,19 @@ export class CreateProductDto {
   })
   barCode?: string | null
 
+  @ApiPropertyOptional({
+    type: Number,
+    example: 0,
+    description: 'Impuesto (debe ser "0" o "15")',
+    default: 0,
+    enum: [0, 15],
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'El impuesto debe ser un número' })
+  @IsInt({ message: 'El impuesto debe ser un número entero' })
+  @IsIn([0, 15], { message: 'El impuesto debe ser 0 (exento) o 15 (con IVA)' })
+  tax?: number = 0
+
   @ApiProperty({
     type: Number,
     example: 100,
@@ -135,16 +166,6 @@ export class CreateProductDto {
   @ApiPropertyOptional({
     type: String,
     example: '123e4567-e89b-12d3-a456-426614174000',
-    description: 'ID de la marca del producto',
-    nullable: true,
-  })
-  @IsOptional()
-  @IsUUID('4', { message: 'El ID de la marca debe ser un UUID válido' })
-  brandId?: string | null
-
-  @ApiPropertyOptional({
-    type: String,
-    example: '123e4567-e89b-12d3-a456-426614174000',
     description: 'ID del proveedor del producto',
     nullable: true,
   })
@@ -152,13 +173,30 @@ export class CreateProductDto {
   @IsUUID('4', { message: 'El ID del proveedor debe ser un UUID válido' })
   supplierId?: string | null
 
-  @ApiProperty({
+  @ApiPropertyOptional({
+    type: String,
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'ID de la marca del producto',
+    nullable: true,
+  })
+  @IsOptional()
+  @ValidateIf(
+    (obj, value) => value !== '' && value !== null && value !== undefined,
+  )
+  @IsUUID('4', { message: 'El ID de la marca debe ser un UUID válido' })
+  brandId?: string | null
+
+  @ApiPropertyOptional({
     type: String,
     example: '123e4567-e89b-12d3-a456-426614174000',
     description:
-      'ID del template que define la estructura de atributos del producto (OBLIGATORIO)',
+      'ID del template que define la estructura de atributos del producto',
+    nullable: true,
   })
-  @IsNotEmpty({ message: 'El ID del template es obligatorio' })
+  @IsOptional()
+  @ValidateIf(
+    (obj, value) => value !== '' && value !== null && value !== undefined,
+  )
   @IsUUID('4', { message: 'El ID del template debe ser un UUID válido' })
-  templateId: string
+  templateId?: string | null
 }

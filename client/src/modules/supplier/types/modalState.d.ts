@@ -1,4 +1,3 @@
-// INTERFAZ  OBTIENIDA DE RETURN DE "useModalState.ts"
 import { I_Supplier } from '@/common/types/modules/supplier'
 
 export interface ModalState {
@@ -8,6 +7,22 @@ export interface ModalState {
 	openCreateDialog: () => void
 	openEditDialog: (record: I_Supplier) => void
 	closeDialog: () => void
+
+	// Soft delete modal state
+	isSoftDeleteModalOpen: boolean
+	recordToSoftDelete: I_Supplier | null
+	isSoftDeleting: boolean
+	setIsSoftDeleting: (value: boolean) => void
+	openSoftDeleteModal: (record: I_Supplier) => void
+	closeSoftDeleteModal: () => void
+
+	// Restore modal state
+	isRestoreModalOpen: boolean
+	recordToRestore: I_Supplier | null
+	isRestoring: boolean
+	setIsRestoring: (value: boolean) => void
+	openRestoreModal: (record: I_Supplier) => void
+	closeRestoreModal: () => void
 
 	// Hard delete modal state
 	isHardDeleteModalOpen: boolean

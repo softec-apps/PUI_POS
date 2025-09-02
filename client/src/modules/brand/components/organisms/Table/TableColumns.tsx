@@ -2,19 +2,25 @@
 
 import { Icons } from '@/components/icons'
 import { ColumnDef } from '@tanstack/react-table'
-import { Badge } from '@/components/layout/atoms/Badge'
 import { I_Brand } from '@/common/types/modules/brand'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { InfoDate } from '@/modules/brand/components/atoms/InfoDate'
+import { Actions } from '@/modules/brand/components/organisms/Actions'
+import { StatusBadge } from '@/modules/brand/components/atoms/StatusBadge'
 
-import { TableActions } from '@/modules/brand/components/organisms/Table/TableActions'
-import { TableInfoDate } from '@/modules/brand/components/organisms/Table/TableInfoDate'
-
-interface TableColumnsProps {
-	onEdit: (brandData: I_Brand) => void
-	onHardDelete: (brandData: I_Brand) => void
+interface createTableColumnsProps {
+	onEdit: (recordData: I_Brand) => void
+	onSoftDelete: (recordData: I_Brand) => void
+	onHardDelete: (recordData: I_Brand) => void
+	onRestore: (recordData: I_Brand) => void
 }
 
-export const createTableColumns = ({ onEdit, onHardDelete }: TableColumnsProps): ColumnDef<I_Brand>[] => [
+export const createTableColumns = ({
+	onEdit,
+	onSoftDelete,
+	onHardDelete,
+	onRestore,
+}: createTableColumnsProps): ColumnDef<I_Brand>[] => [
 	{
 		accessorKey: 'name',
 		header: ({ column }) => (
@@ -35,11 +41,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: TableColumnsProps):
 				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 			/>
 		),
-		cell: ({ row }) => (
-			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				{row.original.name}
-			</div>
-		),
+		cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.name}</div>,
 	},
 	{
 		accessorKey: 'description',
@@ -61,11 +63,7 @@ export const createTableColumns = ({ onEdit, onHardDelete }: TableColumnsProps):
 				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 			/>
 		),
-		cell: ({ row }) => (
-			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				{row.original.description || 'Sin descripción'}
-			</div>
-		),
+		cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.description}</div>,
 	},
 	{
 		accessorKey: 'status',
@@ -88,24 +86,27 @@ export const createTableColumns = ({ onEdit, onHardDelete }: TableColumnsProps):
 			/>
 		),
 		cell: ({ row }) => (
-			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
-				<Badge
-					variant={row.original.status === 'active' ? 'success' : 'warning'}
-					text={row.original.status === 'active' ? 'Activo' : 'Inactivo'}
-				/>
+			<div className='max-w-56 truncate'>
+				<StatusBadge status={row.original.status} />
 			</div>
 		),
 	},
 	{
 		accessorKey: 'date',
 		header: 'Información',
-		cell: ({ row }) => <TableInfoDate brandData={row.original} />,
+		cell: ({ row }) => <InfoDate recordData={row.original} />,
 	},
 	{
 		id: 'actions',
 		cell: ({ row }) => (
 			<div className='flex justify-end'>
-				<TableActions brandData={row.original} onEdit={onEdit} onHardDelete={onHardDelete} />
+				<Actions
+					recordData={row.original}
+					onEdit={onEdit}
+					onSoftDelete={onSoftDelete}
+					onHardDelete={onHardDelete}
+					onRestore={onRestore}
+				/>
 			</div>
 		),
 	},

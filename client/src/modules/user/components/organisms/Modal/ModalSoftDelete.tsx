@@ -1,7 +1,7 @@
 'use client'
 
 import { I_User } from '@/common/types/modules/user'
-import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
+import { ConfirmationModal } from '@/components/layout/templates/ConfirmationModal'
 
 interface SoftDeleteModalProps {
 	isOpen: boolean
@@ -17,7 +17,7 @@ export function SoftDeleteModal({ isOpen, currentRecord, isAction, onClose, onCo
 			isOpen={isOpen}
 			variant='warning'
 			title='Remover usuario'
-			description='Esta acción no se puede deshacer'
+			description='Esta acción se puede deshacer'
 			message={
 				<>
 					¿Deseas remover temporalmente al usuario{' '}
@@ -29,7 +29,7 @@ export function SoftDeleteModal({ isOpen, currentRecord, isAction, onClose, onCo
 			}
 			alertMessage={
 				<>
-					<p className='text-destructive'>El usuario perderá acceso al sistema de forma temporal.</p>
+					<p className='text-amber-600 dark:text-amber-400'>El usuario perderá acceso al sistema de forma temporal.</p>
 				</>
 			}
 			isProcessing={isAction}

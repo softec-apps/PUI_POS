@@ -15,7 +15,7 @@ export function LogoutButton() {
 			await logout()
 			await signOut({
 				callbackUrl: `${ROUTE_PATH.AUTH.SIGNIN}`,
-				redirect: true,
+				//redirect: true,
 			})
 		} catch (error) {
 			console.error('Error al cerrar sesión:', error)

@@ -1,174 +1,200 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
-import { useBrand } from '@/common/hooks/useBrand'
-import { useModalState } from '@/modules/brand/hooks/useModalState'
-import { usePagination } from '@/modules/brand/hooks/usePagination'
-import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
-import { useBrandHandlers } from '@/modules/brand/hooks/useBrandHandlers'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 
-import { Icons } from '@/components/icons'
-import { Card } from '@/components/ui/card'
-import { UtilBanner } from '@/components/UtilBanner'
-import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { ViewType } from '@/modules/brand/components/molecules/ViewSelector'
-import { BrandHeader } from '@/modules/brand/components/templates/Header'
-import { BrandModals } from '@/modules/brand/components/templates/Modals'
-import { BrandFilters } from '@/modules/brand/components/templates/Filters'
-import { PaginationControls } from '@/modules/brand/components/templates/Pagination'
-import { BrandTable } from '@/modules/brand/components/organisms/Table/TableBrand'
-import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
+import { useModal } from '@/modules/brand/hooks/useModal'
+import { useBrandData } from '@/modules/brand/hooks/useData'
+import { usePagination } from '@/modules/brand/hooks/usePagination'
+import { useActions } from '@/modules/brand/hooks/useActions'
+import { useGenericRefresh } from '@/common/hooks/shared/useGenericRefresh'
+
+import { ViewType } from '@/components/layout/organims/ViewSelector'
+import { Header } from '@/modules/brand/components/templates/Header'
+import { Modals } from '@/modules/brand/components/templates/Modals'
+import { Filters } from '@/modules/brand/components/templates/Filters'
+import { EmptyState } from '@/modules/brand/components/templates/EmptyState'
+import { ErrorState } from '@/components/layout/templates/ErrorState'
+import { PaginationControls } from '@/components/layout/organims/Pagination'
+import { TableData } from '@/modules/brand/components/organisms/Table/TableData'
+
+const SEARCH_DELAY = 500
+const MAX_RETRIES = 3
 
 export function BrandView() {
-	const [retryCount, setRetryCount] = useState(0)
 	const [viewType, setViewType] = useState<ViewType>('table')
+	const [debouncedSearch, setDebouncedSearch] = useState('')
+	const [retryCount, setRetryCount] = useState(0)
+	const [totalRealRecords, setTotalRealRecords] = useState(0)
 
-	// Hooks de paginación
-	const {
-		pagination,
-		searchTerm,
-		currentSort,
-		currentStatus,
-		handleNextPage,
-		handlePrevPage,
-		handleLimitChange,
-		handleSearchChange,
-		handleSort,
-		handleStatusChange,
-		handleResetAll,
-		handlePageChange,
-	} = usePagination()
+	// Hooks
+	const pagination = usePagination()
+	const modal = useModal()
 
-	// Memoizar parámetros de paginación
-	const paginationParams = useMemo(
+	// Debounce search
+	useEffect(() => {
+		const timer = setTimeout(() => setDebouncedSearch(pagination.searchTerm), SEARCH_DELAY)
+		return () => clearTimeout(timer)
+	}, [pagination.searchTerm])
+
+	// Data parameters (updated to include date filters)
+	const dataParams = useMemo(() => {
+		const cleanedDateFilters = Object.fromEntries(
+			Object.entries(pagination.dateFilters).filter(([_, range]) => range && (range.startDate || range.endDate))
+		)
+
+		return {
+			search: debouncedSearch,
+			page: pagination.pagination.page,
+			limit: pagination.pagination.limit,
+			sort: pagination.currentSort ? [pagination.currentSort] : undefined,
+			filters: {
+				status: pagination.currentStatus || undefined,
+				...cleanedDateFilters,
+			},
+		}
+	}, [debouncedSearch, pagination])
+
+	// Data parameters para obtener el total real (sin filtros)
+	const totalParams = useMemo(
 		() => ({
-			search: searchTerm,
-			page: pagination.page,
-			limit: pagination.limit,
-			sort: currentSort ? [currentSort] : undefined,
-			filters: currentStatus ? { status: currentStatus } : undefined,
+			search: '',
+			page: 1,
+			limit: 1,
+			filters: {},
 		}),
-		[pagination.page, pagination.limit, searchTerm, currentStatus, currentSort]
+		[]
 	)
 
-	// Hook principal de marcas
-	const {
-		brands,
-		loading,
-		error: errorBrand,
-		createBrand,
-		updateBrand,
-		hardDeleteBrand,
-		refetchBrands,
-	} = useBrand(paginationParams)
+	// Data and actions
+	const brandData = useBrandData(dataParams)
+	const totalBrandData = useBrandData(totalParams)
+	const { isRefreshing, handleRefresh } = useGenericRefresh(brandData.refetchRecords)
 
-	// Función para reintentar la carga
-	const handleRetry = useCallback(() => {
-		setRetryCount(prev => prev + 1)
-		refetchBrands()
-	}, [refetchBrands])
+	// Actualizar el total real cuando se obtengan los datos
+	useEffect(() => {
+		if (totalBrandData.data.pagination?.totalRecords) setTotalRealRecords(totalBrandData.data.pagination.totalRecords)
+	}, [totalBrandData.data.pagination?.totalRecords])
 
-	// Hook de refresh
-	const { isRefreshing, handleRefresh } = useGenericRefresh(refetchBrands)
-
-	// Hooks de formulario y modales
-	const modalState = useModalState()
-
-	// Handlers de marcas
-	const brandHandlers = useBrandHandlers({
-		modalState,
-		createBrand,
-		updateBrand,
-		hardDeleteBrand,
+	const userActions = useActions({
+		createRecord: brandData.createRecord,
+		updateRecord: brandData.updateRecord,
+		softDeleteRecord: brandData.softDeleteRecord,
+		hardDeleteRecord: brandData.hardDeleteRecord,
+		restoreRecord: brandData.restoreRecord,
 	})
 
-	// Optimized next page handler
-	const handleNext = useCallback(() => {
-		handleNextPage(brands?.data?.pagination?.hasNextPage)
-	}, [handleNextPage, brands?.data?.pagination?.hasNextPage])
+	// Handler para refrescar datos
+	const handleFiltersRefresh = useCallback(async () => {
+		await handleRefresh()
+		totalBrandData.refetchRecords()
+	}, [handleRefresh, totalBrandData])
 
-	// Memoizar datos derivados
-	const brandData = useMemo(
-		() => ({
-			items: brands?.data?.items || [],
-			pagination: brands?.data?.pagination,
-			hasNextPage: brands?.data?.pagination?.hasNextPage,
-		}),
-		[brands?.data]
+	const handleModalSubmit = useCallback(
+		async (data: any) => {
+			try {
+				modal.setLoading(true)
+				await userActions.handleSubmit(data, modal.record?.id)
+				modal.closeModal()
+			} catch (error) {
+				throw error
+			} finally {
+				modal.setLoading(false)
+			}
+		},
+		[modal, userActions]
 	)
 
-	if (errorBrand && retryCount < 3) return <RetryErrorState onRetry={handleRetry} />
+	const handleModalDelete = useCallback(async () => {
+		if (!modal.record?.id || !modal.type) return
 
-	if (errorBrand)
-		return (
-			<Card className='flex h-screen w-full flex-col items-center justify-center gap-4 border-none bg-transparent shadow-none'>
-				<FatalErrorState />
-			</Card>
-		)
+		try {
+			modal.setLoading(true)
+			const deleteType = modal.type === 'hardDelete' ? 'hard' : 'soft'
+			await userActions.handleDelete(modal.record.id, deleteType)
+			modal.closeModal()
+		} catch (error) {
+		} finally {
+			modal.setLoading(false)
+		}
+	}, [modal, userActions])
+
+	const handleModalRestore = useCallback(async () => {
+		if (!modal.record?.id) return
+
+		try {
+			modal.setLoading(true)
+			await userActions.handleRestore(modal.record.id)
+			modal.closeModal()
+		} catch (error) {
+		} finally {
+			modal.setLoading(false)
+		}
+	}, [modal, userActions])
+
+	const handleRetry = useCallback(() => {
+		setRetryCount(prev => prev + 1)
+		brandData.refetchRecords()
+	}, [brandData])
+
+	const handleNextPage = useCallback(() => {
+		pagination.handleNextPage(brandData.data.pagination?.hasNextPage)
+	}, [pagination, brandData.data.pagination?.hasNextPage])
+
+	// Render states
+	if (brandData.data.hasError && retryCount < MAX_RETRIES) return <ErrorState onRetry={handleRetry} type='retry' />
+	if (brandData.data.hasError) return <ErrorState type='fatal' />
 
 	return (
 		<div className='flex flex-1 flex-col space-y-6'>
-			{brandData?.pagination?.totalRecords === 0 ? (
-				<Card className='flex h-screen items-center justify-center border-none bg-transparent shadow-none'>
-					<UtilBanner
-						icon={<Icons.dataBase />}
-						title='Sin registros'
-						description='No hay datos disponibles. Intentá crear un registro'
-					/>
-
-					<ActionButton
-						size='lg'
-						variant='default'
-						icon={<Icons.plus />}
-						text='Nueva marca'
-						className='rounded-xl'
-						onClick={modalState.openCreateDialog}
-					/>
-				</Card>
+			{brandData.data.isEmpty ? (
+				<EmptyState onCreate={modal.openCreate} />
 			) : (
 				<>
-					{/* Header */}
-					<BrandHeader onCreateClick={modalState.openCreateDialog} />
+					<Header onCreateClick={modal.openCreate} onRefresh={handleFiltersRefresh} totalRecords={totalRealRecords} />
 
-					{/* Filtros y búsqueda */}
-					<BrandFilters
-						searchValue={searchTerm}
-						currentSort={currentSort}
-						currentStatus={currentStatus}
+					<Filters
+						searchValue={pagination.searchTerm}
+						currentSort={pagination.currentSort}
+						currentStatus={pagination.currentStatus}
+						dateFilters={pagination.dateFilters}
 						isRefreshing={isRefreshing}
-						onSearchChange={handleSearchChange}
-						onSort={handleSort}
-						onStatusChange={handleStatusChange}
-						onRefresh={handleRefresh}
-						onResetAll={handleResetAll}
+						onRefresh={handleFiltersRefresh}
+						onStatusChange={pagination.handleStatusChange}
+						onSearchChange={pagination.handleSearchChange}
+						onSort={pagination.handleSort}
+						onDateFilterChange={pagination.handleDateFilterChange}
+						onClearDateFilter={pagination.clearDateFilter}
+						onResetAll={pagination.handleResetAll}
 						viewType={viewType}
 						onViewChange={setViewType}
 					/>
 
-					{/* Tabla */}
-					<BrandTable
-						brandData={brandData.items}
-						loading={loading}
-						onEdit={brandHandlers.handleEdit}
-						onHardDelete={modalState.openHardDeleteModal}
+					<TableData
+						recordsData={brandData.data.items}
+						loading={brandData.loading}
+						onEdit={modal.openEdit}
+						onHardDelete={modal.openHardDelete}
+						onSoftDelete={modal.openSoftDelete}
+						onRestore={modal.openRestore}
 						viewType={viewType}
 					/>
 
-					{/* Controles de paginación */}
 					<PaginationControls
-						loading={loading}
-						pagination={pagination}
-						onPrevPage={handlePrevPage}
-						onPageChange={handlePageChange}
-						onNextPage={handleNext}
-						onLimitChange={handleLimitChange}
-						metaDataPagination={brands?.data?.pagination}
+						loading={brandData.loading}
+						pagination={pagination.pagination}
+						onPrevPage={pagination.handlePrevPage}
+						onPageChange={pagination.handlePageChange}
+						onNextPage={handleNextPage}
+						onLimitChange={pagination.handleLimitChange}
+						metaDataPagination={brandData.data.pagination}
 					/>
 				</>
 			)}
 
-			{/* Modales */}
-			<BrandModals modalState={modalState} brandHandlers={brandHandlers} />
+			<Modals modal={modal} onSubmit={handleModalSubmit} onDelete={handleModalDelete} onRestore={handleModalRestore} />
 		</div>
 	)
 }

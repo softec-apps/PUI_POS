@@ -2,7 +2,7 @@ import { useGenericApi } from '@/common/hooks/useGenericApi'
 import { CATEGORY_ENDPOINTS_CONFIG } from '@/common/configs/api/category-endpoints.config'
 import { I_CreateCategory, I_Category, I_UpdateCategory, I_CategoriesResponse } from '@/common/types/modules/category'
 
-interface UseCategoryParams {
+export interface UseCategoryParams {
 	page?: number
 	limit?: number
 	search?: string
@@ -44,22 +44,22 @@ export const useCategory = (paginationParams: UseCategoryParams = {}) => {
 	const query = api.buildQuery(queryParams)
 
 	return {
-		// Datos del query - manteniendo los mismos nombres
-		categories: query.data,
+		// Datos del query
+		recordsData: query.data,
 		loading: query.isLoading,
 		error: query.error?.message,
 
-		// Funciones - manteniendo los mismos nombres
-		refetchCategories: query.refetch,
+		// Funciones
+		refetchRecords: query.refetch,
 
-		// Funciones CRUD - manteniendo los mismos nombres
-		createCategory: api.create,
-		updateCategory: api.update,
-		restoreCategory: api.restore,
-		softDeleteCategory: api.delete,
-		hardDeleteCategory: api.hardDelete,
+		// Funciones CRUD
+		createRecord: api.create,
+		updateRecord: api.update,
+		restoreRecord: api.restore,
+		softDeleteRecord: api.delete,
+		hardDeleteRecord: api.hardDelete,
 
-		// Estados granulares de loading - manteniendo los mismos nombres
+		// Estados granulares de loading
 		isCreating: api.isCreating,
 		isUpdating: api.isUpdating,
 		isRestoring: api.isRestoring,
@@ -69,7 +69,7 @@ export const useCategory = (paginationParams: UseCategoryParams = {}) => {
 		// Mutations para control avanzado - ahora completamente dinámicas
 		mutations: api.mutations, // Contiene todas las mutations configuradas
 
-		// Funciones adicionales del API genérico - manteniendo los mismos nombres
+		// Funciones adicionales del API genérico
 		executeCustomEndpoint: api.executeCustomEndpoint,
 		apiService: api.apiService,
 	}

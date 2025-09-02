@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ViewType } from '@/components/layout/organims/ViewSelector'
-import { TableSkeleton } from '@/modules/category/components/organisms/Table/TableSkeleton'
+import { TableSkeleton } from '@/modules/category/components/organisms/Tabless/TableSkeleton'
 
 interface LoadingStatesProps {
 	viewType: ViewType

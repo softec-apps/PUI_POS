@@ -20,12 +20,14 @@ const viewOptions = [
 		icon: Grid3x3,
 		description: 'Vista de tarjetas',
 	},
+	/*
 	{
 		key: 'list' as ViewType,
 		label: 'Lista',
 		icon: List,
 		description: 'Vista de lista',
 	},
+	*/
 ]
 
 interface ViewSelectorProps {

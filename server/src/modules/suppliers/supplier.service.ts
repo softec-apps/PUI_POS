@@ -88,29 +88,46 @@ export class SupplierService {
   ): Promise<ApiResponse<EnhancedInfinityPaginationResponseDto<Supplier>>> {
     const page = query?.page ?? 1
     let limit = query?.limit ?? 10
-    if (limit > 50) limit = 50
+
+    // Si el límite es 9999, marcar para obtener todos los registros
+    const isGetAll = limit === 9999
+
+    if (!isGetAll && limit > 50) limit = 50
+
+    // Si es obtener todos, usar un límite muy alto para la consulta inicial
+    const queryLimit = isGetAll ? Number.MAX_SAFE_INTEGER : limit
 
     // Obtener datos del repositorio (sin formato)
     const { data, totalCount, totalRecords } =
       await this.supplierRepository.findManyWithPagination({
         filterOptions: query?.filters,
         sortOptions: query?.sort,
-        paginationOptions: { page, limit },
+        paginationOptions: {
+          page: isGetAll ? 1 : page,
+          limit: queryLimit,
+        },
         searchOptions: query?.search,
       })
+
+    // Para el caso de obtener todos, ajustar los parámetros de paginación
+    const finalPage = isGetAll ? 1 : page
+    const finalLimit = isGetAll ? totalCount : limit
 
     // Formatear respuesta paginada con la utilidad
     const paginatedData = infinityPaginationWithMetadata(
       data,
-      { page, limit },
+      {
+        page: finalPage,
+        limit: finalLimit,
+      },
       totalCount,
       totalRecords,
     )
 
     return listResponse({
       data: paginatedData,
-      resource: PATH_SOURCE.SUPPLIER,
-      message: 'Categorias obtenidas exitosamente',
+      resource: PATH_SOURCE.USER,
+      message: MESSAGE_RESPONSE.LISTED,
     })
   }
 
@@ -132,6 +149,25 @@ export class SupplierService {
 
   async findByIds(ids: Supplier['id'][]): Promise<Supplier[]> {
     return this.supplierRepository.findByIds(ids)
+  }
+
+  async findByName(legalName: string): Promise<ApiResponse<Supplier>> {
+    const legalNameSupplier = await this.supplierRepository.findByField(
+      'legalName',
+      legalName,
+    )
+
+    if (!legalNameSupplier) {
+      throw new NotFoundException({
+        message: MESSAGE_RESPONSE.NOT_FOUND.NAME,
+      })
+    }
+
+    return readResponse({
+      data: legalNameSupplier,
+      resource: PATH_SOURCE.SUPPLIER,
+      message: MESSAGE_RESPONSE.READED,
+    })
   }
 
   async update(
@@ -200,6 +236,33 @@ export class SupplierService {
       return updatedResponse({
         resource: PATH_SOURCE.SUPPLIER,
         message: MESSAGE_RESPONSE.UPDATED,
+      })
+    })
+  }
+
+  async softDelete(id: Supplier['id']): Promise<ApiResponse<void>> {
+    return this.dataSource.transaction(async (entityManager) => {
+      const user = await this.supplierRepository.findById(id)
+
+      if (!user) {
+        throw new NotFoundException({
+          message: MESSAGE_RESPONSE.NOT_FOUND.ID,
+        })
+      }
+
+      await this.supplierRepository.update(
+        id,
+        {
+          status: SupplierStatus.INACTIVE,
+        },
+        entityManager,
+      )
+
+      await this.supplierRepository.softDelete(id, entityManager)
+
+      return deletedResponse({
+        resource: PATH_SOURCE.USER,
+        message: MESSAGE_RESPONSE.DELETED.SOFT,
       })
     })
   }

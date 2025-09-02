@@ -39,6 +39,7 @@ import { FilesService } from '@/modules/files/files.service'
 import { KardexMovementType } from '@/modules/kardex/movement-type.enum'
 import { UserRepository } from '@/modules/users/infrastructure/persistence/user.repository'
 import { KardexRepository } from '@/modules/kardex/infrastructure/persistence/kardex.repository'
+import { Template } from '../template/domain/template'
 
 @Injectable()
 export class ProductService {
@@ -88,11 +89,14 @@ export class ProductService {
         }
       }
 
-      const template = await this.templateRepository.findById(
-        createProductDto.templateId,
-      )
-      if (!template) {
-        throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.TEMPLATE)
+      let template: Template | null = null
+      if (createProductDto.templateId) {
+        template = await this.templateRepository.findById(
+          createProductDto.templateId,
+        )
+        if (!template) {
+          throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.TEMPLATE)
+        }
       }
 
       let photo: FileType | null | undefined = undefined
@@ -117,11 +121,12 @@ export class ProductService {
           name: createProductDto.name,
           description: createProductDto.description || null,
           price: createProductDto.price,
+          pricePublic: createProductDto.pricePublic,
           status: createProductDto.status || ProductStatus.DRAFT,
           sku: createProductDto.sku || null,
           barCode: createProductDto.barCode || null,
           stock: createProductDto.stock || 0,
-          code: '',
+          tax: createProductDto.tax || 0,
           photo,
           brand: brand || null,
           template: template,
@@ -141,7 +146,7 @@ export class ProductService {
         }
 
         // Calculate financial values for the initial stock
-        const unitCost = createProductDto.price || 0
+        const unitCost = createProductDto.pricePublic || 0
         const taxRate = 15
         const subtotal = parseFloat((initialStock * unitCost).toFixed(6))
         const taxAmount = parseFloat(((subtotal * taxRate) / 100).toFixed(6))
@@ -262,6 +267,10 @@ export class ProductService {
       // Actualización de propiedades numéricas
       if (updateProductDto.price !== undefined)
         updateData.price = updateProductDto.price
+
+      // Actualización de propiedades numéricas
+      if (updateProductDto.pricePublic !== undefined)
+        updateData.pricePublic = updateProductDto.pricePublic
 
       // *** STOCK MANAGEMENT WITH KARDEX INTEGRATION ***
       let shouldCreateKardexEntry = false
@@ -403,7 +412,7 @@ export class ProductService {
         if (!user) throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.USER)
 
         // Calculate financial values for the stock movement
-        const unitCost = updateProductDto.price || existingProduct.price || 0
+        const unitCost = updateProductDto.pricePublic || 0
         const taxRate = 15
         const subtotal = parseFloat(
           (stockMovementData.quantity * unitCost).toFixed(6),
@@ -488,6 +497,7 @@ export class ProductService {
   /*
    * METHODS PRIVATES
    **/
+  /*
   private async validateRelations(createProductDto: CreateProductDto): Promise<{
     brand?: any
     category?: any
@@ -554,4 +564,5 @@ export class ProductService {
 
     return relations
   }
+  */
 }

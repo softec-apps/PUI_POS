@@ -30,7 +30,6 @@ import { EnhancedInfinityPaginationResponseDto } from '@/utils/dto/enhanced-infi
 
 @ApiTags(PATH_SOURCE.TEMPLATE)
 @ApiBearerAuth()
-@Roles(RoleEnum.Admin)
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller({
   path: PATH_SOURCE.TEMPLATE,
@@ -48,6 +47,7 @@ export class TemplateProductController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Roles(RoleEnum.Admin)
   @SerializeOptions({ groups: ['admin'] })
   @TemplateApiDocs.create
   async create(
@@ -64,6 +64,7 @@ export class TemplateProductController {
    * @returns The API standard response
    */
   @Get()
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
   @SerializeOptions({ groups: ['admin'] })
   @HttpCode(HttpStatus.OK)
   @TemplateApiDocs.findAll
@@ -80,6 +81,7 @@ export class TemplateProductController {
    */
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
   @SerializeOptions({ groups: ['admin'] })
   @TemplateApiDocs.findOne
   findOne(@Param() param: ParamTemplateDto): Promise<ApiResponse<Template>> {

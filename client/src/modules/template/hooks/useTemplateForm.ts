@@ -92,7 +92,8 @@ export function useTemplateForm(currentTemplate?: any) {
 
 	// Obtener todos los atributos seleccionados en orden
 	const selectedAttributes = useMemo(() => {
-		const selectedIds = form.watch('atributeIds') || []
+		const selectedIds = form.watch('atributeIds')
+		if (!Array.isArray(selectedIds)) return []
 		return selectedIds.map(id => loadedAttributes[id]).filter(Boolean)
 	}, [form.watch('atributeIds'), loadedAttributes])
 

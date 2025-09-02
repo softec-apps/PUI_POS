@@ -1,3 +1,4 @@
+import { MetaDataPagination, MetaResponse } from '@/common/types/pagination'
 import { AttributeTypeAllow } from '@/modules/atribute/enums/attribute-types-allow.enum'
 
 /** Propiedades base del atributo */
@@ -36,17 +37,12 @@ export interface I_AttributeId {
 
 /** Respuesta paginada del atributos */
 export interface I_AttributesResponse {
-	items: I_Attribute[]
-	pagination?: {
-		totalRecords: number
-		currentPage: number
-		totalPages: number
-		pageSize: number
-		hasNextPage: boolean
-		hasPreviousPage: boolean
-		firstPage: number
-		lastPage: number
+	success: boolean
+	statusCode: number
+	message: string
+	data: {
+		items: I_Attribute[]
+		pagination: MetaDataPagination
 	}
-	
+	meta: MetaResponse
 }
-

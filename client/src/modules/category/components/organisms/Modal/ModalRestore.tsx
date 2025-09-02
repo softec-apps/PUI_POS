@@ -1,36 +1,38 @@
 'use client'
 
-import { Category_I } from '@/common/types/modules/attribute'
-import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
+import { I_Category } from '@/common/types/modules/category'
+import { ConfirmationModal } from '@/components/layout/templates/ConfirmationModal'
 
-interface RestoreConfirmationModalProps {
+interface RestoreModalProps {
 	isOpen: boolean
-	category: Category_I | null
-	isRestoring: boolean
+	currentRecord: I_Category | null
+	isAction: boolean
 	onClose: () => void
 	onConfirm: () => Promise<void>
 }
 
-export function RestoreModal({ isOpen, category, isRestoring, onClose, onConfirm }: RestoreConfirmationModalProps) {
+export function RestoreModal({ isOpen, currentRecord, isAction, onClose, onConfirm }: RestoreModalProps) {
 	return (
 		<ConfirmationModal
-			variant='success'
 			isOpen={isOpen}
+			variant='success'
 			title='Restaurar categoría'
 			description='Esta acción se puede deshacer'
 			message={
 				<>
-					¿Estás seguro de que deseas remover la categoría{' '}
-					<span className='text-foreground font-semibold'>{category?.name}</span>? Todos los productos asociados a esta
-					categoría perderán su clasificación.
+					¿Deseas restaurar la categoría <span className='text-foreground font-semibold'>{currentRecord?.name}</span>?
 				</>
 			}
-			alertMessage='Esta categoría volverá a estar activa en el sistema.'
-			isProcessing={isRestoring}
+			alertMessage={
+				<>
+					<p className='text-emerald-600 dark:text-emerald-400'>La categoría volvera a estar accesible en el sistema</p>
+				</>
+			}
+			isProcessing={isAction}
 			onClose={onClose}
 			onConfirm={onConfirm}
-			confirmText='Ok, restaurar'
-			cancelText='No, cancelar'
+			confirmText='Restaurar'
+			cancelText='Cancelar'
 		/>
 	)
 }

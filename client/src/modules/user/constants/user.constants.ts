@@ -1,4 +1,4 @@
-import { Pagination, SortOption } from '@/modules/atribute/types/pagination'
+import { SortOption, Pagination } from '@/common/types/pagination'
 
 export const SORT_OPTIONS: SortOption[] = [
 	{ label: 'Nombre (A-Z)', field: 'firstName', order: 'asc', key: 'firstName:asc' },

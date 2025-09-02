@@ -1,6 +1,7 @@
 export const ALLOW_ROLES = {
 	ADMIN: 'admin',
 	MANAGER: 'manager',
+	INVENTORY: 'inventory',
 	CASHIER: 'cashier',
 } as const
 

@@ -17,7 +17,7 @@ export const ROUTE_PATH = {
 		CATEGORY: '/dashboard/category',
 		SUPPLIER: '/dashboard/supplier',
 		PRODUCT: '/dashboard/product',
-		SALES: '/dashboard/sales',
+		SALES: '/dashboard/sale',
 		REPORTS: '/dashboard/reports',
 		CUSTOMERS: '/dashboard/customers',
 		USER: '/dashboard/user',

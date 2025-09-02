@@ -1,11 +1,14 @@
 'use client'
 
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
-import { Card, CardContent } from '@/components/ui/card'
+
 import { Skeleton } from '@/components/ui/skeleton'
+import { Card, CardContent } from '@/components/ui/card'
+
+import { Icons } from '@/components/icons'
 import { I_Category } from '@/common/types/modules/category'
-import Image from 'next/image'
 
 const itemVariants = {
 	hidden: { opacity: 0, y: 20 },
@@ -27,25 +30,27 @@ export const CategoryCard: React.FC<CardProps> = ({ category, isSelected = false
 			className='aspect-square w-full'>
 			<Card
 				className={cn(
-					'h-full cursor-pointer border-2 p-0 transition-all duration-500',
+					'h-auto cursor-pointer border-2 p-0 transition-all duration-500',
 					isSelected ? 'border-primary ring-primary/50 ring-2' : 'hover:border-primary/50'
 				)}
 				onClick={onSelect}>
 				<CardContent className='flex h-full flex-col p-0'>
-					<div className='relative h-full w-full overflow-hidden'>
-						<Image
-							alt={category?.name || 'Category image'}
-							src={
-								category?.photo?.path ||
-								'https://us.123rf.com/450wm/dustin999/dustin9992302/dustin999230203648/199476687-icono-de-imagen-en-estilo-plano-moderno-aislado-en-el-s%C3%ADmbolo-de-imagen-de-fondo-gris-para-el-dise%C3%B1o.jpg?ver=6'
-							}
-							fill
-							className='rounded-t-lg object-cover'
-							unoptimized
-						/>
+					<div className='bg-muted relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-t-2xl'>
+						{category?.photo ? (
+							<Image
+								src={category?.photo?.path}
+								alt={category?.name}
+								width={200}
+								height={200}
+								unoptimized
+								className='h-full w-full object-cover transition-transform group-hover:scale-105'
+							/>
+						) : (
+							<Icons.media className='text-muted-foreground h-8 w-8' />
+						)}
 					</div>
 
-					<div className='bg-background right-0 bottom-0 left-0 rounded-b-lg border-t p-2 text-center'>
+					<div className='bg-background rounded-b-2xl border-t p-2 text-center'>
 						<h3 className={cn('text-primary text-sm font-medium', isSelected && 'text-primary')}>{category?.name}</h3>
 					</div>
 				</CardContent>

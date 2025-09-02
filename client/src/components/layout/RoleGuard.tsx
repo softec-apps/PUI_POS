@@ -38,8 +38,8 @@ const UnauthorizedState = ({ onRetry, error }: { onRetry?: () => void; error?: s
 				<CardContent className='space-y-6'>
 					<AlertMessage
 						variant='destructive'
-						title='Permisos insuficientes'
-						message={error || 'No tienes los privilegios necesarios para acceder a este recurso'}
+						title='Permisos insuficientesds'
+						message={'No tienes los privilegios necesarios para acceder a este recurso'}
 					/>
 					<div className='flex flex-col items-center justify-center gap-3 sm:flex-row'>
 						<ActionButton icon={<Icons.iconArrowLeft />} text='Volver atrás' onClick={handleGoBack} variant='ghost' />

@@ -8,10 +8,5 @@ export const metadata: Metadata = {
 }
 
 export default async function POSLayout({ children }: { children: React.ReactNode }) {
-	return (
-		<SidebarInset className='bg-muted/50 dark:bg-card shadow-none'>
-			<NavbarPOSMatriz />
-			{children}
-		</SidebarInset>
-	)
+	return <SidebarInset className='bg-muted/50 dark:bg-card shadow-none'>{children}</SidebarInset>
 }

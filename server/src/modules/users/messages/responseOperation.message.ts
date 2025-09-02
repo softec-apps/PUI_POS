@@ -14,6 +14,7 @@ export const MESSAGE_RESPONSE = {
     SOFT_DELETE: 'No pudes remover tu propio usuario',
     HARD_DELETE: 'No pudes eliminar tu propio usuario',
     SESSION: 'El usuario tiene una sesión abierta',
+    DNI: 'Ya existe una usuario con esta cédula',
   },
   NOT_FOUND: {
     ID: 'No se encontro la usuario',
@@ -22,5 +23,6 @@ export const MESSAGE_RESPONSE = {
     STATUS: 'No se encontro el rol',
     ID_IMAGE: 'No se encontro el id de la imagen de la usuario',
     EMAIL: 'No se encontro el usuario',
+    DNI: 'No se encontro el usuario por us cédula',
   },
 }

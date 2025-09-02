@@ -1,7 +1,7 @@
 'use client'
 
 import { I_User } from '@/common/types/modules/user'
-import { ConfirmationModal } from '@/components/layout/atoms/ConfirmationModal'
+import { ConfirmationModal } from '@/components/layout/templates/ConfirmationModal'
 
 interface HardDeleteModalProps {
 	isOpen: boolean

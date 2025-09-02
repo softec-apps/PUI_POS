@@ -25,6 +25,7 @@ import { EnhancedInfinityPaginationResponseDto } from '@/utils/dto/enhanced-infi
 import { MESSAGE_RESPONSE } from '@/modules/establishment/messages/responseOperation.message'
 
 import { FileRepository } from '@/modules/files/infrastructure/persistence/file.repository'
+import { BillingService } from '@/modules/factuZen/services/factuZen.service'
 import { EstablishmentRepository } from '@/modules/establishment/infrastructure/persistence/establishment.repository'
 
 import { FileType } from '@/modules/files/domain/file'
@@ -36,7 +37,7 @@ export class EstablishmentService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly filesService: FilesService,
-    private readonly fileRepository: FileRepository,
+    private readonly billingService: BillingService,
     private readonly establishmentRepository: EstablishmentRepository,
   ) {}
 
@@ -67,16 +68,9 @@ export class EstablishmentService {
           tradeName: createEstablishmentDto.tradeName,
           parentEstablishmentAddress:
             createEstablishmentDto.parentEstablishmentAddress!,
-          addressIssuingEstablishment:
-            createEstablishmentDto.addressIssuingEstablishment,
-          issuingEstablishmentCode:
-            createEstablishmentDto.issuingEstablishmentCode!,
-          issuingPointCode: createEstablishmentDto.issuingPointCode!,
-          resolutionNumber: createEstablishmentDto.resolutionNumber,
           accounting: createEstablishmentDto.accounting,
           photo,
           environmentType: createEstablishmentDto.environmentType,
-          typeIssue: createEstablishmentDto.typeIssue,
         },
         entityManager,
       )
@@ -195,32 +189,6 @@ export class EstablishmentService {
             : updateEstablishmentDto.parentEstablishmentAddress
       }
 
-      // Manejo de addressIssuingEstablishment (dirección emisor) - obligatorio
-      let addressIssuingEstablishment: string | undefined = undefined
-      if (updateEstablishmentDto.addressIssuingEstablishment !== undefined) {
-        addressIssuingEstablishment =
-          updateEstablishmentDto.addressIssuingEstablishment
-      }
-
-      // Manejo de issuingEstablishmentCode (código establecimiento) - opcional
-      let issuingEstablishmentCode: number | undefined = undefined
-      if (updateEstablishmentDto.issuingEstablishmentCode !== undefined) {
-        issuingEstablishmentCode =
-          updateEstablishmentDto.issuingEstablishmentCode
-      }
-
-      // Manejo de issuingPointCode (código punto emisión) - opcional
-      let issuingPointCode: number | undefined = undefined
-      if (updateEstablishmentDto.issuingPointCode !== undefined) {
-        issuingPointCode = updateEstablishmentDto.issuingPointCode
-      }
-
-      // Manejo de resolutionNumber (número resolución) - obligatorio
-      let resolutionNumber: number | undefined = undefined
-      if (updateEstablishmentDto.resolutionNumber !== undefined) {
-        resolutionNumber = updateEstablishmentDto.resolutionNumber
-      }
-
       // Manejo de accounting (contabilidad) - obligatorio, enum
       let accounting: Accounting | undefined = undefined
       if (updateEstablishmentDto.accounting !== undefined) {
@@ -231,12 +199,6 @@ export class EstablishmentService {
       let environmentType: EnvironmentType | undefined = undefined
       if (updateEstablishmentDto.environmentType !== undefined) {
         environmentType = updateEstablishmentDto.environmentType
-      }
-
-      // Manejo de typeIssue (tipo emisión) - obligatorio, enum
-      let typeIssue: TypeOfIssue | undefined = undefined
-      if (updateEstablishmentDto.typeIssue !== undefined) {
-        typeIssue = updateEstablishmentDto.typeIssue
       }
 
       // Manejo de la imagen (photo) - opcional
@@ -281,17 +243,20 @@ export class EstablishmentService {
           companyName,
           tradeName,
           parentEstablishmentAddress,
-          addressIssuingEstablishment,
-          issuingEstablishmentCode,
-          issuingPointCode,
-          resolutionNumber,
           accounting,
           photo,
           environmentType,
-          typeIssue,
         },
         entityManager,
       )
+
+      // Factus Zen - Sincronizacion con profile
+      await this.billingService.updateProfile({
+        name: companyName,
+        razonSocial: companyName,
+        nombreComercial: tradeName,
+        dirMatriz: parentEstablishmentAddress ?? '',
+      })
 
       return updatedResponse({
         resource: PATH_SOURCE.ESTABLISHMENT,

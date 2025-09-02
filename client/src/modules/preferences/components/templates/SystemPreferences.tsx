@@ -1,7 +1,7 @@
 'use client'
 
 import { toast } from 'sonner'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import React from 'react'
 import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -18,21 +18,26 @@ import { FatalErrorState } from '@/components/layout/organims/ErrorStateCard'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
 
 const systemPreferencesSchema = z.object({
-	accounting: z.enum(['SI', 'NO'], {
-		required_error: 'Campo requerido',
-		invalid_type_error: 'Debe seleccionar SI o NO',
-	}),
-	addressIssuingEstablishment: z.string().min(1, 'Campo requerido').max(300, 'Máximo 300 caracteres'),
+	accounting: z
+		.string()
+		.optional()
+		.transform(val => {
+			// Si no hay valor o es vacío, usar 'NO' como default
+			if (!val || val.trim() === '') {
+				return 'NO'
+			}
+			// Normalizar el valor para asegurar que sea exactamente 'SI' o 'NO'
+			const normalized = val.toUpperCase().trim()
+			return normalized === 'SI' || normalized === 'SÍ' ? 'SI' : 'NO'
+		})
+		.pipe(
+			z.enum(['SI', 'NO'], {
+				required_error: 'Campo requerido',
+				invalid_type_error: 'Debe seleccionar SI o NO',
+			})
+		),
+	parentEstablishmentAddress: z.string().min(1, 'Campo requerido').max(300, 'Máximo 300 caracteres'),
 	companyName: z.string().min(1, 'Campo requerido').max(300, 'Máximo 300 caracteres'),
-	environmentType: z.enum(['1', '2'], {
-		required_error: 'Campo requerido',
-		invalid_type_error: 'Debe ser 1 o 2',
-	}),
-	resolutionNumber: z
-		.number({ required_error: 'Campo requerido', invalid_type_error: 'Debe ser un número' })
-		.int('Debe ser un número entero')
-		.min(10000, 'Debe tener exactamente 5 dígitos')
-		.max(99999, 'Debe tener exactamente 5 dígitos'),
 	ruc: z
 		.string()
 		.min(1, 'No puede estar vacío')
@@ -57,22 +62,7 @@ const systemPreferencesSchema = z.object({
 			{ message: 'RUC ingresado no es válido' }
 		),
 	tradeName: z.string().min(1, 'Campo requerido').max(300, 'Máximo 300 caracteres'),
-	typeIssue: z.literal(1, {
-		required_error: 'El tipo de emisión debe ser 1',
-		invalid_type_error: 'El tipo de emisión debe ser 1',
-	}),
-	issuingEstablishmentCode: z
-		.number({ required_error: 'Campo requerido', invalid_type_error: 'Debe ser un número' })
-		.int('Debe ser un número entero')
-		.min(1, 'Debe tener al menos 1 dígito')
-		.max(999, 'Debe tener máximo 3 dígitos'),
-	issuingPointCode: z
-		.number({ required_error: 'Campo requerido', invalid_type_error: 'Debe ser un número' })
-		.int('Debe ser un número entero')
-		.min(1, 'Debe tener al menos 1 dígito')
-		.max(999, 'Debe tener máximo 3 dígitos'),
-	parentEstablishmentAddress: z.string().max(300, 'Máximo 300 caracteres').optional(),
-	photo: z.string().optional(), // File ID, not a URL
+	photo: z.string().optional(),
 })
 
 type SystemPreferencesFormData = z.infer<typeof systemPreferencesSchema>
@@ -82,22 +72,19 @@ export function SystemPreferences() {
 	const { previewImage, isUploading, fileInputRef, uploadFile, clearPreview, triggerFileInput, setPreviewImage } =
 		useFileUpload({ showPreview: true })
 
+	// Ref para controlar si ya se inicializó el formulario
+	const formInitialized = useRef(false)
+
 	const formMethods = useForm<SystemPreferencesFormData>({
 		mode: 'onChange',
 		resolver: zodResolver(systemPreferencesSchema),
 		defaultValues: {
-			accounting: 'NO',
-			addressIssuingEstablishment: '',
-			companyName: '',
-			environmentType: '1',
-			resolutionNumber: 10000, // Valor por defecto válido
+			photo: undefined,
 			ruc: '',
 			tradeName: '',
-			typeIssue: 1,
-			issuingEstablishmentCode: 1, // Valor por defecto válido
-			issuingPointCode: 1, // Valor por defecto válido
+			companyName: '',
 			parentEstablishmentAddress: '',
-			photo: undefined,
+			accounting: 'NO',
 		},
 	})
 
@@ -113,27 +100,28 @@ export function SystemPreferences() {
 
 	const currentPreferences = recordsData?.data?.items?.[0]
 
+	// Inicializar formulario solo una vez cuando se cargan los datos
 	useEffect(() => {
-		if (currentPreferences) {
+		if (currentPreferences && !formInitialized.current) {
+			// Normalizar el valor de accounting con validación más robusta
+
+			let accountingValue: 'SI' | 'NO' = 'NO'
+			if (currentPreferences.accounting !== undefined && currentPreferences.accounting !== null) {
+				const normalizedAccounting = String(currentPreferences.accounting).toUpperCase().trim()
+				accountingValue = (normalizedAccounting === 'SI' || normalizedAccounting === 'SÍ' ? 'SI' : 'NO') as 'SI' | 'NO'
+			}
 			const formattedData: SystemPreferencesFormData = {
-				accounting: (currentPreferences.accounting as 'SI' | 'NO') || 'NO',
-				addressIssuingEstablishment: currentPreferences.addressIssuingEstablishment || '',
-				companyName: currentPreferences.companyName || '',
-				environmentType: (currentPreferences.environmentType?.toString() as '1' | '2') || '1',
-				resolutionNumber: currentPreferences.resolutionNumber || 10000,
-				ruc: currentPreferences.ruc || '',
-				tradeName: currentPreferences.tradeName || '',
-				typeIssue: 1,
-				issuingEstablishmentCode: currentPreferences.issuingEstablishmentCode || 1,
-				issuingPointCode: currentPreferences.issuingPointCode || 1,
-				parentEstablishmentAddress: currentPreferences.parentEstablishmentAddress || '',
-				// 🔥 CORRECCIÓN: Extraer solo el ID del objeto photo
 				photo:
 					typeof currentPreferences.photo === 'object' && currentPreferences.photo?.id
 						? currentPreferences.photo.id
 						: (currentPreferences.photo as string) || undefined,
+				ruc: currentPreferences?.ruc || '',
+				tradeName: currentPreferences.tradeName || '',
+				companyName: currentPreferences.companyName || '',
+				parentEstablishmentAddress: currentPreferences.parentEstablishmentAddress || '',
+				accounting: accountingValue,
 			}
-			console.log('Resetting form with:', formattedData)
+
 			reset(formattedData)
 
 			// Para la preview, usar el path del objeto
@@ -142,6 +130,8 @@ export function SystemPreferences() {
 					typeof currentPreferences.photo === 'object' ? currentPreferences.photo.path : currentPreferences.photo
 				setPreviewImage(imagePath)
 			}
+
+			formInitialized.current = true
 		}
 	}, [currentPreferences, reset, setPreviewImage])
 
@@ -156,91 +146,78 @@ export function SystemPreferences() {
 			}
 			return fileId
 		} catch (error) {
-			console.error('Error uploading file:', error)
 			toast.error('Error al subir la imagen')
 			return null
 		}
 	}
 
 	const onSubmit = async (data: SystemPreferencesFormData) => {
-		console.log('Submit triggered with data:', data)
-
 		try {
 			const submitData = {
-				accounting: data.accounting,
-				addressIssuingEstablishment: data.addressIssuingEstablishment.trim(),
-				companyName: data.companyName.trim(),
-				environmentType: Number(data.environmentType),
-				resolutionNumber: data.resolutionNumber,
+				photo: data.photo || null,
 				ruc: data.ruc.trim(),
 				tradeName: data.tradeName.trim(),
-				typeIssue: 1,
-				issuingEstablishmentCode: data.issuingEstablishmentCode,
-				issuingPointCode: data.issuingPointCode,
-				parentEstablishmentAddress: data.parentEstablishmentAddress?.trim() || null,
-				photo: data.photo || null,
+				companyName: data.companyName.trim(),
+				parentEstablishmentAddress: data.parentEstablishmentAddress.trim(),
+				accounting: data.accounting as string,
 			}
-
-			console.log('Submitting data:', submitData)
 
 			let result
 			if (currentPreferences?.id) {
-				console.log('Updating record with ID:', currentPreferences.id)
 				result = await updateRecord(currentPreferences.id, submitData)
 			} else {
-				console.log('Creating new record')
 				result = await createRecord(submitData)
 			}
 
-			console.log('Operation result:', result)
+			// Marcar como inicializado después de guardar exitosamente
+			formInitialized.current = true
 
-			// Reset form with new data to clear dirty state
+			// Reset form con los nuevos datos para limpiar el estado dirty
 			reset(data)
-			toast.success(
-				currentPreferences?.id ? 'Configuración actualizada correctamente' : 'Configuración creada correctamente'
-			)
 		} catch (error: any) {
-			console.error('Error saving establishment settings:', error)
-			toast.error(`Error al guardar: ${error?.message || 'Error desconocido'}`)
+			console.error('Error saving preferences:', error)
 		}
 	}
 
 	const handleReset = () => {
 		if (currentPreferences) {
+			// Normalizar el valor de accounting con validación más robusta
+			let accountingValue: 'SI' | 'NO' = 'NO'
+			if (currentPreferences.accounting !== undefined && currentPreferences.accounting !== null) {
+				const normalizedAccounting = String(currentPreferences.accounting).toUpperCase().trim() as string
+				accountingValue = normalizedAccounting === 'SI' || normalizedAccounting === 'SÍ' ? 'SI' : 'NO'
+			}
+
 			const formattedData: SystemPreferencesFormData = {
-				accounting: (currentPreferences.accounting as 'SI' | 'NO') || 'NO',
-				addressIssuingEstablishment: currentPreferences.addressIssuingEstablishment || '',
-				companyName: currentPreferences.companyName || '',
-				environmentType: (currentPreferences.environmentType?.toString() as '1' | '2') || '1',
-				resolutionNumber: currentPreferences.resolutionNumber || 10000,
+				photo:
+					typeof currentPreferences.photo === 'object' && currentPreferences.photo?.id
+						? currentPreferences.photo.id
+						: (currentPreferences.photo as string) || undefined,
 				ruc: currentPreferences.ruc || '',
 				tradeName: currentPreferences.tradeName || '',
-				typeIssue: 1,
-				issuingEstablishmentCode: currentPreferences.issuingEstablishmentCode || 1,
-				issuingPointCode: currentPreferences.issuingPointCode || 1,
+				companyName: currentPreferences.companyName || '',
 				parentEstablishmentAddress: currentPreferences.parentEstablishmentAddress || '',
-				photo: currentPreferences.photo || undefined,
+				accounting: accountingValue,
 			}
 			reset(formattedData)
-			if (currentPreferences.photo?.path) {
-				setPreviewImage(currentPreferences.photo.path)
+
+			// Restaurar imagen original
+			if (currentPreferences.photo) {
+				const imagePath =
+					typeof currentPreferences.photo === 'object' ? currentPreferences.photo.path : currentPreferences.photo
+				setPreviewImage(imagePath)
 			} else {
 				setPreviewImage(null)
 			}
 		} else {
+			// Reset a valores por defecto si no hay datos previos
 			reset({
-				accounting: 'NO',
-				addressIssuingEstablishment: '',
-				companyName: '',
-				environmentType: '1',
-				resolutionNumber: 10000,
-				ruc: '',
-				tradeName: '',
-				typeIssue: 1,
-				issuingEstablishmentCode: 1,
-				issuingPointCode: 1,
-				parentEstablishmentAddress: '',
 				photo: undefined,
+				ruc: '',
+				companyName: '',
+				tradeName: '',
+				parentEstablishmentAddress: '',
+				accounting: 'NO',
 			})
 			setPreviewImage(null)
 		}
@@ -248,11 +225,13 @@ export function SystemPreferences() {
 		toast.info('Cambios descartados')
 	}
 
-	// Función de debug para el botón
-	const handleDebugSubmit = (e: React.FormEvent) => {
-		console.log('Form submit event triggered', e)
-		e.preventDefault() // Prevenir submit por defecto
-		handleSubmit(onSubmit)(e) // Llamar manualmente al submit de react-hook-form
+	// Función mejorada para el submit del formulario
+	const handleFormSubmit = (e: React.FormEvent) => {
+		e.preventDefault()
+		// Ejecutar el submit de react-hook-form
+		handleSubmit(onSubmit, () => {
+			toast.error('Por favor corrige los errores en el formulario')
+		})(e)
 	}
 
 	if (loading) {
@@ -275,7 +254,7 @@ export function SystemPreferences() {
 		<Card className='border-none bg-transparent p-0 shadow-none'>
 			<CardContent className='space-y-6 p-0'>
 				<FormProvider {...formMethods}>
-					<form onSubmit={handleDebugSubmit} className='space-y-8'>
+					<form onSubmit={handleFormSubmit} className='space-y-8'>
 						<div className='space-y-4'>
 							<CardHeaderInfo
 								title='Información básica'
@@ -296,20 +275,31 @@ export function SystemPreferences() {
 								/>
 
 								<div className='space-y-4'>
-									<UniversalFormField
-										control={control}
-										name='companyName'
-										label='Razón Social / Nombres y Apellidos'
-										placeholder='Ingrese la razón social o nombres completos'
-										type='text'
-										required
-									/>
+									<div className='grid grid-cols-2 gap-4'>
+										<UniversalFormField
+											control={control}
+											name='companyName'
+											label='Razón Social / Nombres y Apellidos'
+											placeholder='Ingrese la razón social o nombres completos'
+											type='text'
+											required
+										/>
+
+										<UniversalFormField
+											control={control}
+											name='tradeName'
+											label='Nombre Comercial'
+											placeholder='Ingrese el nombre comercial'
+											type='text'
+											required
+										/>
+									</div>
 
 									<UniversalFormField
 										control={control}
-										name='tradeName'
-										label='Nombre Comercial'
-										placeholder='Ingrese el nombre comercial'
+										name='parentEstablishmentAddress'
+										label='Dirección matriz'
+										placeholder='Ingrese la dirección completa'
 										type='text'
 										required
 									/>
@@ -335,92 +325,10 @@ export function SystemPreferences() {
 												{ value: 'SI', label: 'Sí' },
 												{ value: 'NO', label: 'No' },
 											]}
+											placeholder='Seleccione una opción'
 										/>
 									</div>
 								</div>
-							</div>
-						</div>
-
-						<div className='grid grid-cols-1 gap-12 md:grid-cols-2'>
-							<div className='space-y-4'>
-								<CardHeaderInfo
-									title='Información Fiscal'
-									description='Configuración relacionada con los documentos fiscales y autorizaciones del SRI, incluyendo número de resolución y tipo de ambiente.'
-								/>
-								<div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-									<UniversalFormField
-										control={control}
-										name='resolutionNumber'
-										label='Número de Resolución (5 dígitos)'
-										placeholder='12345'
-										type='number'
-										required
-									/>
-									<UniversalFormField
-										control={control}
-										name='environmentType'
-										label='Tipo de Ambiente'
-										type='select'
-										required
-										options={[
-											{ value: '1', label: 'Pruebas' },
-											{ value: '2', label: 'Producción' },
-										]}
-									/>
-								</div>
-							</div>
-
-							<div className='space-y-4'>
-								<CardHeaderInfo
-									title='Códigos'
-									description='Identificadores numéricos asignados por el SRI para el establecimiento y punto de emisión, utilizados en la numeración de documentos.'
-								/>
-
-								<div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-									<UniversalFormField
-										control={control}
-										name='issuingEstablishmentCode'
-										label='Código del Establecimiento Emisor'
-										placeholder='001'
-										type='number'
-										required
-									/>
-
-									<UniversalFormField
-										control={control}
-										name='issuingPointCode'
-										label='Código Punto de Emisión'
-										placeholder='001'
-										type='number'
-										required
-									/>
-								</div>
-							</div>
-						</div>
-
-						<div className='space-y-4'>
-							<CardHeaderInfo
-								title='Direcciones'
-								description='Ubicaciones físicas del establecimiento emisor y matriz (si aplica), necesarias para la facturación electrónica.'
-							/>
-							<div className='grid grid-cols-1 gap-12 md:grid-cols-2'>
-								<UniversalFormField
-									control={control}
-									name='addressIssuingEstablishment'
-									label='Dirección del Establecimiento Emisor'
-									placeholder='Ingrese la dirección completa'
-									type='text'
-									required
-								/>
-
-								<UniversalFormField
-									control={control}
-									name='parentEstablishmentAddress'
-									label='Dirección del Establecimiento Matriz'
-									placeholder='Ingrese la dirección de la matriz'
-									type='text'
-									required
-								/>
 							</div>
 						</div>
 

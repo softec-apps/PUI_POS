@@ -10,7 +10,7 @@ interface ActionButtonProps {
 	text?: string | React.ReactNode
 	onClick?: () => void
 	tooltip?: string
-	variant?: 'secondary' | 'destructive' | 'ghost' | 'link' | 'outline' | 'default'
+	variant?: 'secondary' | 'destructive' | 'ghost' | 'link' | 'outline' | 'default' | 'pos'
 	size?: 'default' | 'icon' | 'lg' | 'sm' | 'xs' | 'pos'
 	showTooltip?: boolean
 	className?: string

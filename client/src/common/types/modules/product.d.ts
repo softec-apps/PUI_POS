@@ -10,12 +10,14 @@ export type ProductStatus = 'draft' | 'active' | 'inactive' | 'discontinued' | '
 export interface I_Product {
 	id: string
 	code: string
+	tax: number
 	isVariant: boolean
 	name: string
 	description: string | null
 	status: ProductStatus
 	photo?: I_Photo
 	price: number
+	pricePublic: number
 	sku: string | null
 	barCode: string | null
 	stock: number

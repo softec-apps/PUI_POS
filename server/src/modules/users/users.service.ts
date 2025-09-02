@@ -63,6 +63,20 @@ export class UsersService {
         email = createUserDto.email
       }
 
+      let dni: string | null = null
+      if (createUserDto.dni) {
+        const userObject = await this.usersRepository.findByField(
+          'dni',
+          createUserDto.dni,
+        )
+        if (userObject) {
+          throw new ConflictException({
+            message: MESSAGE_RESPONSE.CONFLIC.DNI,
+          })
+        }
+        dni = createUserDto.dni
+      }
+
       let photo: FileType | null | undefined = undefined
 
       if (createUserDto.photo?.id) {
@@ -113,6 +127,7 @@ export class UsersService {
           firstName: createUserDto.firstName,
           lastName: createUserDto.lastName,
           email: email,
+          dni: dni,
           password: password,
           photo: photo,
           role: role,
@@ -135,21 +150,38 @@ export class UsersService {
   ): Promise<ApiResponse<EnhancedInfinityPaginationResponseDto<User>>> {
     const page = query?.page ?? 1
     let limit = query?.limit ?? 10
-    if (limit > 50) limit = 50
+
+    // Si el límite es 9999, marcar para obtener todos los registros
+    const isGetAll = limit === 9999
+
+    if (!isGetAll && limit > 50) limit = 50
+
+    // Si es obtener todos, usar un límite muy alto para la consulta inicial
+    const queryLimit = isGetAll ? Number.MAX_SAFE_INTEGER : limit
 
     // Obtener datos del repositorio (sin formato)
     const { data, totalCount, totalRecords } =
       await this.usersRepository.findManyWithPagination({
         filterOptions: query?.filters,
         sortOptions: query?.sort,
-        paginationOptions: { page, limit },
+        paginationOptions: {
+          page: isGetAll ? 1 : page,
+          limit: queryLimit,
+        },
         searchOptions: query?.search,
       })
+
+    // Para el caso de obtener todos, ajustar los parámetros de paginación
+    const finalPage = isGetAll ? 1 : page
+    const finalLimit = isGetAll ? totalCount : limit
 
     // Formatear respuesta paginada con la utilidad
     const paginatedData = infinityPaginationWithMetadata(
       data,
-      { page, limit },
+      {
+        page: finalPage,
+        limit: finalLimit,
+      },
       totalCount,
       totalRecords,
     )
@@ -227,6 +259,22 @@ export class UsersService {
         email = null
       }
 
+      let dni: string | null | undefined = undefined
+      if (updateUserDto.dni) {
+        const userObject = await this.usersRepository.findByField(
+          'dni',
+          updateUserDto.dni,
+        )
+        if (userObject && userObject.id !== id) {
+          throw new NotFoundException({
+            message: MESSAGE_RESPONSE.NOT_FOUND.DNI,
+          })
+        }
+        dni = updateUserDto.dni
+      } else if (updateUserDto.dni === null) {
+        dni = null
+      }
+
       let photo: FileType | null | undefined = undefined
 
       if (
@@ -283,6 +331,7 @@ export class UsersService {
           firstName: updateUserDto.firstName,
           lastName: updateUserDto.lastName,
           email,
+          dni: updateUserDto.dni,
           password,
           photo,
           role,
@@ -319,7 +368,6 @@ export class UsersService {
         })
       }
 
-      // Validación opcional si quieres verificar si el status existe en el enum
       const isValidStatus = Object.values(StatusEnum)
         .map((value) => String(value))
         .includes('2')
@@ -330,7 +378,6 @@ export class UsersService {
         })
       }
 
-      // ✅ Actualizar el status del usuario antes del soft delete
       await this.usersRepository.update(
         id,
         {
@@ -360,6 +407,16 @@ export class UsersService {
           message: MESSAGE_RESPONSE.NOT_FOUND.ID,
         })
       }
+
+      await this.usersRepository.update(
+        id,
+        {
+          status: {
+            id: 1,
+          },
+        },
+        entityManager,
+      )
 
       await this.usersRepository.restore(id, entityManager)
 

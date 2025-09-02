@@ -2,24 +2,26 @@
 
 import { Icons } from '@/components/icons'
 import { ColumnDef } from '@tanstack/react-table'
-import { I_User } from '@/modules/user/types/user'
+import { I_User } from '@/common/types/modules/user'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { ImageControl } from '@/components/layout/organims/ImageControl'
+import { UserRoleBadge } from '@/modules/user/components/atoms/UserRoleBadge'
 import { UserStatusBadge } from '@/modules/user/components/atoms/UserStatusBadge'
-import { TableActions } from '@/modules/user/components/organisms/Table/TableActions'
-import { TableInfoDate } from '@/modules/user/components/organisms/Table/TableInfoDate'
-import { UserRoleBadge } from '../../atoms/UserRoleBadge'
+import { UserActions } from '@/modules/user/components/organisms/UserActions'
+import { UserInfoDate } from '@/modules/user/components/atoms/UserInfoDate'
 
 interface createTableColumnsProps {
 	onEdit: (recordData: I_User) => void
 	onSoftDelete: (recordData: I_User) => void
 	onHardDelete: (recordData: I_User) => void
+	onRestore: (recordData: I_User) => void
 }
 
 export const createTableColumns = ({
 	onEdit,
 	onSoftDelete,
 	onHardDelete,
+	onRestore,
 }: createTableColumnsProps): ColumnDef<I_User>[] => [
 	{
 		accessorKey: 'photo',
@@ -44,7 +46,7 @@ export const createTableColumns = ({
 		cell: ({ row }) => (
 			<div className='line-clamp-2 w-auto max-w-fit overflow-hidden text-ellipsis whitespace-normal'>
 				<ImageControl
-					recordData={row.original}
+					recordData={row.original.photo}
 					enableHover={false}
 					enableClick={false}
 					imageHeight={50}
@@ -78,6 +80,28 @@ export const createTableColumns = ({
 				{row.original.firstName} {row.original.lastName}
 			</div>
 		),
+	},
+	{
+		accessorKey: 'dni',
+		header: ({ column }) => (
+			<ActionButton
+				variant='link'
+				size='xs'
+				className='p-0'
+				text={
+					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
+						Cédula
+						{column.getIsSorted() === 'asc' ? (
+							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : column.getIsSorted() === 'desc' ? (
+							<Icons.sortDescendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
+						) : null}
+					</div>
+				}
+				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+			/>
+		),
+		cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.dni}</div>,
 	},
 	{
 		accessorKey: 'email',
@@ -156,17 +180,18 @@ export const createTableColumns = ({
 	{
 		accessorKey: 'date',
 		header: 'Información',
-		cell: ({ row }) => <TableInfoDate recordData={row.original} />,
+		cell: ({ row }) => <UserInfoDate recordData={row.original} />,
 	},
 	{
 		id: 'actions',
 		cell: ({ row }) => (
 			<div className='flex justify-end'>
-				<TableActions
+				<UserActions
 					recordData={row.original}
 					onEdit={onEdit}
 					onSoftDelete={onSoftDelete}
 					onHardDelete={onHardDelete}
+					onRestore={onRestore}
 				/>
 			</div>
 		),

@@ -7,6 +7,7 @@ import {
   IsEmail,
   IsNotEmpty,
   IsOptional,
+  IsString,
   MaxLength,
   MinLength,
 } from 'class-validator'
@@ -18,6 +19,23 @@ export class CreateUserDto {
   //@Transform(lowerCaseTransformer)
   @IsEmail()
   email: string | null
+
+  @ApiProperty({
+    type: 'string',
+    example: '1234567890001',
+    description: 'Número de cédula',
+    maxLength: 10,
+    minLength: 10,
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'Se requiere número de cédula' })
+  @MinLength(10, {
+    message: 'El número de cédula debe tener al menos 10 dígitos',
+  })
+  @MaxLength(13, {
+    message: 'El número de cédula debe tener como máximo 13 dígitos',
+  })
+  dni?: string | null
 
   @ApiProperty({
     type: 'string',

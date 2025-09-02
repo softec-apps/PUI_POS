@@ -7,25 +7,14 @@ import { ExportButton } from '@/components/layout/organims/ExportButton'
 import { CreateButton } from '@/components/layout/organims/CreateButton'
 import { ModuleHeader } from '@/components/layout/templates/ModuleHeader'
 import { useGenericExport } from '@/common/hooks/shared/useGenericExport'
+import { formatImageValue } from '@/common/utils/formatImageValue-util'
+import { DateFilters, DateFilterType, DateRange } from '@/common/types/pagination'
+import { useCallback, useState } from 'react'
 
-interface CategoryHeaderProps {
+interface HeaderProps {
 	onCreateClick: () => void
-}
-
-// Función helper para formatear imágenes
-const formatImageValue = (value: any): string => {
-	if (!value) return 'Sin imagen'
-
-	// Si es un objeto, intentar extraer la URL
-	if (typeof value === 'object' && value !== null) {
-		const imageUrl = value.url || value.src || value.path || value.href
-		return imageUrl && typeof imageUrl === 'string' ? imageUrl : 'Imagen disponible'
-	}
-
-	// Si ya es una string (URL), devolverla tal como está
-	if (typeof value === 'string') return value
-
-	return 'Formato de imagen no válido'
+	onRefresh: () => void
+	totalRecords: number
 }
 
 // Configuración de exportación separada para mejor mantenibilidad
@@ -108,19 +97,53 @@ const EXPORT_CONFIG = {
 	},
 }
 
-export function CategoryHeader({ onCreateClick }: CategoryHeaderProps) {
-	const { categories: recordsData, loading } = useCategory()
-
-	// Datos derivados
-	const totalRecords = recordsData?.data?.pagination?.totalRecords || 0
-	const categoryData = recordsData?.data?.items || []
-
-	// Hook de exportación con configuración separada
+export function Header({ onCreateClick, onRefresh, totalRecords }: HeaderProps) {
+	const { recordsData, loading } = useCategory({ limit: 9999 })
 	const { exportData } = useGenericExport(EXPORT_CONFIG)
+	const [exportDateFilters, setExportDateFilters] = useState<DateFilters>({})
 
-	// Handler de exportación simplificado
-	const handleExport = async (format: 'xlsx' | 'pdf', selectedColumns?: string[]) =>
-		await exportData(categoryData, format, selectedColumns)
+	const categoryData = recordsData?.data?.items ?? []
+	const hasRecords = categoryData.length > 0
+
+	const handleExport = async (format: 'xlsx' | 'pdf', selectedColumns?: string[], dateFilters?: DateFilters) => {
+		let dataToExport = categoryData
+
+		if (dateFilters && Object.keys(dateFilters).length > 0) {
+			dataToExport = dataToExport.filter(item => {
+				return Object.entries(dateFilters).every(([filterType, range]) => {
+					if (!range || (!range.startDate && !range.endDate)) return true
+
+					const itemDate = new Date(item[filterType])
+					const startDate = range.startDate ? new Date(range.startDate) : null
+					const endDate = range.endDate ? new Date(range.endDate) : null
+
+					if (startDate && itemDate < startDate) return false
+					if (endDate && itemDate > endDate) return false
+
+					return true
+				})
+			})
+		}
+
+		await exportData(dataToExport, format, selectedColumns)
+	}
+
+	const handleDateFilterChange = (filterType: DateFilterType, range: DateRange) => {
+		setExportDateFilters(prev => ({
+			...prev,
+			[filterType]: range,
+		}))
+	}
+
+	const handleClearDateFilter = (filterType: DateFilterType) => {
+		setExportDateFilters(prev => {
+			const updated = { ...prev }
+			delete updated[filterType]
+			return updated
+		})
+	}
+
+	const handleExportSheetOpen = useCallback(async () => onRefresh(), [onRefresh])
 
 	return (
 		<ModuleHeader
@@ -134,6 +157,13 @@ export function CategoryHeader({ onCreateClick }: CategoryHeaderProps) {
 						totalRecords={totalRecords}
 						loading={loading}
 						onExport={handleExport}
+						onSheetOpen={handleExportSheetOpen}
+						config={{
+							text: 'Exportar',
+							size: 'lg',
+							variant: 'ghost',
+							disabled: !hasRecords || loading,
+						}}
 						exportConfig={{
 							columnLabels: EXPORT_CONFIG.columnLabels,
 							columnTypes: EXPORT_CONFIG.columnTypes,
@@ -141,13 +171,22 @@ export function CategoryHeader({ onCreateClick }: CategoryHeaderProps) {
 							columnGroups: EXPORT_CONFIG.columnGroups,
 							customGroupConfig: EXPORT_CONFIG.customGroupConfig,
 						}}
+						dateFiltersConfig={{
+							enabled: true,
+							defaultFilters: exportDateFilters,
+							availableFilters: ['createdAt'],
+							onDateFilterChange: handleDateFilterChange,
+							onClearDateFilter: handleClearDateFilter,
+						}}
 					/>
+
 					<CreateButton
 						onClick={onCreateClick}
 						config={{
 							text: 'Nueva categoría',
 							icon: <Icons.plus />,
 							size: 'lg',
+							disabled: loading,
 						}}
 					/>
 				</>

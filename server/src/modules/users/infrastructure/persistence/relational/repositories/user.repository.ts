@@ -9,6 +9,9 @@ import {
   EntityManager,
   ILike,
   Not,
+  Between,
+  MoreThanOrEqual,
+  LessThanOrEqual,
 } from 'typeorm'
 import { NullableType } from '@/utils/types/nullable.type'
 import { IPaginationOptions } from '@/utils/types/pagination-options'
@@ -19,6 +22,7 @@ import { UserMapper } from '@/modules/users/infrastructure/persistence/relationa
 import { StatusEntity } from '@/statuses/infrastructure/persistence/relational/entities/status.entity'
 import { RoleEntity } from '@/modules/roles/infrastructure/persistence/relational/entities/role.entity'
 import { FileEntity } from '@/modules/files/infrastructure/persistence/relational/entities/file.entity'
+import { DateRangeDto } from '@/utils/dto/DateRangeDto'
 
 @Injectable()
 export class UsersRelationalRepository implements UserRepository {
@@ -53,47 +57,68 @@ export class UsersRelationalRepository implements UserRepository {
       | FindOptionsWhere<UserEntity>
       | FindOptionsWhere<UserEntity>[] = {}
 
+    const buildDateFilter = (dateRange: DateRangeDto | null | undefined) => {
+      if (!dateRange) return undefined
+
+      const { startDate, endDate } = dateRange
+
+      // Si ambas fechas están presentes
+      if (startDate && endDate)
+        return Between(new Date(startDate), new Date(endDate))
+
+      // Solo fecha de inicio
+      if (startDate) return MoreThanOrEqual(new Date(startDate))
+
+      // Solo fecha de fin
+      if (endDate) return LessThanOrEqual(new Date(endDate))
+
+      return undefined
+    }
+
     // Aplicar filtros
     if (filterOptions) {
       const filteredEntries = Object.entries(filterOptions).filter(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         ([_, value]) => value !== undefined && value !== null,
       )
+
       if (filteredEntries.length > 0) {
         whereClause = filteredEntries.reduce((acc, [key, value]) => {
-          acc[key as keyof UserEntity] = value as any
+          if (['createdAt', 'updatedAt', 'deletedAt'].includes(key)) {
+            const dateFilter = buildDateFilter(value as DateRangeDto)
+            if (dateFilter) acc[key as keyof UserEntity] = dateFilter as any
+          } else {
+            // Filtros normales (roleId, statusId, etc.)
+            acc[key as keyof UserEntity] = value as any
+          }
           return acc
         }, {} as FindOptionsWhere<UserEntity>)
       }
     }
 
-    // Aplicar búsqueda
+    // Aplicar búsqueda (mantener lógica existente)
     if (searchOptions?.trim()) {
       const searchTerm = `%${searchOptions.trim().toLowerCase()}%`
+
+      const baseSearchConditions = [
+        { email: ILike(searchTerm) },
+        { firstName: ILike(searchTerm) },
+        { lastName: ILike(searchTerm) },
+      ]
+
       if (Array.isArray(whereClause) || Object.keys(whereClause).length > 0) {
-        whereClause = [
-          {
-            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
-            email: ILike(searchTerm),
-            role: { id: Not(1) }, // Excluir roleId = 1
-          },
-          {
-            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
-            firstName: ILike(searchTerm),
-            role: { id: Not(1) }, // Excluir roleId = 1
-          },
-          {
-            ...(Array.isArray(whereClause) ? whereClause[0] : whereClause),
-            lastName: ILike(searchTerm),
-            role: { id: Not(1) }, // Excluir roleId = 1
-          },
-        ]
+        const baseWhere = Array.isArray(whereClause)
+          ? whereClause[0]
+          : whereClause
+        whereClause = baseSearchConditions.map((condition) => ({
+          ...baseWhere,
+          ...condition,
+          role: { id: Not(1) }, // Excluir roleId = 1
+        }))
       } else {
-        whereClause = [
-          { email: ILike(searchTerm), role: { id: Not(1) } },
-          { firstName: ILike(searchTerm), role: { id: Not(1) } },
-          { lastName: ILike(searchTerm), role: { id: Not(1) } },
-        ]
+        whereClause = baseSearchConditions.map((condition) => ({
+          ...condition,
+          role: { id: Not(1) },
+        }))
       }
     } else {
       // Si no hay búsqueda, agregar la condición de exclusión del roleId = 1
@@ -229,6 +254,7 @@ export class UsersRelationalRepository implements UserRepository {
 
     // Copiar propiedades simples
     if (payload.email !== undefined) entityPayload.email = payload.email
+    if (payload.dni !== undefined) entityPayload.dni = payload.dni
     if (payload.password !== undefined)
       entityPayload.password = payload.password
     if (payload.provider !== undefined)
@@ -294,6 +320,7 @@ export class UsersRelationalRepository implements UserRepository {
     const repository = entityManager.getRepository(UserEntity)
     await repository.restore(id)
   }
+
   async hardDelete(
     id: User['id'],
     entityManager: EntityManager,

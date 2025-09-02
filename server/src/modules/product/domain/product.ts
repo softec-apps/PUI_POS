@@ -94,20 +94,38 @@ export class Product {
   @ApiProperty({
     type: Number,
     example: 29.123456,
-    description:
-      'Precio base del producto (debe ser un número positivo, entero o decimal)',
+    description: 'Costo (debe ser un número positivo, entero o decimal)',
     nullable: true,
     required: false,
   })
-  @IsNotEmpty({ message: 'El Precio base es requerido' })
+  @IsNotEmpty({ message: 'El costo base es requerido' })
   @IsNumber(
     { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 6 },
     {
-      message: 'El Precio base debe ser un número válido (máximo 6 decimales)',
+      message: 'El costo base debe ser un número válido (máximo 6 decimales)',
     },
   )
-  @IsPositive({ message: 'El Precio base debe ser un número positivo' })
+  @IsPositive({ message: 'El csoto debe ser un número positivo' })
   price: number
+
+  @ApiProperty({
+    type: Number,
+    example: 29.123456,
+    description:
+      'Precio de venta del producto (debe ser un número positivo, entero o decimal)',
+    nullable: true,
+    required: false,
+  })
+  @IsNotEmpty({ message: 'El Precio de venta es requerido' })
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 6 },
+    {
+      message:
+        'El Precio de venta debe ser un número válido (máximo 6 decimales)',
+    },
+  )
+  @IsPositive({ message: 'El Precio de venta debe ser un número positivo' })
+  pricePublic: number
 
   @ApiPropertyOptional({
     type: String,
@@ -145,6 +163,18 @@ export class Product {
   @IsPositive({ message: 'El stock debe ser un número positivo' })
   @IsInt({ message: 'El stock debe ser un número entero' })
   stock: number
+
+  @ApiProperty({
+    type: Number,
+    example: 0,
+    description: 'Inpuesto (debe ser "0" o "15)',
+    default: 0,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'El impuesto debe ser un número' })
+  @IsInt({ message: 'El impuesto debe ser un número entero' })
+  @IsPositive({ message: 'El impuesto debe ser un número positivo' })
+  tax?: number = 0
 
   // Relations
   @ApiPropertyOptional({

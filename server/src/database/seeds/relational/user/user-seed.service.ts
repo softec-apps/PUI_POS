@@ -68,15 +68,6 @@ export class UserSeedService {
           name: 'Manager',
         },
       },
-      {
-        firstName: 'Mike',
-        lastName: 'Inventory',
-        email: 'inventory@gmail.com',
-        role: {
-          id: RoleEnum.Inventory,
-          name: 'Inventory',
-        },
-      },
     ]
 
     for (const user of usersToSeed) {

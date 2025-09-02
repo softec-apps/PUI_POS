@@ -64,9 +64,7 @@ export function SignInForm() {
 		}
 	}
 
-	const togglePasswordVisibility = () => {
-		setShowPassword(!showPassword)
-	}
+	const togglePasswordVisibility = () => setShowPassword(!showPassword)
 
 	// Animaciones
 	const container = {
@@ -119,7 +117,7 @@ export function SignInForm() {
 			<motion.form variants={item} className='space-y-6' onSubmit={handleSubmit}>
 				<motion.div variants={item} className='space-y-2'>
 					<Label htmlFor='email'>Email</Label>
-					<motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+					<motion.div whileHover={{ scale: 1 }} whileTap={{ scale: 1 }}>
 						<Input
 							id='email'
 							name='email'
@@ -137,7 +135,7 @@ export function SignInForm() {
 				<motion.div variants={item} className='space-y-2'>
 					<div className='flex items-center justify-between'>
 						<Label htmlFor='password'>Contraseña</Label>
-						<motion.div whileHover={{ scale: 1.05 }}>
+						<motion.div whileHover={{ scale: 1 }}>
 							<Link
 								href='/forgot-password'
 								className='text-muted-foreground hover:text-primary/80 text-sm underline-offset-4 transition-colors hover:underline'>
@@ -145,7 +143,7 @@ export function SignInForm() {
 							</Link>
 						</motion.div>
 					</div>
-					<motion.div className='relative' whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+					<motion.div className='relative' whileHover={{ scale: 1 }} whileTap={{ scale: 1 }}>
 						<Input
 							id='password'
 							name='password'
@@ -220,25 +218,7 @@ export function SignInForm() {
 				</motion.div>
 			</motion.form>
 
-			<motion.div variants={item} className='relative' initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-				<div className='absolute inset-0 flex items-center'>
-					<motion.span
-						className='w-full border-t'
-						initial={{ scaleX: 0 }}
-						animate={{ scaleX: 1 }}
-						transition={{ duration: 0.5, type: 'spring' }}
-					/>
-				</div>
-				<div className='relative flex justify-center text-xs uppercase'>
-					<motion.span
-						className='bg-background text-muted-foreground px-2'
-						initial={{ scale: 0.8 }}
-						animate={{ scale: 1 }}>
-						O continúa con
-					</motion.span>
-				</div>
-			</motion.div>
-
+			{/* 			
 			<motion.div variants={item}>
 				<Button
 					variant='outline'
@@ -270,6 +250,7 @@ export function SignInForm() {
 					)}
 				</Button>
 			</motion.div>
+			*/}
 		</motion.div>
 	)
 }
