@@ -137,7 +137,7 @@ export class BillingInvoiceService {
       const response =
         await this.billingApiService.makeAuthenticatedRequest<any>(
           'GET',
-          `/comprobantes/${comprobanteId}/estado`,
+          `/comprobantes/byId/${comprobanteId}/estado`,
         )
 
       // ✅ DEBUG: Verificar la estructura real de la respuesta
@@ -193,7 +193,7 @@ export class BillingInvoiceService {
       const response =
         await this.billingApiService.makeAuthenticatedRequest<any>(
           'POST',
-          `/api/comprobantes/${comprobanteId}/resend-webhook`,
+          `/api/comprobantes/byId/${comprobanteId}/resend-webhook`,
           { callbackUrl },
         )
 
@@ -446,7 +446,7 @@ export class BillingInvoiceService {
       JSON.stringify(facturaData, null, 2),
     )
 
-    return this.createFactura(puntoEmision, facturaData)
+    return await this.createFactura(puntoEmision, facturaData)
   }
 
   /**
@@ -630,6 +630,27 @@ export class BillingInvoiceService {
       if (diferencia > 0.01) {
         // Tolerancia de 1 centavo por redondeos
         errors.push('La suma de pagos debe coincidir con el importe total')
+      }
+    }
+
+    // Validar infoAdicional si existe
+    if (facturaData.infoAdicional) {
+      if (facturaData.infoAdicional.telefono) {
+        const telefono = facturaData.infoAdicional.telefono.toString()
+        const validPhonePattern = /^0[2-7]\d{8}$|^09\d{8}$/
+
+        if (!validPhonePattern.test(telefono)) {
+          errors.push(
+            'Teléfono debe tener formato válido SRI Ecuador (10 dígitos iniciando con 0)',
+          )
+        }
+      }
+
+      if (facturaData.infoAdicional.email) {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailPattern.test(facturaData.infoAdicional.email)) {
+          errors.push('Email debe tener formato válido')
+        }
       }
     }
 

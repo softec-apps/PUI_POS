@@ -38,18 +38,33 @@ export class SaleController {
   constructor(private readonly saleService: SaleService) {}
 
   /**
-   * Create a new sale
+   * Create a new sale - Facturación SRI
    */
-  @Post()
+  @Post('sri')
   @SaleApiDocs.create
   @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
   @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
   @HttpCode(HttpStatus.CREATED)
-  async create(
+  async createSaleSri(
     @Body() createSaleDto: CreateSaleDto,
     @Request() req: any,
   ): Promise<ApiResponse<Sale>> {
-    return this.saleService.createSale(createSaleDto, req.user.id)
+    return await this.saleService.createSaleSri(createSaleDto, req.user.id)
+  }
+
+  /**
+   * Create a new sale
+   */
+  @Post('simple')
+  @SaleApiDocs.create
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
+  @HttpCode(HttpStatus.CREATED)
+  async createSimpleSale(
+    @Body() createSaleDto: CreateSaleDto,
+    @Request() req: any,
+  ): Promise<ApiResponse<Sale>> {
+    return await this.saleService.createSimpleSale(createSaleDto, req.user.id)
   }
 
   /**
@@ -65,7 +80,7 @@ export class SaleController {
   async findAll(
     @Query() query: QuerySaleDto,
   ): Promise<ApiResponse<EnhancedInfinityPaginationResponseDto<Sale>>> {
-    return this.saleService.findManyWithPagination(query)
+    return await this.saleService.findManyWithPagination(query)
   }
 
   /**
@@ -77,6 +92,6 @@ export class SaleController {
   @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
   @HttpCode(HttpStatus.OK)
   async findOne(@Param() param: ParamSaleDto): Promise<ApiResponse<Sale>> {
-    return this.saleService.findById(param.id)
+    return await this.saleService.findById(param.id)
   }
 }

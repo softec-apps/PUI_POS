@@ -20,6 +20,7 @@ export class SaleItemMapper {
       unitPrice: Number(raw.unitPrice),
       taxRate: raw.taxRate,
       totalPrice: Number(raw.totalPrice),
+      revenue: Number(raw.revenue),
     })
     return domainEntity
   }
@@ -35,6 +36,7 @@ export class SaleItemMapper {
       unitPrice: domainEntity.unitPrice,
       taxRate: domainEntity.taxRate,
       totalPrice: domainEntity.totalPrice,
+      revenue: domainEntity.revenue,
     })
 
     // Manejo de producto
@@ -71,7 +73,7 @@ export class SaleMapper {
       taxAmount: Number(raw.taxAmount),
       total: Number(raw.total),
       totalItems: raw.totalItems,
-      paymentMethod: raw.paymentMethod,
+      paymentMethods: raw.paymentMethods,
       receivedAmount: Number(raw.receivedAmount),
       change: Number(raw.change),
       items: Array.isArray(raw.items)
@@ -86,7 +88,6 @@ export class SaleMapper {
     return domainEntity
   }
 
-  // SaleMapper.ts
   static toPersistence(domainEntity: Partial<Sale>): SaleEntity {
     const persistenceEntity = new SaleEntity()
     Object.assign(persistenceEntity, {
@@ -98,7 +99,7 @@ export class SaleMapper {
       taxAmount: domainEntity.taxAmount,
       total: domainEntity.total,
       totalItems: domainEntity.totalItems,
-      paymentMethod: domainEntity.paymentMethod,
+      paymentMethods: domainEntity.paymentMethods,
       receivedAmount: domainEntity.receivedAmount,
       change: domainEntity.change,
       createdAt: domainEntity.createdAt ?? new Date(),

@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
 import { motion } from 'framer-motion'
+import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
@@ -10,7 +10,7 @@ interface ActionButtonProps {
 	text?: string | React.ReactNode
 	onClick?: () => void
 	tooltip?: string
-	variant?: 'secondary' | 'destructive' | 'ghost' | 'link' | 'outline' | 'default' | 'pos'
+	variant?: 'secondary' | 'destructive' | 'ghost' | 'link' | 'outline' | 'default' | 'success' | 'info'
 	size?: 'default' | 'icon' | 'lg' | 'sm' | 'xs' | 'pos'
 	showTooltip?: boolean
 	className?: string

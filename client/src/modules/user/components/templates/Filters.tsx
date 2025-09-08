@@ -7,7 +7,6 @@ import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { ViewSelector } from '@/components/layout/organims/ViewSelector'
 import { SearchInput } from '@/components/layout/organims/SearchInput'
 import { SortDropdown } from '@/modules/user/components/organisms/Filters/SortDropdown'
-import { StatusDropdown } from '@/modules/user/components/organisms/Filters/StatusDropdown'
 import { DateFiltersDropdown } from '@/modules/user/components/organisms/Filters/DateFiltersDropdown'
 import { DateFilters, DateFilterType, DateRange } from '@/common/types/pagination'
 

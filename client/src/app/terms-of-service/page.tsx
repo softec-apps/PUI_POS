@@ -1,13 +1,15 @@
-import { FooterSection } from '@/components/Footer'
 import { HeaderAuth } from '@/modules/auth/components/templates/header'
+import { FooterPublic } from '@/components/layout/templates/FooterPublic'
 import { TermsOfServicePage } from '@/modules/terms_services/components/view/TermsService'
 
-export default async function TermsServicePage() {
+export default function TermsServicePage() {
 	return (
-		<>
+		<div className='h-screen min-h-screen w-auto space-y-20 overflow-y-auto'>
 			<HeaderAuth />
 			<TermsOfServicePage />
-			<FooterSection />
-		</>
+			<div className='mx-auto max-w-7xl pb-6'>
+				<FooterPublic />
+			</div>
+		</div>
 	)
 }

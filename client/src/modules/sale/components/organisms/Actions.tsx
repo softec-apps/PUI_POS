@@ -17,7 +17,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
 
 interface ActionsProps {
@@ -163,18 +162,21 @@ export const Actions = ({ recordData }: ActionsProps) => {
 						className='rounded-full'
 					/>
 				</DropdownMenuTrigger>
+
 				<DropdownMenuContent align='end' className='border-border/50 rounded-2xl border'>
 					<DropdownMenuItem onClick={handleViewDetails} className='flex items-center gap-2 rounded-xl'>
 						<Icons.eye />
 						<span>Detalles venta</span>
 					</DropdownMenuItem>
-					{recordData.clave_acceso ? (
+
+					{recordData.estado_sri === 'AUTHORIZED' ? (
 						<>
 							<DropdownMenuItem onClick={handleViewInvoice} className='flex items-center gap-2 rounded-xl'>
 								<Icons.file />
-								<span>Visualizar factura</span>
+								<span>Ver factura SRI</span>
 							</DropdownMenuItem>
 
+							{/* 
 							<DropdownMenuItem
 								onClick={handleDownloadPDF}
 								className='flex items-center gap-2 rounded-xl'
@@ -190,6 +192,7 @@ export const Actions = ({ recordData }: ActionsProps) => {
 								{isDownloading.xml ? <Icons.spinnerSimple className='animate-spin' /> : <Icons.download />}
 								<span>Descargar XML</span>
 							</DropdownMenuItem>
+							*/}
 						</>
 					) : (
 						<DropdownMenuItem onClick={handleViewComprobante} className='flex items-center gap-2 rounded-xl'>
@@ -221,7 +224,7 @@ export const Actions = ({ recordData }: ActionsProps) => {
 									<SpinnerLoader text='Cargando...Por favor espera' />
 								</div>
 							) : pdfUrl ? (
-								<iframe src={pdfUrl} className='h-full w-full' title='Previa de Factura' />
+								<iframe src={pdfUrl} className='h-full w-full border' title='Previa de Factura' />
 							) : (
 								<div className='flex h-full items-center justify-center'>
 									<div className='flex flex-col items-center gap-2'>
@@ -256,19 +259,19 @@ export const Actions = ({ recordData }: ActionsProps) => {
 							<div className='flex items-center gap-4'>
 								<ActionButton
 									size='sm'
-									onClick={handleDownloadPDF}
-									disabled={isDownloading.pdf}
-									icon={isDownloading.pdf ? <Icons.spinnerSimple className='animate-spin' /> : <Icons.download />}
-									text={isDownloading.pdf ? 'Descargando...' : 'Descargar PDF'}
-								/>
-
-								<ActionButton
-									size='sm'
 									variant='secondary'
 									onClick={handleDownloadXML}
 									disabled={isDownloading.xml}
 									icon={isDownloading.xml ? <Icons.spinnerSimple className='animate-spin' /> : <Icons.download />}
 									text={isDownloading.xml ? 'Descargando...' : 'Descargar XML'}
+								/>
+
+								<ActionButton
+									size='sm'
+									onClick={handleDownloadPDF}
+									disabled={isDownloading.pdf}
+									icon={isDownloading.pdf ? <Icons.spinnerSimple className='animate-spin' /> : <Icons.download />}
+									text={isDownloading.pdf ? 'Descargando...' : 'Descargar PDF'}
 								/>
 							</div>
 						</div>

@@ -55,13 +55,15 @@ export const ProductSchema = z.object({
 	),
 	sku: z.string().max(20, 'Máximo 20 caracteres').optional(),
 	barCode: z.string().max(50, 'Máximo 50 caracteres').optional(),
-	status: z.enum([
-		STATUS_ALLOW.DRAFT,
-		STATUS_ALLOW.ACTIVE,
-		STATUS_ALLOW.INACTIVE,
-		STATUS_ALLOW.DISCONTINUED,
-		STATUS_ALLOW.OUT_OF_STOCK,
-	]),
+	status: z
+		.enum([
+			STATUS_ALLOW.DRAFT,
+			STATUS_ALLOW.ACTIVE,
+			STATUS_ALLOW.INACTIVE,
+			STATUS_ALLOW.DISCONTINUED,
+			STATUS_ALLOW.OUT_OF_STOCK,
+		])
+		.default(STATUS_ALLOW.ACTIVE),
 	// Cambiar la validación del tax para que maneje strings que se convierten a enum
 	tax: z.preprocess(val => {
 		// Si es string, convertir a número y luego al enum

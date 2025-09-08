@@ -156,12 +156,18 @@ export const CustomerSection: React.FC = () => {
 	}
 
 	return (
-		<div className='space-y-2 pt-2'>
+		<div className='space-y-2'>
 			{selectedCustomer && <Typography variant='h6'>Cliente</Typography>}
 
 			{/* Mostrar solo un botón inicialmente */}
 			{!selectedCustomer ? (
-				<ActionButton onClick={handleOpenDialog} text='Cliente' icon={<Icons.user />} size='lg' />
+				<ActionButton
+					onClick={handleOpenDialog}
+					text='Seleccionar cliente'
+					icon={<Icons.user />}
+					size='lg'
+					className='w-full'
+				/>
 			) : (
 				<SelectedCustomer customer={selectedCustomer} onDeselect={handleDeselectCustomer} />
 			)}

@@ -28,9 +28,7 @@ export const HeaderAuth = () => {
 	return (
 		<>
 			<header
-				className={`bg-muted/20 sticky top-0 z-50 w-full border-b backdrop-blur-lg transition-all duration-300 ${
-					isScrolled ? 'bg-background shadow-none' : 'bg-transparent'
-				}`}>
+				className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? 'bg-popover' : 'bg-popover'}`}>
 				<div className='container mx-auto flex h-16 items-center justify-between px-6 md:px-0'>
 					<LogoType />
 

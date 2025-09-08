@@ -46,7 +46,7 @@ export function SaleView() {
 			limit: pagination.pagination.limit,
 			sort: pagination.currentSort ? [pagination.currentSort] : undefined,
 			filters: {
-				paymentMethod: pagination.currentPaymentMethod || undefined,
+				estado_sri: pagination.currentStatusSRI || undefined,
 				...cleanedDateFilters,
 			},
 		}
@@ -104,11 +104,11 @@ export function SaleView() {
 					<Filters
 						searchValue={pagination.searchTerm}
 						currentSort={pagination.currentSort}
-						currentPaymentMethod={pagination.currentPaymentMethod}
+						currentStatusSRI={pagination.currentStatusSRI}
 						dateFilters={pagination.dateFilters}
 						isRefreshing={isRefreshing}
 						onRefresh={handleFiltersRefresh}
-						onPaymentMethodChange={pagination.handlePaymentMethodChange}
+						onStatusSRIChange={pagination.handleStatusSRIChange}
 						onSearchChange={pagination.handleSearchChange}
 						onSort={pagination.handleSort}
 						onDateFilterChange={pagination.handleDateFilterChange}

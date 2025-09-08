@@ -1,111 +1,278 @@
-import { Badge } from '@/components/ui/badge'
-import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react'
-import { Skeleton } from '@/components/ui/skeleton'
+'use client'
 
-export async function DashboardView() {
+import React, { useState, useEffect, useMemo } from 'react'
+import { useAuth } from '@/common/hooks/useAuth'
+import { useSale } from '@/common/hooks/useSale'
+import { formatPrice } from '@/common/utils/formatPrice-util'
+import {
+	Chart as ChartJS,
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	BarElement,
+	Title,
+	Tooltip,
+	Legend,
+	ArcElement,
+	Filler,
+} from 'chart.js'
+
+// Componentes del dashboard
+import { KPISection } from '@/modules/dashboard/components/templates/KPISection'
+import { TimeSelector } from '@/modules/dashboard/components/organisms/TimeSelector'
+import { ChartsSection } from '@/modules/dashboard/components/templates/ChartsSection'
+import { DashboardHeader } from '@/modules/dashboard/components/templates/DashboardHeader'
+import { ProfitabilitySection } from '@/modules/dashboard/components/templates/ProfitabilitySection'
+import { TopCustomersSection, TopProductsSection } from '@/modules/dashboard/components/templates/TopPerformersSection'
+
+// Utilidades y hooks
+import { useDashboardMetrics } from '@/modules/dashboard/hooks/useDashboardMetrics'
+import { getEcuadorTime, getGreeting } from '@/modules/dashboard/utils/timeUtils'
+import { getPeriodDates } from '@/modules/dashboard/utils/dateUtils'
+
+// Registrar Chart.js
+ChartJS.register(
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	BarElement,
+	Title,
+	Tooltip,
+	Legend,
+	ArcElement,
+	Filler
+)
+
+export function DashboardView() {
+	const { user } = useAuth()
+	const [currentTime, setCurrentTime] = useState(getEcuadorTime())
+	const [dateRange, setDateRange] = useState<string>('30')
+
+	// Filtros para el hook de ventas
+	const filters = useMemo(() => {
+		if (dateRange === '0') return {}
+		const { startDate, endDate } = getPeriodDates(dateRange)
+		return {
+			createdAt: {
+				startDate: startDate.toISOString(),
+				endDate: endDate.toISOString(),
+			},
+		}
+	}, [dateRange])
+
+	const { recordsData, loading } = useSale({
+		limit: 9999, // API reconce que no debe usar paginacion
+		filters,
+	})
+
+	// Calcular métricas
+	const metrics = useDashboardMetrics(recordsData?.data?.items || [], dateRange)
+
+	// Datos para gráficos
+	const chartData = useMemo(() => {
+		const dailySalesData = {
+			labels: metrics.salesByDay.map(item => `${item.day}\n${item.date}`),
+			datasets: [
+				{
+					label: 'Ventas del día',
+					data: metrics.salesByDay.map(item => item.sales),
+					backgroundColor: 'rgba(116, 134, 119, 0.8)',
+					borderColor: 'rgb(116, 134, 119)',
+					borderWidth: 0,
+				},
+			],
+		}
+
+		const salesTrendData = {
+			labels: metrics.salesByMonth.map(item => item.month),
+			datasets: [
+				{
+					label: 'Número de Ventas',
+					data: metrics.salesByMonth.map(item => item.sales),
+					borderColor: 'rgb(75, 192, 192)',
+					backgroundColor: 'rgba(75, 192, 192, 0.1)',
+					tension: 0.4,
+					fill: true,
+					yAxisID: 'y',
+				},
+				{
+					label: 'Ingresos ($)',
+					data: metrics.salesByMonth.map(item => item.revenue),
+					borderColor: 'rgb(159, 213, 190)',
+					backgroundColor: 'rgba(159, 213, 190, 0.1)',
+					tension: 0.4,
+					fill: false,
+					yAxisID: 'y1',
+				},
+				{
+					label: 'Ganancias ($)',
+					data: metrics.salesByMonth.map(item => item.profit),
+					borderColor: 'rgb(206, 180, 217)',
+					backgroundColor: 'rgba(206, 180, 217, 0.1)',
+					tension: 0.4,
+					fill: false,
+					yAxisID: 'y1',
+				},
+			],
+		}
+
+		const paymentMethodData = {
+			labels: Object.keys(metrics.salesByPaymentMethod),
+			datasets: [
+				{
+					data: Object.values(metrics.salesByPaymentMethod),
+					backgroundColor: ['#fbdee0', '#a6c7ea', '#fbf5ab', '#4BC0C0', '#dfcde3', '#e6eda0'],
+					borderWidth: 0,
+				},
+			],
+		}
+
+		const statusSriData = {
+			labels: Object.keys(metrics.salesByStatus).map(status => {
+				switch (status) {
+					case 'AUTHORIZED':
+						return 'Autorizadas'
+					case 'PENDING':
+						return 'Pendientes'
+					case 'NO_ELECTRONIC':
+						return 'No Electrónicas'
+					case 'ERROR':
+						return 'Error'
+					default:
+						return status
+				}
+			}),
+			datasets: [
+				{
+					data: Object.values(metrics.salesByStatus),
+					backgroundColor: ['#9fd4bd', '#f1afa1', '#f6f19f', '#ccd7c6'],
+					borderWidth: 0,
+				},
+			],
+		}
+
+		return {
+			dailySalesData,
+			salesTrendData,
+			paymentMethodData,
+			statusSriData,
+		}
+	}, [metrics])
+
+	// Opciones para gráficos
+	const chartOptions = useMemo(
+		() => ({
+			responsive: true,
+			maintainAspectRatio: false,
+			plugins: {
+				legend: { display: false },
+				tooltip: {
+					mode: 'index' as const,
+					intersect: false,
+					backgroundColor: 'rgba(0, 0, 0, 0.8)',
+					titleColor: '#ffffff',
+					bodyColor: '#ffffff',
+					borderColor: 'rgba(255, 255, 255, 0.3)',
+					borderWidth: 1,
+					cornerRadius: 8,
+					displayColors: true,
+				},
+			},
+			scales: {
+				x: {
+					display: true,
+					grid: { display: false },
+					border: { display: false },
+					ticks: {
+						font: { size: 11, weight: '500' },
+						padding: 0,
+					},
+				},
+				y: {
+					display: false,
+					grid: { display: false },
+				},
+			},
+			elements: {
+				point: { hoverBorderWidth: 2 },
+			},
+			interaction: {
+				intersect: false,
+				mode: 'index',
+			},
+			layout: {
+				padding: { left: 0, right: 0, top: 0, bottom: 0 },
+			},
+		}),
+		[]
+	)
+
+	const paymentMethodOptions = useMemo(
+		() => ({
+			...chartOptions,
+			plugins: {
+				...chartOptions.plugins,
+				tooltip: {
+					...chartOptions.plugins.tooltip,
+					callbacks: {
+						label: function (context: any) {
+							const label = context.label || ''
+							const value = context.raw || 0
+							return `${label}: ${formatPrice(value)}`
+						},
+					},
+				},
+			},
+		}),
+		[chartOptions]
+	)
+
+	useEffect(() => {
+		const interval = setInterval(() => setCurrentTime(getEcuadorTime()), 1000)
+		return () => clearInterval(interval)
+	}, [])
+
+	// Datos del usuario y saludo
+	const firstName = user?.firstName || ''
+	const lastName = user?.lastName || ''
+	const fullName = `${firstName} ${lastName}`.trim() || 'Usuario'
+	const ecuadorHour = currentTime.getHours()
+	const greeting = getGreeting(ecuadorHour)
+
 	return (
 		<div className='flex flex-1 flex-col gap-6'>
-			<div className='flex items-center justify-between space-y-2'>
-				<h2 className='text-2xl font-bold tracking-tight'>Hi, Welcome back 👋</h2>
-			</div>
-
-			<div className='*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs md:grid-cols-2 lg:grid-cols-4'>
-				<Card className='@container/card'>
-					<CardHeader>
-						<CardDescription>Total Revenue</CardDescription>
-						<CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>$1,250.00</CardTitle>
-						<CardAction>
-							<Badge variant='outline'>
-								<IconTrendingUp />
-								+12.5%
-							</Badge>
-						</CardAction>
-					</CardHeader>
-
-					<CardFooter className='flex-col items-start gap-1.5 text-sm'>
-						<div className='line-clamp-1 flex gap-2 font-medium'>
-							Trending up this month <IconTrendingUp className='size-4' />
-						</div>
-						<div className='text-muted-foreground'>Visitors for the last 6 months</div>
-					</CardFooter>
-				</Card>
-
-				<Card className='@container/card'>
-					<CardHeader>
-						<CardDescription>New Customers</CardDescription>
-						<CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>1,234</CardTitle>
-						<CardAction>
-							<Badge variant='outline'>
-								<IconTrendingDown />
-								-20%
-							</Badge>
-						</CardAction>
-					</CardHeader>
-
-					<CardFooter className='flex-col items-start gap-1.5 text-sm'>
-						<div className='line-clamp-1 flex gap-2 font-medium'>
-							Down 20% this period <IconTrendingDown className='size-4' />
-						</div>
-						<div className='text-muted-foreground'>Acquisition needs attention</div>
-					</CardFooter>
-				</Card>
-
-				<Card className='@container/card'>
-					<CardHeader>
-						<CardDescription>Active Accounts</CardDescription>
-						<CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>45,678</CardTitle>
-						<CardAction>
-							<Badge variant='outline'>
-								<IconTrendingUp />
-								+12.5%
-							</Badge>
-						</CardAction>
-					</CardHeader>
-
-					<CardFooter className='flex-col items-start gap-1.5 text-sm'>
-						<div className='line-clamp-1 flex gap-2 font-medium'>
-							Strong user retention <IconTrendingUp className='size-4' />
-						</div>
-						<div className='text-muted-foreground'>Engagement exceed targets</div>
-					</CardFooter>
-				</Card>
-
-				<Card className='@container/card'>
-					<CardHeader>
-						<CardDescription>Growth Rate</CardDescription>
-						<CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>4.5%</CardTitle>
-						<CardAction>
-							<Badge variant='outline'>
-								<IconTrendingUp />
-								+4.5%
-							</Badge>
-						</CardAction>
-					</CardHeader>
-
-					<CardFooter className='flex-col items-start gap-1.5 text-sm'>
-						<div className='line-clamp-1 flex gap-2 font-medium'>
-							Steady performance increase <IconTrendingUp className='size-4' />
-						</div>
-						<div className='text-muted-foreground'>Meets growth projections</div>
-					</CardFooter>
-				</Card>
-			</div>
-
-			<div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7'>
-				<div className='col-span-4'>
-					<Skeleton className='bg-muted h-48' />
-				</div>
-				<div className='col-span-4 md:col-span-3'>
-					<Skeleton className='bg-muted h-48' />
-				</div>
-				<div className='col-span-7 md:col-span-7'>
-					<Skeleton className='bg-muted h-48' />
-				</div>
-				<div className='col-span-7 md:col-span-7'>
-					<Skeleton className='bg-muted h-48' />
+			<div className='items-center justify-between gap-4 md:flex'>
+				<DashboardHeader greeting={greeting} userName={fullName} />
+				<div className='pt-6 md:pt-0'>
+					<TimeSelector currentTime={currentTime} dateRange={dateRange} onDateRangeChange={setDateRange} />
 				</div>
 			</div>
+
+			<div className='grid grid-cols-5 gap-6'>
+				<div className='col-span-5 flex flex-col gap-4 md:col-span-3'>
+					<KPISection metrics={metrics} dateRange={dateRange} loading={loading} />
+					<ProfitabilitySection metrics={metrics} loading={loading} />
+					<div className='pt-2'>
+						<TopCustomersSection metrics={metrics} />
+					</div>
+				</div>
+
+				<div className='col-span-2'>
+					<TopProductsSection metrics={metrics} />
+				</div>
+			</div>
+
+			<ChartsSection
+				metrics={metrics}
+				dailySalesData={chartData.dailySalesData}
+				statusSriData={chartData.statusSriData}
+				paymentMethodData={chartData.paymentMethodData}
+				salesTrendData={chartData.salesTrendData}
+				chartOptions={chartOptions}
+				paymentMethodOptions={paymentMethodOptions}
+			/>
 		</div>
 	)
 }

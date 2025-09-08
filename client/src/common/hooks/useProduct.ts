@@ -135,7 +135,8 @@ export const useProduct = (paginationParams: UseProductParamsProps = {}) => {
 			}
 		},
 		onError: (error: any) => {
-			toast.error(error.response?.data?.message || 'Error en la importación masiva')
+			console.log('ERRRR', error)
+			toast.error(error.response?.data?.message)
 		},
 	})
 

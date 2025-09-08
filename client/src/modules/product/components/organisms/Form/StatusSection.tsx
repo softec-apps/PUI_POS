@@ -9,9 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 interface StatusSectionProps {
 	control: Control<ProductFormData>
+	isEditing: boolean
 }
 
-export function StatusSection({ control }: StatusSectionProps) {
+export function StatusSection({ control, isEditing }: StatusSectionProps) {
+	if (!isEditing) return null
+
 	return (
 		<Card className='border-none bg-transparent p-0 shadow-none'>
 			<CardHeader className='p-0'>
@@ -24,7 +27,7 @@ export function StatusSection({ control }: StatusSectionProps) {
 
 			<CardContent className='grid grid-cols-1 items-start gap-4 p-0 md:grid-cols-1'>
 				<UniversalFormField
-					required
+					required={isEditing ? true : false}
 					control={control}
 					name='status'
 					type='select'

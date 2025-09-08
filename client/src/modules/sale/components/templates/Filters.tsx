@@ -8,20 +8,20 @@ import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { ViewSelector } from '@/components/layout/organims/ViewSelector'
 import { SearchInput } from '@/components/layout/organims/SearchInput'
 import { SortDropdown } from '@/modules/sale/components/organisms/Filters/SortDropdown'
-import { PaymentMethodDropdown } from '@/modules/sale/components/organisms/Filters/PaymentMethodDropdown'
+import { StatusSRIDropdown } from '@/modules/sale/components/organisms/Filters/StatusSRIDropdown'
 import { DateFiltersDropdown } from '@/modules/sale/components/organisms/Filters/DateFiltersDropdown'
 import { DateFilters, DateFilterType, DateRange } from '@/common/types/pagination'
-import { PaymentMethod } from '@/common/enums/sale.enum'
+import { StatusSRI } from '@/common/enums/sale.enum'
 
 interface FiltersProps {
 	searchValue: string
 	isRefreshing: boolean
 	currentSort?: string
-	currentPaymentMethod?: PaymentMethod.CASH | PaymentMethod.CARD | PaymentMethod.DIGITAL | null
+	currentStatusSRI?: StatusSRI.AUTHORIZED | StatusSRI.NO_ELECTRONIC | StatusSRI.ERROR | null
 	dateFilters: DateFilters
 	onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 	onSort: (sortKey: string) => void
-	onPaymentMethodChange: (paymentMethod: PaymentMethod.CASH | PaymentMethod.CARD | PaymentMethod.DIGITAL | null) => void
+	onStatusSRIChange: (statusSRI: StatusSRI.AUTHORIZED | StatusSRI.NO_ELECTRONIC | StatusSRI.ERROR | null) => void
 	onDateFilterChange: (filterType: DateFilterType, range: DateRange) => void
 	onClearDateFilter: (filterType: DateFilterType) => void
 	onRefresh: () => void
@@ -34,11 +34,11 @@ export function Filters({
 	searchValue,
 	isRefreshing,
 	currentSort,
-	currentPaymentMethod,
+	currentStatusSRI,
 	dateFilters,
 	onSearchChange,
 	onSort,
-	onPaymentMethodChange,
+	onStatusSRIChange,
 	onDateFilterChange,
 	onClearDateFilter,
 	onRefresh,
@@ -52,7 +52,7 @@ export function Filters({
 	const clearSort = () => onSort('')
 
 	// Función para limpiar estado
-	const clearPaymentMethod = () => onPaymentMethodChange(null)
+	const clearStatusSRI = () => onStatusSRIChange(null)
 
 	// Función para limpiar todas las fechas
 	const clearAllDateFilters = () => Object.keys(dateFilters).forEach(key => onClearDateFilter(key as DateFilterType))
@@ -89,18 +89,9 @@ export function Filters({
 					<span className='text-muted-foreground'>|</span>
 
 					<div className='relative flex items-center gap-2'>
-						<PaymentMethodDropdown
-							currentPaymentMethod={currentPaymentMethod}
-							onPaymentMethodChange={onPaymentMethodChange}
-						/>
-						{currentPaymentMethod !== null && (
-							<ActionButton
-								icon={<Icons.x />}
-								onClick={clearPaymentMethod}
-								variant='ghost'
-								size='sm'
-								className='h-8 w-8'
-							/>
+						<StatusSRIDropdown currentStatusSRI={currentStatusSRI} onStatusSRIChange={onStatusSRIChange} />
+						{currentStatusSRI !== null && (
+							<ActionButton icon={<Icons.x />} onClick={clearStatusSRI} variant='ghost' size='sm' className='h-8 w-8' />
 						)}
 					</div>
 

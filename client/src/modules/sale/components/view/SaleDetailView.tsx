@@ -16,18 +16,11 @@ import { useSale } from '@/common/hooks/useSale'
 import { PaymentMethodLabels_ES } from '@/common/enums/sale.enum'
 import { formatDate } from '@/common/utils/dateFormater-util'
 import { StatCard } from '@/components/layout/organims/StatCard'
-import { Button } from '@/components/ui/button'
 import { ImageControl } from '@/components/layout/organims/ImageControl'
 import { formatPrice } from '@/common/utils/formatPrice-util'
 import { IdentificationTypeLabels_ES } from '@/common/enums/customer.enum'
 import { Badge } from '@/components/ui/badge'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import {
 	Dialog,
 	DialogClose,
@@ -48,10 +41,9 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { InfoDate } from '../atoms/InfoDate'
-import { MethodPaymentBadge } from '../atoms/MethodPaymentBadge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
+import { SoomFeatureBanner } from '@/components/layout/organims/SoomFeat'
 
 interface SaleDetailViewProps {
 	saleId: string
@@ -91,19 +83,6 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 
 		if (saleId) fetchSale()
 	}, [saleId, getSaleById])
-
-	const saleStatus = useMemo(() => {
-		if (!saleData) return { label: 'Desconocido', variant: 'secondary' as const }
-
-		const statuses = {
-			completed: { label: 'Completada', variant: 'default' as const },
-			pending: { label: 'Pendiente', variant: 'secondary' as const },
-			cancelled: { label: 'Cancelada', variant: 'destructive' as const },
-			refunded: { label: 'Reembolsada', variant: 'outline' as const },
-		}
-
-		return statuses.completed // Default fallback
-	}, [saleData])
 
 	// Función para imprimir el PDF - MOVIDA DESPUÉS de la declaración de pdfUrl
 	const handlePrintPDF = useCallback(
@@ -286,10 +265,28 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 							</button>
 						</Link>
 
-						<div className='flex flex-col'>
+						<div className='flex flex-col gap-2'>
 							<Typography variant='h3' className='font-bold uppercase'>
 								#{saleData.code}
 							</Typography>
+
+							{saleData?.clave_acceso && (
+								<div className='flex items-center gap-2'>
+									<Typography variant='span' className='font-mono'>
+										Clave acceso SRI: {saleData?.clave_acceso}
+									</Typography>
+									<ActionButton
+										size='icon'
+										variant='secondary'
+										icon={<Icons.copy />}
+										tooltip='Copiar'
+										onClick={() => {
+											navigator.clipboard.writeText(saleData.clave_acceso)
+											toast.info('Clave de acceso copiada')
+										}}
+									/>
+								</div>
+							)}
 						</div>
 					</div>
 
@@ -299,10 +296,10 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 							<DropdownMenuTrigger asChild>
 								<ActionButton variant='secondary' icon={<Icons.dotsVertical />} size='sm' text='Acciones' />
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align='end' className='w-56'>
+							<DropdownMenuContent align='end' className='w-auto'>
 								{/* Opción de imprimir */}
 								<DropdownMenuItem onClick={handlePrintPDF}>
-									<Icons.printer className='mr-2 h-4 w-4' />
+									<Icons.printer className='h-4 w-4' />
 									Imprimir
 								</DropdownMenuItem>
 
@@ -310,113 +307,78 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 								{saleData.clave_acceso && saleData.estado_sri === 'AUTHORIZED' && (
 									<>
 										<DropdownMenuItem onClick={handleViewInvoice}>
-											<Icons.file className='mr-2 h-4 w-4' />
-											Ver Factura
+											<Icons.file className='h-4 w-4' />
+											Ver factura SRI
 										</DropdownMenuItem>
+
+										{/* 
 										<DropdownMenuItem onClick={handleDownloadPDF} disabled={isDownloading.pdf}>
 											{isDownloading.pdf ? (
-												<Icons.spinnerSimple className='mr-2 h-4 w-4 animate-spin' />
+												<Icons.spinnerSimple className='h-4 w-4 animate-spin' />
 											) : (
-												<Icons.download className='mr-2 h-4 w-4' />
+												<Icons.download className='h-4 w-4' />
 											)}
 											Descargar PDF
 										</DropdownMenuItem>
 										<DropdownMenuItem onClick={handleDownloadXML} disabled={isDownloading.xml}>
 											{isDownloading.xml ? (
-												<Icons.spinnerSimple className='mr-2 h-4 w-4 animate-spin' />
+												<Icons.spinnerSimple className='h-4 w-4 animate-spin' />
 											) : (
-												<Icons.download className='mr-2 h-4 w-4' />
+												<Icons.download className='h-4 w-4' />
 											)}
 											Descargar XML
 										</DropdownMenuItem>
+										*/}
 									</>
 								)}
-
-								{/* Opción de email */}
-								<DropdownMenuItem onClick={handleSendEmail}>
-									<Icons.mail className='mr-2 h-4 w-4' />
-									Enviar por Email
-								</DropdownMenuItem>
-
-								<DropdownMenuSeparator />
-
-								{/* Opción de reembolso */}
-								<DropdownMenuItem onClick={() => setShowRefundDialog(true)}>
-									<Icons.sTurnDown className='mr-2 h-4 w-4' />
-									Reembolsar
-								</DropdownMenuItem>
-
-								{/* Opción de duplicar */}
-								<DropdownMenuItem>
-									<Icons.copy className='mr-2 h-4 w-4' />
-									Duplicar venta
-								</DropdownMenuItem>
-
-								<DropdownMenuSeparator />
-
-								{/* Opción de eliminar */}
-								<DropdownMenuItem
-									onClick={() => setShowDeleteDialog(true)}
-									className='text-destructive focus:text-destructive'>
-									<Icons.trash className='mr-2 h-4 w-4' />
-									Eliminar
-								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>
 				</CardHeader>
 			</Card>
 
-			{/* Statistics Overview */}
-			<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-				<StatCard
-					title='Total'
-					value={`${formatPrice(saleData.total)}`}
-					icon={<Icons.currencyDollar className='h-5 w-5' />}
-					footerText='Importe total facturado'
-					variant='success'
-				/>
-				<StatCard
-					title='Cambio'
-					value={`${formatPrice(saleData.change)}`}
-					icon={<Icons.userDollar className='h-5 w-5' />}
-					footerText={`Monto recibido${formatPrice(saleData.receivedAmount)}`}
-					variant='info'
-				/>
-				<StatCard
-					title='Pago'
-					value={PaymentMethodLabels_ES[saleData?.paymentMethod] || 'No especificado'}
-					icon={<Icons.payment className='h-5 w-5' />}
-					footerText='Forma de pago utilizada'
-					variant='indigo'
-				/>
-				<StatCard
-					title='Estado SRI'
-					value={saleData.estado_sri === 'AUTHORIZED' ? 'Autorizada' : saleData.estado_sri || 'Sin Factura'}
-					icon={
-						saleData.estado_sri === 'AUTHORIZED' ? (
-							<Icons.checkCircle className='h-5 w-5' />
-						) : saleData.estado_sri ? (
-							<Icons.clock className='h-5 w-5' />
-						) : (
-							<Icons.infoCircle className='h-5 w-5' />
-						)
-					}
-					footerText={
-						saleData.estado_sri === 'AUTHORIZED'
-							? 'Factura electrónica autorizada'
-							: saleData.estado_sri
-								? 'Procesando en SRI'
-								: 'No aplica factura electrónica'
-					}
-					variant={saleData.estado_sri === 'AUTHORIZED' ? 'success' : saleData.estado_sri ? 'warning' : 'secondary'}
-				/>
-			</div>
-
 			{/* Main Content */}
 			<div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
 				{/* Left Column - Invoice and Products */}
-				<div className='space-y-0 lg:col-span-2'>
+				<div className='space-y-6 lg:col-span-2'>
+					{/* Statistics Overview */}
+					<div className='grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-3'>
+						<StatCard
+							title='Total'
+							value={`$${formatPrice(saleData?.total)}`}
+							icon={<Icons.currencyDollar className='h-5 w-5' />}
+							footerText='Total facturado + impuestos'
+						/>
+						<StatCard
+							title='Cambio'
+							value={`$${formatPrice(saleData?.change)}`}
+							icon={<Icons.userDollar className='h-5 w-5' />}
+							footerText={`Monto recibido $${formatPrice(saleData.receivedAmount)}`}
+							variant='info'
+						/>
+						<StatCard
+							title='Estado SRI'
+							value={saleData.estado_sri === 'AUTHORIZED' ? 'Autorizado' : saleData.estado_sri || 'Sin Factura'}
+							icon={
+								saleData.estado_sri === 'AUTHORIZED' ? (
+									<Icons.checkCircle className='h-5 w-5' />
+								) : saleData.estado_sri ? (
+									<Icons.clock className='h-5 w-5' />
+								) : (
+									<Icons.infoCircle className='h-5 w-5' />
+								)
+							}
+							footerText={
+								saleData.estado_sri === 'AUTHORIZED'
+									? 'Factura electrónica'
+									: saleData.estado_sri
+										? 'Procesando en SRI'
+										: 'No aplica factura electrónica'
+							}
+							variant={saleData.estado_sri === 'AUTHORIZED' ? 'success' : saleData.estado_sri ? 'warning' : 'secondary'}
+						/>
+					</div>
+
 					<Tabs defaultValue='products' className='w-full space-y-4'>
 						<TabsList className='grid w-full grid-cols-2'>
 							<TabsTrigger value='products'>Productos</TabsTrigger>
@@ -449,7 +411,7 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 															imageHeight={40}
 															imageWidth={40}
 														/>
-														<div>
+														<div className='max-w-72 truncate'>
 															<Typography variant='span' className='font-medium'>
 																{item.product?.name}
 															</Typography>
@@ -476,81 +438,23 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 
 						{/* Sale History */}
 						<TabsContent value='history'>
-							<div className='space-y-4'>
-								{[
-									{
-										date: saleData.createdAt,
-										action: 'Venta creada',
-										description: 'Se registró la venta en el sistema',
-										icon: Icons.plus,
-										variant: 'success' as const,
-									},
-									{
-										date: saleData.createdAt,
-										action: 'Pago procesado',
-										description: `Pago de ${formatPrice(saleData.total)} procesado exitosamente via ${PaymentMethodLabels_ES[saleData.paymentMethod]}`,
-										icon: Icons.calendar,
-										variant: 'success' as const,
-									},
-									{
-										date: saleData.createdAt,
-										action: 'Factura generada',
-										description: 'Se generó la factura electrónica',
-										icon: Icons.fileText,
-										variant: 'default' as const,
-									},
-								].map((event, idx) => (
-									<div key={idx} className='flex items-start gap-4'>
-										<div
-											className={`rounded-full p-2 ${
-												event.variant === 'success' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
-											}`}>
-											<event.icon className='h-4 w-4' />
-										</div>
-
-										<div className='flex-1 space-y-1'>
-											<div className='flex items-center justify-between'>
-												<Typography variant='span' className='font-medium'>
-													{event.action}
-												</Typography>
-												<Typography variant='small' className='text-muted-foreground'>
-													{formatDate(event.date)}
-												</Typography>
-											</div>
-											<Typography variant='small' className='text-muted-foreground'>
-												{event.description}
-											</Typography>
-										</div>
-									</div>
-								))}
-							</div>
+							<SoomFeatureBanner />
 						</TabsContent>
 					</Tabs>
 				</div>
 
 				{/* Right Column - Customer Info and Analytics */}
 				<div className='space-y-6'>
-					{/* Payment Info */}
+					{/* Summary sale */}
 					<Card>
-						<CardHeader>Resumen</CardHeader>
+						<CardHeader className='flex items-center justify-between'>
+							Resumen
+							<Typography variant='small' className='text-primary font-medium'>
+								{formatDate(saleData?.createdAt)}
+							</Typography>
+						</CardHeader>
 						<CardContent className='space-y-4'>
 							<div className='space-y-3'>
-								{/* Fecha de la transacción */}
-								<div className='flex items-center justify-between gap-2'>
-									<Typography variant='small' className='text-muted-foreground'>
-										<InfoDate recordData={saleData} />
-									</Typography>
-
-									<div className='flex items-center gap-2'>
-										<MethodPaymentBadge type={saleData?.paymentMethod} />
-										{/* Agregando ícono representativo */}
-										{saleData.paymentMethod === 'credit_card' && <i className='fa fa-credit-card text-blue-500' />}
-										{saleData.paymentMethod === 'paypal' && <i className='fa fa-paypal text-yellow-500' />}
-
-										<Badge variant='success'>Pagado</Badge>
-									</div>
-								</div>
-
 								{/* Monto recibido */}
 								<div className='flex items-center justify-between'>
 									<Typography variant='small' className='text-muted-foreground'>
@@ -612,8 +516,35 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 						</CardContent>
 					</Card>
 
+					{/* Payment methods Info */}
+					<Card className='dark:bg-popover bg-muted'>
+						<CardHeader>Métodos de pago</CardHeader>
+						<CardContent className='space-y-4'>
+							<div className='space-y-3'>
+								<div className='space-y-3'>
+									{Array.isArray(saleData?.paymentMethods) && saleData.paymentMethods.length > 0 ? (
+										saleData.paymentMethods.map((payment, idx) => (
+											<div key={idx} className='flex items-center justify-between'>
+												<Typography variant='small' className='text-muted-foreground'>
+													{PaymentMethodLabels_ES[payment.method] || payment.method}
+												</Typography>
+												<Typography variant='small' className='text-primary font-medium'>
+													${formatPrice(payment.amount)}
+												</Typography>
+											</div>
+										))
+									) : (
+										<Typography variant='small' className='text-muted-foreground'>
+											No especificado
+										</Typography>
+									)}
+								</div>
+							</div>
+						</CardContent>
+					</Card>
+
 					{/* Customer Info */}
-					<Card>
+					<Card className='dark:bg-popover bg-muted'>
 						<CardHeader className='flex items-center justify-between'>
 							Cliente
 							<Link href={`${ROUTE_PATH.ADMIN.CUSTOMERS}/${saleData.customer.id}`}>
@@ -660,7 +591,7 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 				<DialogContent className='flex h-[95vh] min-w-5xl flex-col'>
 					<DialogHeader>
 						<div className='flex items-center justify-between'>
-							<DialogTitle>Previa de Factura</DialogTitle>
+							<DialogTitle>Vista previa de factura SRI</DialogTitle>
 							<DialogClose>
 								<ActionButton icon={<Icons.x />} size='icon' variant='secondary' />
 							</DialogClose>
@@ -676,7 +607,7 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 									<SpinnerLoader text='Cargando...Por favor espera' />
 								</div>
 							) : pdfUrl ? (
-								<iframe src={pdfUrl} className='h-full w-full' title='Previa de Factura' />
+								<iframe src={pdfUrl} className='h-full w-full border' title='Previa de Factura' />
 							) : (
 								<div className='flex h-full items-center justify-center'>
 									<div className='flex flex-col items-center gap-2'>
@@ -711,19 +642,18 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 							<div className='flex items-center gap-4'>
 								<ActionButton
 									size='sm'
-									onClick={handleDownloadPDF}
-									disabled={isDownloading.pdf}
-									icon={isDownloading.pdf ? <Icons.spinnerSimple className='animate-spin' /> : <Icons.download />}
-									text={isDownloading.pdf ? 'Descargando...' : 'Descargar PDF'}
-								/>
-
-								<ActionButton
-									size='sm'
 									variant='secondary'
 									onClick={handleDownloadXML}
 									disabled={isDownloading.xml}
 									icon={isDownloading.xml ? <Icons.spinnerSimple className='animate-spin' /> : <Icons.download />}
 									text={isDownloading.xml ? 'Descargando...' : 'Descargar XML'}
+								/>
+								<ActionButton
+									size='sm'
+									onClick={handleDownloadPDF}
+									disabled={isDownloading.pdf}
+									icon={isDownloading.pdf ? <Icons.spinnerSimple className='animate-spin' /> : <Icons.download />}
+									text={isDownloading.pdf ? 'Descargando...' : 'Descargar PDF'}
 								/>
 							</div>
 						</div>

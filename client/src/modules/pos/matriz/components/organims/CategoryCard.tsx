@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 
 import { Skeleton } from '@/components/ui/skeleton'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 import { Icons } from '@/components/icons'
 import { I_Category } from '@/common/types/modules/category'
@@ -23,11 +23,7 @@ interface CardProps {
 
 export const CategoryCard: React.FC<CardProps> = ({ category, isSelected = false, onSelect = () => {} }) => {
 	return (
-		<motion.div
-			variants={itemVariants}
-			whileHover={{ scale: 1.02 }}
-			whileTap={{ scale: 0.98 }}
-			className='aspect-square w-full'>
+		<motion.div variants={itemVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
 			<Card
 				className={cn(
 					'h-auto cursor-pointer border-2 p-0 transition-all duration-500',
@@ -67,11 +63,12 @@ export const CategoryCardSkeleton: React.FC<SkeletonCardProps> = ({ count = 6 })
 	return (
 		<>
 			{Array.from({ length: count }).map((_, i) => (
-				<motion.div key={`category-skeleton-${i}`} variants={itemVariants} className='aspect-square w-full'>
-					<Card className='border-border h-full'>
-						<CardContent className='h-full p-0'>
-							<Skeleton className='h-full w-full' />
-						</CardContent>
+				<motion.div key={`category-skeleton-${i}`} variants={itemVariants} className='aspect-square w-full rounded-2xl'>
+					<Card className='border-border p-0'>
+						<Skeleton className='h-24 w-full rounded-t-2xl' />
+						<div className='px-2 pb-2'>
+							<Skeleton className='h-4 w-full' />
+						</div>
 					</Card>
 				</motion.div>
 			))}

@@ -5,13 +5,15 @@ import {
   IsOptional,
   ValidateNested,
   IsDateString,
+  IsUrl,
+  ValidateIf,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 export class ImpuestoDto {
   @ApiProperty({
-    description: 'Código del impuesto (2 = IVA)',
+    description: 'Código del impuesto (2 = IVA  (15%), 0 = No IVA (0%))',
     example: 2,
   })
   @IsNumber()
@@ -169,7 +171,7 @@ export class InfoAdicionalDto {
   })
   @IsOptional()
   @IsString()
-  telefono?: string
+  telefono?: string | null
 }
 
 export class CreateFacturaDto {
@@ -267,4 +269,28 @@ export class CreateFacturaDto {
   @ValidateNested()
   @Type(() => InfoAdicionalDto)
   infoAdicional?: InfoAdicionalDto
+
+  // 🔥 NUEVOS CAMPOS PARA WEBHOOK/CALLBACK
+  @ApiPropertyOptional({
+    description:
+      'ID único de la venta en el sistema POS (requerido si se usa callbackUrl)',
+    example: 'SALE-12345',
+  })
+  @IsOptional()
+  @IsString()
+  @ValidateIf((o) => !!o.callbackUrl)
+  saleId?: string | null
+
+  @ApiPropertyOptional({
+    description:
+      'URL donde recibir notificaciones del estado de la factura (requerido si se usa saleId)',
+    example: 'https://mi-pos.com/api/webhooks/factura-status',
+  })
+  @IsOptional()
+  @IsUrl({
+    protocols: ['http', 'https'],
+    require_protocol: true,
+  })
+  @ValidateIf((o) => !!o.saleId)
+  callbackUrl?: string | null
 }

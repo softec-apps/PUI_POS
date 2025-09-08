@@ -153,11 +153,9 @@ export class SaleRelationalRepository implements SaleRepository {
         withDeleted: true,
         relations: {
           customer: true,
-          /*
           items: {
             product: true,
           },
-          */
         },
       }),
       this.saleRepository.count({

@@ -40,7 +40,7 @@ const defaultPreferences: SystemPreferences = {
 export const usePreferencesStore = create<PreferencesState>()(
 	persist(
 		(set, get) => ({
-			currentView: 'pos',
+			currentView: 'matriz',
 			preferences: defaultPreferences,
 
 			setView: (view: ViewType) => set({ currentView: view }),

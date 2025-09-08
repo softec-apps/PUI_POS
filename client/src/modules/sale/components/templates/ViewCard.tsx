@@ -50,28 +50,21 @@ export const CardView = ({ recordsData }: CardViewProps) => {
 								<Card className='p-0'>
 									{/* HEADER */}
 									<CardHeader className='pt-4'>
-										<div className='flex items-start justify-between'>
-											<div className='flex items-center gap-2'>
-												<Typography variant='overline' className='text-xl font-bold tracking-tight'>
-													#{recordData.code}
-												</Typography>
-											</div>
+										<div className='flex items-center justify-between'>
+											<InfoDate recordData={recordData} />
 											<Actions recordData={recordData} />
 										</div>
 									</CardHeader>
 
 									{/* CONTENT */}
-									<CardContent className='flex-grow space-y-4 px-5'>
-										{/* Cliente */}
-										<div className='dark:bg-popover bg-accent/40 flex items-center gap-3 rounded-xl p-3'>
-											<div className='bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full'>
-												<Icons.user className='text-primary h-4 w-4' />
-											</div>
-											<div className='flex flex-col'>
-												<Typography variant='small' className='font-medium'>
-													{recordData.customer.firstName} {recordData.customer.lastName}
-												</Typography>
-											</div>
+									<CardContent className='flex-grow space-y-4 pb-4'>
+										<div className='dark:bg-popover bg-accent/40 flex items-center justify-center gap-3 rounded-xl p-3'>
+											<Typography variant='muted' className='text-sm'>
+												<Icons.shoppingCart />
+											</Typography>
+											<Typography variant='overline' className='text-xl font-bold tracking-tight'>
+												#{recordData.code}
+											</Typography>
 										</div>
 
 										{/* Totales */}
@@ -106,13 +99,6 @@ export const CardView = ({ recordsData }: CardViewProps) => {
 
 											<div className='flex items-center justify-between'>
 												<Typography variant='muted' className='text-sm'>
-													Método:
-												</Typography>
-												<MethodPaymentBadge type={recordData.paymentMethod} />
-											</div>
-
-											<div className='flex items-center justify-between'>
-												<Typography variant='muted' className='text-sm'>
 													Subtotal:
 												</Typography>
 												<Typography variant='span' className='text-sm font-medium'>
@@ -139,11 +125,6 @@ export const CardView = ({ recordsData }: CardViewProps) => {
 											</div>
 										</div>
 									</CardContent>
-
-									{/* FOOTER */}
-									<CardFooter className='flex flex-none items-center border-t p-5 pt-0'>
-										<InfoDate recordData={recordData} />
-									</CardFooter>
 								</Card>
 							</motion.div>
 						)

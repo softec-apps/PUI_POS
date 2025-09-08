@@ -1,7 +1,5 @@
 export const ENDPOINT_API = {
-	AUTH: {
-		SIGNIN: 'signin',
-	},
+	AUTH: 'auth',
 	USER: 'user',
 	CATEGORY: 'category',
 	ATRIBUTE: 'atribute',

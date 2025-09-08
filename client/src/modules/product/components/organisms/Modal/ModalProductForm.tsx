@@ -21,8 +21,8 @@ import { SupplierSelector } from '@/modules/product/components/organisms/Form/Su
 import { CategorySelector } from '@/modules/product/components/organisms/Form/CategorySelector'
 import { BasicInfoSection } from '@/modules/product/components/organisms/Form/BasicInfoSection'
 import { TemplateSelector } from '@/modules/product/components/organisms/Form/TemplateSelector'
-import { StatusSection } from '../Form/StatusSection'
-import { TaxAllow } from '@/modules/product/constants/product.constants'
+import { StatusSection } from '@/modules/product/components/organisms/Form/StatusSection'
+import { STATUS_ALLOW, TaxAllow } from '@/modules/product/constants/product.constants'
 
 export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: ProductFormProps) {
 	const { getProductById } = useProduct()
@@ -114,7 +114,7 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 			form.reset({
 				name: dataToUse?.name || '',
 				description: dataToUse?.description || '',
-				status: dataToUse?.status || '',
+				status: dataToUse?.status || STATUS_ALLOW.ACTIVE,
 				photo: dataToUse?.photo || '',
 				removePhoto: false,
 				price: dataToUse?.price || '',
@@ -228,6 +228,8 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 												setBrandOpen={setBrandOpen}
 											/>
 
+											{/* TODO: SOOM FEAT */}
+											{/* 
 											<TemplateSelector
 												control={form.control}
 												setValue={form.setValue}
@@ -239,11 +241,12 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 												templateOpen={templateOpen}
 												setTemplateOpen={setTemplateOpen}
 											/>
+											*/}
 										</div>
 
 										<MediaSection control={form.control} setValue={form.setValue} watch={form.watch} />
 
-										<StatusSection control={form.control} />
+										<StatusSection control={form.control} isEditing={!!currentRecord?.id} />
 									</div>
 								</div>
 							</form>

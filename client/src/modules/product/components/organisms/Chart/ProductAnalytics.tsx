@@ -130,7 +130,7 @@ export function ProductAnalytics() {
 						<div className='flex items-center gap-2'>
 							<CardTitle>Ventas del Producto</CardTitle>
 						</div>
-						<Badge decord={false} variant='success' text='+20%' />
+						<Badge variant='success' text='+20%' />
 					</div>
 					<CardDescription>Últimos 7 días</CardDescription>
 				</CardHeader>

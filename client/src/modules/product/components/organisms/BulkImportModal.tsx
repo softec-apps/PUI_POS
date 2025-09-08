@@ -308,28 +308,18 @@ class ExcelManager {
 		}
 	}
 
+	// ExcelManager.ts
 	static async downloadTemplate() {
-		try {
-			const response = await api.get('/product/bulk-import/excel-template', {
-				responseType: 'blob',
-			})
+		const url =
+			'https://download1323.mediafire.com/5ipfdrlzsrogF7algpUmwcGXDgmTSmLK8oWygwoUE8X3ojYSOx5uO-GXYpoZ2vqvrHYdshxh5hHwQjns3D_O7cHzn2Rf5fUUPpemRGq79SDjPy57ULfndySwUiYwdIvDEGHDrxEmFVlqZh7BGiiGKD3Yxizq0EoOkENheWhsbF8r5hjE/3no5nhx6200fulz/Plantilla.xls'
 
-			const blob = new Blob([response.data], {
-				type: 'application/vnd.openxmlformats-officedocument.spreadsheettml.sheet',
-			})
-			const url = window.URL.createObjectURL(blob)
-			const link = document.createElement('a')
-			link.href = url
-			link.download = 'template-productos.xlsx'
-			document.body.appendChild(link)
-			link.click()
-			document.body.removeChild(link)
-			window.URL.revokeObjectURL(url)
-			toast.success('Plantilla Excel descargada')
-		} catch (error: any) {
-			console.error(error)
-			toast.error('No se pudo descargar la plantilla')
-		}
+		// Opción 2: forzar descarga
+		const link = document.createElement('a')
+		link.href = url
+		link.setAttribute('download', 'Plantilla.xls')
+		document.body.appendChild(link)
+		link.click()
+		link.remove()
 	}
 }
 

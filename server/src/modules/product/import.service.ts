@@ -383,7 +383,7 @@ export class BulkProductImportService {
         'legalName',
         companyName,
       )
-      return suppliers || null
+      return suppliers
     } catch (error) {
       console.log(`Error buscando proveedor similar: ${error.message}`)
       return null

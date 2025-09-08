@@ -421,10 +421,7 @@ export function BillingConfiguration() {
 					{/* Panel de firma digital mejorado */}
 					<Card className='border-none bg-transparent p-0'>
 						<CardHeader>
-							<CardTitle className='flex items-center gap-2'>
-								<Icons.shield size={20} />
-								Firma Digital
-							</CardTitle>
+							<CardTitle className='flex items-center gap-2'>Firma Digital</CardTitle>
 							<CardDescription>
 								Certificado digital PKCS#12 (.p12) para firmar electrónicamente los comprobantes fiscales.
 							</CardDescription>

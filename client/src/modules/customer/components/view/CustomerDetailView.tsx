@@ -13,11 +13,14 @@ import Link from 'next/link'
 import { Icons } from '@/components/icons'
 import { Typography } from '@/components/ui/typography'
 import { useSale } from '@/common/hooks/useSale'
-import { usePagination } from '../../hooks/usePagination'
+import { usePagination } from '@/modules/customer/hooks/usePagination'
 import { PurchasesTab } from '../templates/DetailPurchasesTab'
 import { IdentificationTypeLabels_ES } from '@/common/enums/customer.enum'
 import { formatDate } from '@/common/utils/dateFormater-util'
 import { StatCard } from '@/components/layout/organims/StatCard'
+import { SoomFeature } from '@/components/layout/organims/SoomFeat'
+
+const SEARCH_DELAY = 300
 
 interface CustomerDetailViewProps {
 	customerId: string
@@ -30,16 +33,30 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
 	const [errorCustomer, setCustomerError] = useState<string | null>(null)
 
 	const pagination = usePagination()
+	const [debouncedSearch, setDebouncedSearch] = useState('')
+
+	// Debounce search for sales
+	useEffect(() => {
+		const timer = setTimeout(() => setDebouncedSearch(pagination.searchTerm), SEARCH_DELAY)
+		return () => clearTimeout(timer)
+	}, [pagination.searchTerm])
 
 	const salesParams = useMemo(() => {
+		const cleanedDateFilters = Object.fromEntries(
+			Object.entries(pagination.dateFilters).filter(([_, range]) => range && (range.startDate || range.endDate))
+		)
+
 		return {
-			search: pagination.searchTerm,
+			search: debouncedSearch,
 			page: pagination.pagination.page,
 			limit: pagination.pagination.limit,
 			sort: pagination.currentSort ? [pagination.currentSort] : undefined,
-			filters: { customerId: customerData?.id },
+			filters: {
+				customerId: customerData?.id,
+				...cleanedDateFilters,
+			},
 		}
-	}, [pagination, customerData?.id])
+	}, [debouncedSearch, pagination, customerData?.id])
 
 	const { recordsData, loading: loadingSales, refetchSales } = useSale(salesParams)
 
@@ -60,6 +77,27 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
 		if (customerId) fetchCustomer()
 	}, [customerId, getCustomerById])
 
+	// Pagination handlers
+	const handlePageChange = (page: number) => {
+		pagination.handlePageChange(page)
+	}
+
+	const handleNextPage = () => {
+		if (recordsData?.pagination?.hasNext) {
+			pagination.handleNextPage(true)
+		}
+	}
+
+	const handlePrevPage = () => {
+		if (recordsData?.pagination?.hasPrev) {
+			pagination.handlePrevPage()
+		}
+	}
+
+	const handleLimitChange = (value: string) => {
+		pagination.handleLimitChange(value)
+	}
+
 	if (loadingCustomer) {
 		return (
 			<div className='flex h-screen items-center justify-center'>
@@ -69,7 +107,6 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
 	}
 
 	if (errorCustomer) return <FatalErrorState />
-
 	if (!customerData) return <NotFoundState />
 
 	return (
@@ -129,22 +166,32 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
 						</TabsList>
 
 						<TabsContent value='purchases'>
-							<PurchasesTab recordsData={recordsData} isRefreshing={loadingSales} onRefresh={refetchSales} />
+							<PurchasesTab
+								recordsData={recordsData?.data}
+								isRefreshing={loadingSales}
+								onRefresh={refetchSales}
+								onPageChange={handlePageChange}
+								onNextPage={handleNextPage}
+								onPrevPage={handlePrevPage}
+								onLimitChange={handleLimitChange}
+								currentPage={pagination.pagination.page}
+								currentLimit={pagination.pagination.limit}
+							/>
 						</TabsContent>
 
 						<TabsContent value='returns'>
-							<div className='text-muted-foreground'>Proximamente...</div>
+							<SoomFeature />
 						</TabsContent>
 						<TabsContent value='quotes'>
-							<div className='text-muted-foreground'>Proximamente...</div>
+							<SoomFeature />
 						</TabsContent>
 						<TabsContent value='proformas'>
-							<div className='text-muted-foreground'>Proximamente...</div>
+							<SoomFeature />
 						</TabsContent>
 					</Tabs>
 				</div>
 
-				{/* Customer Details Sidebar */}
+				{/* Customer details  */}
 				<div className='space-y-6'>
 					<Card className='bg-transparent'>
 						<CardHeader>
@@ -154,8 +201,23 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
 						</CardHeader>
 
 						<CardContent className='space-y-4'>
-							<div className='flex items-center gap-3'>
-								<div className='bg-muted flex h-10 w-10 items-center justify-center rounded-full'>
+							<div className='flex items-center'>
+								<div className='h-10 w-10'>
+									<Icons.user className='text-muted-foreground h-5 w-5' />
+								</div>
+
+								<div className='flex flex-col space-y-1'>
+									<Typography variant='small' className=''>
+										Nombres
+									</Typography>
+									<Typography variant='small' className='text-primary text-sm'>
+										{customerData.firstName} {customerData.lastName}
+									</Typography>
+								</div>
+							</div>
+
+							<div className='flex items-center'>
+								<div className='h-10 w-10'>
 									<Icons.id className='text-muted-foreground h-5 w-5' />
 								</div>
 
@@ -169,8 +231,8 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
 								</div>
 							</div>
 
-							<div className='flex items-center gap-3'>
-								<div className='bg-muted flex h-10 w-10 items-center justify-center rounded-full'>
+							<div className='flex items-center'>
+								<div className='h-10 w-10'>
 									<Icons.mail className='text-muted-foreground h-5 w-5' />
 								</div>
 								<div className='flex flex-col space-y-1'>
@@ -183,8 +245,8 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
 								</div>
 							</div>
 
-							<div className='flex items-center gap-3'>
-								<div className='bg-muted flex h-10 w-10 items-center justify-center rounded-full'>
+							<div className='flex items-center'>
+								<div className='h-10 w-10'>
 									<Icons.phone className='text-muted-foreground h-5 w-5' />
 								</div>
 								<div className='flex flex-col space-y-1'>
@@ -197,8 +259,8 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
 								</div>
 							</div>
 
-							<div className='flex items-center gap-3'>
-								<div className='bg-muted flex h-10 w-10 items-center justify-center rounded-full'>
+							<div className='flex items-center'>
+								<div className='h-10 w-10'>
 									<Icons.mapPin className='text-muted-foreground h-5 w-5' />
 								</div>
 								<div className='flex flex-col space-y-1'>
@@ -211,8 +273,8 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
 								</div>
 							</div>
 
-							<div className='flex items-center gap-3'>
-								<div className='bg-muted flex h-10 w-10 items-center justify-center rounded-full'>
+							<div className='flex items-center'>
+								<div className='h-10 w-10'>
 									<Icons.calendar className='text-muted-foreground h-5 w-5' />
 								</div>
 								<div className='flex flex-col space-y-1'>

@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LogoType } from '@/components/logos/LogoType'
 import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/icons'
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { TypeAnimation } from 'react-type-animation'
 

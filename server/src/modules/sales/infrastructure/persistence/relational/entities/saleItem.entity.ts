@@ -13,6 +13,7 @@ import { EntityRelationalHelper } from '@/utils/relational-entity-helper'
 
 import { SaleEntity } from '@/modules/sales/infrastructure/persistence/relational/entities/sale.entity'
 import { ProductEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product.entity'
+import { Exclude } from 'class-transformer'
 
 @Entity({ name: PATH_SOURCE.SALE_ITEM })
 @Index(['productId'])
@@ -56,6 +57,16 @@ export class SaleItemEntity extends EntityRelationalHelper {
     default: 0,
   })
   unitPrice: number
+
+  @Exclude()
+  @Column({
+    type: 'decimal',
+    precision: 13,
+    scale: 6,
+    nullable: false,
+    default: 0,
+  })
+  revenue: number
 
   @Column({
     type: 'int',

@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { delay, motion } from 'framer-motion'
 import { CardTitle } from '@/components/ui/card'
 import { Typography } from '@/components/ui/typography'
 import { ReactNode } from 'react'
@@ -34,7 +34,7 @@ const itemVariants = {
 }
 
 const iconVariants = {
-	hover: {
+	visible: {
 		rotate: [0, 5, -5, 0],
 		y: [0, 0, 0],
 		transition: {

@@ -2,6 +2,7 @@ import { forwardRef, Module } from '@nestjs/common'
 import { CustomerModule } from '@/modules/customer/customer.module'
 import { ProductModule } from '@/modules/product/product.module'
 import { BillingModule } from '@/modules/factuZen/billing.module'
+import { EstablishmentModule } from '@/modules/establishment/establishment.module'
 import { SaleService } from '@/modules/sales/sale.service'
 import { SaleController } from '@/modules/sales/sale.controller'
 import { RelationalSalePersistenceModule } from '@/modules/sales/infrastructure/persistence/relational/relational-persistence.module'
@@ -21,6 +22,7 @@ const infrastructurePersistenceModule = RelationalSalePersistenceModule
     forwardRef(() => CustomerModule),
     forwardRef(() => ProductModule),
     forwardRef(() => BillingModule),
+    forwardRef(() => EstablishmentModule),
     BullModule.registerQueue({
       name: QUEUE.VOUCHER,
     }),

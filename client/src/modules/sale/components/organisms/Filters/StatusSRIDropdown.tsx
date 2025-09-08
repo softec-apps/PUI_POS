@@ -11,38 +11,38 @@ import {
 import { motion } from 'framer-motion'
 import { Icons } from '@/components/icons'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
-import { PaymentMethod, PaymentMethodLabels_ES } from '@/common/enums/sale.enum'
+import { StatusSRI, StatusSRILabels_ES } from '@/common/enums/sale.enum'
 
-interface PaymentMethodDropdownProps {
-	currentPaymentMethod?: PaymentMethod | null
-	onPaymentMethodChange: (paymentMethod: PaymentMethod | null) => void
+interface StatusSRIDropdownProps {
+	currentStatusSRI?: StatusSRI | null
+	onStatusSRIChange: (statusSRI: StatusSRI | null) => void
 }
 
-const METHOD_PAYMENT_OPTIONS = [
-	{ key: PaymentMethod.CARD, label: PaymentMethodLabels_ES[PaymentMethod.CARD], color: 'bg-cyan-500' },
+const STATUS_SRI_OPTIONS = [
 	{
-		key: PaymentMethod.CASH,
-		label: PaymentMethodLabels_ES[PaymentMethod.CASH],
+		key: StatusSRI.AUTHORIZED,
+		label: StatusSRILabels_ES[StatusSRI.AUTHORIZED],
 		color: 'bg-emerald-500',
 	},
+	{ key: StatusSRI.NO_ELECTRONIC, label: StatusSRILabels_ES[StatusSRI.NO_ELECTRONIC], color: 'bg-primary' },
 	{
-		key: PaymentMethod.DIGITAL,
-		label: PaymentMethodLabels_ES[PaymentMethod.DIGITAL],
-		color: 'bg-blue-500',
+		key: StatusSRI.ERROR,
+		label: StatusSRILabels_ES[StatusSRI.ERROR],
+		color: 'bg-destructive',
 	},
 ] as const
 
-export function PaymentMethodDropdown({ currentPaymentMethod, onPaymentMethodChange }: PaymentMethodDropdownProps) {
-	const getCurrentPaymentMethodLabel = () => {
-		if (!currentPaymentMethod) return 'Todos'
-		const paymentMethodOption = METHOD_PAYMENT_OPTIONS.find(option => option.key === currentPaymentMethod)
-		return paymentMethodOption?.label || 'Filtro'
+export function StatusSRIDropdown({ currentStatusSRI, onStatusSRIChange }: StatusSRIDropdownProps) {
+	const getCurrentStatusSRILabel = () => {
+		if (!currentStatusSRI) return 'Todos'
+		const statusSRIOption = STATUS_SRI_OPTIONS.find(option => option.key === currentStatusSRI)
+		return statusSRIOption?.label || 'Filtro'
 	}
 
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<ActionButton icon={<Icons.filter />} text={getCurrentPaymentMethodLabel()} variant='ghost' />
+				<ActionButton icon={<Icons.filter />} text={getCurrentStatusSRILabel()} variant='ghost' />
 			</DropdownMenuTrigger>
 
 			<DropdownMenuContent align='end' className='min-w-xs'>
@@ -53,7 +53,7 @@ export function PaymentMethodDropdown({ currentPaymentMethod, onPaymentMethodCha
 
 				{/* Opción para mostrar todos */}
 				<DropdownMenuItem
-					onClick={() => onPaymentMethodChange(null)}
+					onClick={() => onStatusSRIChange(null)}
 					className='hover:bg-accent/80 text-accent-foreground/75 cursor-pointer rounded-lg transition-all duration-200'>
 					<motion.div
 						className='flex w-full items-center justify-between'
@@ -65,9 +65,9 @@ export function PaymentMethodDropdown({ currentPaymentMethod, onPaymentMethodCha
 								whileHover={{ scale: 1.3 }}
 								transition={{ type: 'spring', stiffness: 400 }}
 							/>
-							<span className={!currentPaymentMethod ? 'text-primary font-medium' : ''}>Todos</span>
+							<span className={!currentStatusSRI ? 'text-primary font-medium' : ''}>Todos</span>
 						</div>
-						{!currentPaymentMethod && (
+						{!currentStatusSRI && (
 							<motion.div
 								className='bg-primary h-2 w-2 rounded-full'
 								initial={{ scale: 0 }}
@@ -80,10 +80,10 @@ export function PaymentMethodDropdown({ currentPaymentMethod, onPaymentMethodCha
 
 				<DropdownMenuSeparator />
 
-				{METHOD_PAYMENT_OPTIONS.map((paymentMethod, index) => (
+				{STATUS_SRI_OPTIONS.map((statusSRI, index) => (
 					<DropdownMenuItem
-						key={paymentMethod.key}
-						onClick={() => onPaymentMethodChange(paymentMethod.key)}
+						key={statusSRI.key}
+						onClick={() => onStatusSRIChange(statusSRI.key)}
 						className='hover:bg-accent/80 text-accent-foreground/75 cursor-pointer rounded-lg transition-all duration-200'>
 						<motion.div
 							className='flex w-full items-center justify-between'
@@ -92,15 +92,15 @@ export function PaymentMethodDropdown({ currentPaymentMethod, onPaymentMethodCha
 							transition={{ delay: (index + 1) * 0.05 }}>
 							<div className='flex items-center gap-2'>
 								<motion.div
-									className={`h-2 w-2 rounded-full ${paymentMethod.color}`}
+									className={`h-2 w-2 rounded-full ${statusSRI.color}`}
 									whileHover={{ scale: 1.3 }}
 									transition={{ type: 'spring', stiffness: 400 }}
 								/>
-								<span className={currentPaymentMethod === paymentMethod.key ? 'text-primary font-medium' : ''}>
-									{paymentMethod.label}
+								<span className={currentStatusSRI === statusSRI.key ? 'text-primary font-medium' : ''}>
+									{statusSRI.label}
 								</span>
 							</div>
-							{currentPaymentMethod === paymentMethod.key && (
+							{currentStatusSRI === statusSRI.key && (
 								<motion.div
 									className='bg-primary h-2 w-2 rounded-full'
 									initial={{ scale: 0 }}

@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { ImageControl } from '@/components/layout/organims/ImageControl'
 import { formatPrice } from '@/common/utils/formatPrice-util'
+import { toast } from 'sonner'
 
 interface CartItemProps {
 	item: OrderItem
@@ -63,7 +64,7 @@ export const CartItem: React.FC<CartItemProps> = ({ item, index, onUpdateQuantit
 									/>
 								</div>
 
-								<div className='flex-1 space-y-2'>
+								<div className='flex-1 space-y-0.5'>
 									<Typography variant='span' className='text-primary line-clamp-1 break-words'>
 										{item.name}
 									</Typography>

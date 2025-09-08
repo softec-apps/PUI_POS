@@ -28,15 +28,17 @@ export interface I_SaleItem {
 /** Body para creación/actualización de venta */
 export interface I_Sale extends I_SaleBase {
 	code: number
-	estado_sri: string
-	clave_acceso: string
+	estado_sri?: string
+	clave_acceso?: string
 	changeType: number
 	customerId: string
 	items: I_SaleItem[]
-	paymentMethod: string
+	paymentMethods: JSON
 	receivedAmount: number
 	subtotal: number
+	change?: number
 	taxAmount: number
+	discount?: number
 	taxRate: number
 	total: number
 	totalItems: number

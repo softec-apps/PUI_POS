@@ -113,21 +113,6 @@ export class BulkProductImportController {
             'Actualizar productos existentes si se encuentran duplicados',
           default: false,
         },
-        categoryId: {
-          type: 'string',
-          format: 'uuid',
-          description: 'ID de categoría por defecto (opcional)',
-        },
-        brandId: {
-          type: 'string',
-          format: 'uuid',
-          description: 'ID de marca por defecto (opcional)',
-        },
-        supplierId: {
-          type: 'string',
-          format: 'uuid',
-          description: 'ID de proveedor por defecto (opcional)',
-        },
       },
       required: ['file'],
     },
@@ -188,6 +173,7 @@ export class BulkProductImportController {
         data: result,
       })
     } catch (error) {
+      console.log('ERRRRR', error)
       if (error instanceof BadRequestException) {
         throw error
       }

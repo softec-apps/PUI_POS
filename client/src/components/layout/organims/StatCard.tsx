@@ -1,9 +1,9 @@
 'use client'
 
+import { cn } from '@/lib/utils'
 import { ReactElement } from 'react'
 import { Typography } from '@/components/ui/typography'
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
 
 interface StatCardProps {
 	title: string
@@ -32,7 +32,7 @@ interface StatCardProps {
 
 export function StatCard({ title, value, icon, footerText, footerIcon, variant = 'default' }: StatCardProps) {
 	const variantColor = {
-		info: 'text-sky-500 dark:text-sky-400',
+		info: 'text-blue-500 dark:text-blue-400',
 		warning: 'text-amber-500 dark:text-amber-400',
 		success: 'text-emerald-500 dark:text-emerald-400',
 		destructive: 'text-destructive dark:text-destructive',
@@ -51,7 +51,7 @@ export function StatCard({ title, value, icon, footerText, footerIcon, variant =
 	}[variant]
 
 	const gradientBg = {
-		info: 'from-sky-300/10 to-card dark:from-sky-300/15',
+		info: 'from-blue-300/10 to-card dark:from-blue-300/15',
 		warning: 'from-amber-300/10 to-card dark:from-amber-300/15',
 		success: 'from-emerald-300/10 to-card dark:from-emerald-300/15',
 		destructive: 'from-destructive/10 to-card dark:from-destructive/15',
@@ -73,10 +73,12 @@ export function StatCard({ title, value, icon, footerText, footerIcon, variant =
 		<Card data-slot='card' className={cn('@container/card bg-gradient-to-t pt-3', gradientBg)}>
 			<CardHeader>
 				<div className='mt-2 flex items-center justify-between pb-1'>
-					<CardDescription>{title}</CardDescription>
-					{icon && <div className='text-primary'>{icon}</div>}
+					<CardDescription className={cn('text-sm', variantColor)}>{title}</CardDescription>
+					{icon && <div className={cn('', variantColor)}>{icon}</div>}
 				</div>
-				<CardTitle className='font-mono text-2xl @[250px]/card:text-2xl'>{value}</CardTitle>
+				<CardTitle className={cn('text-xl font-medium tabular-nums @[250px]/card:text-2xl', variantColor)}>
+					{value}
+				</CardTitle>
 			</CardHeader>
 
 			{footerText && (

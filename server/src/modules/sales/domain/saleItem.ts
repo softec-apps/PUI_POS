@@ -1,5 +1,6 @@
 import { Product } from '@/modules/product/domain/product'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { Exclude } from 'class-transformer'
 
 export class SaleItem {
   @ApiProperty({
@@ -50,6 +51,13 @@ export class SaleItem {
     description: 'Precio unitario del producto',
   })
   unitPrice: number
+
+  @ApiPropertyOptional({
+    type: 'number',
+    example: 50.123456,
+    description: 'Ganancia del producto',
+  })
+  revenue: number
 
   @ApiProperty({
     type: 'number',

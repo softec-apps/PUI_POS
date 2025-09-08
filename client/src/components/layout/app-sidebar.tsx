@@ -47,6 +47,10 @@ import { Skeleton } from '../ui/skeleton'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { ChevronsUpDown } from 'lucide-react'
 import { ScrollArea } from '../ui/scroll-area'
+import { UserAvatarProfile } from '../user-avatar-profile'
+import { useLogout } from '@/common/hooks/use-logout'
+import { ActionButton } from './atoms/ActionButton'
+import { LogoutOverlay } from './templates/LogoutOverlay'
 
 export const company = {
 	name: 'Acme Inc',
@@ -80,6 +84,8 @@ const NavigationSkeleton = () => (
 )
 
 export default function AppSidebar() {
+	const { isLoading: isLoadingLogout, handleLogout } = useLogout()
+
 	const pathname = usePathname()
 	const { isOpen } = useMediaQuery()
 	const router = useRouter()
@@ -202,15 +208,12 @@ export default function AppSidebar() {
 									<SidebarMenuButton
 										size='lg'
 										className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'>
-										<Avatar className='h-8 w-8 rounded-lg'>
-											<AvatarImage src={userSession?.user?.image} alt={userSession?.user?.name} />
-											<AvatarFallback className='rounded-lg'>CN</AvatarFallback>
-										</Avatar>
+										<UserAvatarProfile showInfo={false} />
 										<div className='grid flex-1 text-left text-sm leading-tight'>
 											<span className='truncate font-medium'>{userSession?.user?.name}</span>
 											<span className='truncate text-xs'>{userSession?.user?.email}</span>
 										</div>
-										<ChevronsUpDown className='ml-auto size-4' />
+										<Icons.dotsVertical className='ml-auto size-4' />
 									</SidebarMenuButton>
 								</DropdownMenuTrigger>
 
@@ -228,24 +231,10 @@ export default function AppSidebar() {
 
 									<DropdownMenuSeparator />
 
-									<DropdownMenuGroup>
-										<DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
-											<IconUserCircle className='mr-2 h-4 w-4' />
-											Profile
-										</DropdownMenuItem>
-										<DropdownMenuItem>
-											<IconCreditCard className='mr-2 h-4 w-4' />
-											Billing
-										</DropdownMenuItem>
-										<DropdownMenuItem>
-											<IconBell className='mr-2 h-4 w-4' />
-											Notifications
-										</DropdownMenuItem>
-									</DropdownMenuGroup>
-									<DropdownMenuSeparator />
-									<DropdownMenuItem>
-										<IconLogout className='mr-2 h-4 w-4' />
-										<LogoutButton />
+									<DropdownMenuItem onClick={handleLogout} className='text-destructive hover:text-destructive'>
+										<Icons.logout />
+										Cerrar sesión
+										<LogoutOverlay isLoading={isLoadingLogout} />
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>

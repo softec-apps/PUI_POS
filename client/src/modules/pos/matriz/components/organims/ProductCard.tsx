@@ -48,8 +48,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
 					className={cn(
 						'cursor-pointer border-2 p-0 transition-all duration-200 select-none',
 						'group relative overflow-hidden',
-
-						isOutOfStock ? 'cursor-not-allowed opacity-60' : 'hover:border-primary/50 hover:shadow-md active:scale-95'
+						isOutOfStock ? 'cursor-not-allowed opacity-60' : 'hover:border-primary/50 hover:shadow-md'
 					)}
 					onClick={handleCardClick}>
 					<CardContent className='p-0'>
@@ -62,39 +61,35 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
 									width={200}
 									height={200}
 									unoptimized
-									className='h-full w-full object-cover transition-transform group-hover:scale-105'
+									className='h-full w-full object-contain'
 								/>
 							) : (
 								<Icons.media className='text-muted-foreground h-8 w-8' />
 							)}
 
-							{/* Indicador de agotado */}
-							{isOutOfStock && (
-								<div className='absolute inset-0 flex items-center justify-center bg-black/60'>
-									<div className='bg-destructive text-primary-foreground rounded-full px-3 py-1 text-sm font-medium'>
-										AGOTADO
-									</div>
-								</div>
-							)}
-
 							{/* Stock badge */}
-							{!isOutOfStock && (
-								<div className='absolute top-2 left-2'>
-									<div className='text-primary-foreground rounded-full bg-indigo-400 px-2 py-0.5 text-xs font-medium'>
-										{`${product.stock} und`}
-									</div>
+							<div className='absolute bottom-2 left-2'>
+								<div
+									className={`text-primary-foreground rounded px-1.5 py-0.5 text-xs font-medium ${
+										product.stock === 0
+											? 'bg-destructive'
+											: product.stock <= 5
+												? 'bg-amber-500 dark:bg-amber-400'
+												: 'bg-muted-foreground'
+									}`}>
+									{product.stock === 0 ? 'Agotado' : `${product.stock} und`}
 								</div>
-							)}
+							</div>
 						</div>
 
 						{/* Información del producto */}
-						<div className='space-y-2 p-3'>
+						<div className='space-y-1 p-3'>
 							{/* Nombre del producto */}
 							<Typography variant='small' className='line-clamp-1 text-xs break-words'>
 								{product.name}
 							</Typography>
 
-							{/* Código del producto */}
+							{/* Code del producto */}
 							<Typography variant='small' className='text-muted-foreground line-clamp-1 text-xs break-words'>
 								{product.code}
 							</Typography>
@@ -138,7 +133,7 @@ export const ProductCardSkeleton: React.FC<ProductCardSkeletonProps> = ({ count 
 							{/* Image skeleton */}
 							<div className='bg-muted relative flex aspect-square h-24 w-full items-center justify-center'>
 								{/* Action buttons skeleton */}
-								<div className='absolute top-2 left-2 flex gap-1'>
+								<div className='absolute bottom-2 left-2 flex gap-1'>
 									<Skeleton className='h-5 w-16 rounded-full' />
 								</div>
 							</div>
@@ -146,7 +141,6 @@ export const ProductCardSkeleton: React.FC<ProductCardSkeletonProps> = ({ count 
 							{/* Content skeleton */}
 							<div className='space-y-2 p-3'>
 								<Skeleton className='h-4 w-full' />
-								<Skeleton className='h-4 w-3/4' />
 								<Skeleton className='h-4 w-3/4' />
 							</div>
 						</CardContent>

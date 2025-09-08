@@ -10,6 +10,8 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Transform, Type, plainToInstance } from 'class-transformer'
 import { SaleEntity } from '@/modules/sales/infrastructure/persistence/relational/entities/sale.entity'
+import { DateRangeDto } from '@/utils/dto/DateRangeDto'
+import { StatusSRI } from '@/modules/sales/sale.enum'
 
 export class FilterSaleDto {
   @ApiPropertyOptional({
@@ -25,32 +27,19 @@ export class FilterSaleDto {
     example: 'd7a2d85d-453c-4ed0-a2cf-c2099aafdfe4',
   })
   @IsOptional()
-  @IsString({ message: 'Debe ser un estado valido' })
+  @IsString({
+    message: `Estado del producto (${Object.values(StatusSRI).join(', ')})`,
+  })
   estado_sri?: string
 
   @ApiPropertyOptional({
-    description: 'Filtrar por método de pago (cash, digital, card)',
-    example: 'cash',
+    type: DateRangeDto,
+    description: 'Filtro por rango de fecha de creación',
   })
   @IsOptional()
-  @IsString()
-  paymentMethod?: string
-
-  @ApiPropertyOptional({
-    description: 'Filtrar por fecha mínima de creación',
-    example: '2025-08-14T00:00:00Z',
-  })
-  @IsOptional()
-  @IsDateString({}, { message: 'La fecha mínima debe ser una fecha válida' })
-  dateFrom?: string
-
-  @ApiPropertyOptional({
-    description: 'Filtrar por fecha máxima de creación',
-    example: '2025-08-14T23:59:59Z',
-  })
-  @IsOptional()
-  @IsDateString({}, { message: 'La fecha máxima debe ser una fecha válida' })
-  dateTo?: string
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  createdAt?: DateRangeDto | null
 }
 
 export class SortSaleDto {

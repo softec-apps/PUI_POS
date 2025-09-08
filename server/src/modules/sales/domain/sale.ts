@@ -13,7 +13,7 @@ export class Sale {
   @ApiPropertyOptional({
     type: 'string',
     example: 'e65ee225ee66',
-    description: 'Código de  la venta',
+    description: 'Código de la venta',
   })
   code?: string | null
 
@@ -53,7 +53,7 @@ export class Sale {
   taxAmount: number
 
   @ApiProperty({
-    type: 'integer',
+    type: 'number',
     example: 1150.123456,
     description: 'Total de la venta',
   })
@@ -67,16 +67,33 @@ export class Sale {
   totalItems: number
 
   @ApiProperty({
-    type: 'string',
-    example: 'cash',
-    description: 'Método de pago (cash, transfer, card, etc.)',
+    type: 'array',
+    description: 'Métodos de pago utilizados en la venta',
+    example: [
+      {
+        method: 'cash',
+        amount: 1000.0,
+      },
+      {
+        method: 'card',
+        amount: 150.123456,
+      },
+      {
+        method: 'digital',
+        amount: 5.123456,
+      },
+    ],
   })
-  paymentMethod: string
+  paymentMethods: Array<{
+    method: string
+    amount: number
+    transferNumber?: string | null
+  }>
 
   @ApiProperty({
     type: 'number',
     example: 1200.123456,
-    description: 'Monto recibido del cliente',
+    description: 'Monto total recibido del cliente (suma de todos los pagos)',
   })
   receivedAmount: number
 

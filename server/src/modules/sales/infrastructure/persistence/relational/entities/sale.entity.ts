@@ -89,12 +89,16 @@ export class SaleEntity extends EntityRelationalHelper {
   totalItems: number
 
   @Column({
-    type: 'varchar',
-    length: 50,
+    type: 'jsonb',
     nullable: false,
-    comment: 'Método de pago (cash, transfer, card, etc.)',
+    default: () => "'[]'",
+    comment: 'Métodos de pago utilizados en formato JSON',
   })
-  paymentMethod: string
+  paymentMethods: Array<{
+    method: string
+    amount: number
+    transferNumber?: string | null
+  }>
 
   @Column({
     type: 'decimal',
@@ -102,7 +106,7 @@ export class SaleEntity extends EntityRelationalHelper {
     scale: 6,
     nullable: false,
     default: 0,
-    comment: 'Monto recibido del cliente',
+    comment: 'Monto total recibido del cliente (suma de paymentMethods)',
   })
   receivedAmount: number
 

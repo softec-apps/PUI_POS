@@ -8,11 +8,12 @@ import {
   OnWorkerEvent,
   InjectQueue,
 } from '@nestjs/bullmq'
+import { InjectEntityManager } from '@nestjs/typeorm'
+
+import { Sale } from '@/modules/sales/domain/sale'
 import { BillingService } from '@/modules/factuZen/services/factuZen.service'
 import { BillingInvoiceService } from '@/modules/factuZen/services/billing.service'
 import { SaleRepository } from '@/modules/sales/infrastructure/persistence/sale.repository'
-import { InjectEntityManager } from '@nestjs/typeorm'
-import { Sale } from '../sales/domain/sale'
 
 @Processor(QUEUE.VOUCHER)
 export class BillingWorker extends WorkerHost {
@@ -24,7 +25,7 @@ export class BillingWorker extends WorkerHost {
     private readonly saleRepository: SaleRepository,
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
-    @InjectQueue(QUEUE.VOUCHER) private readonly billingQueue: Queue, // ✅ INYECTAR LA COLA
+    @InjectQueue(QUEUE.VOUCHER) private readonly billingQueue: Queue,
   ) {
     super()
     this.logger.log('🔧 BillingWorker inicializado')
@@ -188,8 +189,6 @@ export class BillingWorker extends WorkerHost {
    */
   private async markJobForRemoval(saleId: string): Promise<void> {
     try {
-      // En una implementación real, podrías usar Redis para esto
-      // Por ahora, solo loggeamos que debe auto-eliminarse
       this.logger.log(
         `🏷️ Marcando sale ${saleId} para auto-eliminación en próxima ejecución`,
       )
@@ -216,9 +215,6 @@ export class BillingWorker extends WorkerHost {
     }
   }
 
-  /**
-   * ✅ PROCESAR VERIFICACIÓN DE COMPROBANTES PENDIENTES
-   */
   private async processCheckPendingVouchers(job: Job<any>): Promise<any> {
     this.logger.log('🔍 Verificando comprobantes pendientes...')
 
@@ -278,7 +274,15 @@ export class BillingWorker extends WorkerHost {
 
       if (estadoResponse?.success && estadoResponse.data) {
         const comprobanteData = estadoResponse.data
-        const updateAnalysis = this.needsUpdate(sale, comprobanteData)
+
+        // ✅ EXTRAER CLAVE DE ACCESO DEL RESPONSE
+        const claveAccesoFromAPI = comprobanteData.clave_acceso
+
+        // ✅ CREAR ANÁLISIS DE ACTUALIZACIÓN INCLUYENDO CLAVE DE ACCESO
+        const updateAnalysis = this.needsUpdateWithClaveAcceso(
+          sale,
+          comprobanteData,
+        )
 
         if (updateAnalysis.needsUpdate) {
           // ✅ ACTUALIZAR LA SALE
@@ -290,6 +294,9 @@ export class BillingWorker extends WorkerHost {
 
           if (updateAnalysis.newClaveAcceso) {
             updatePayload.clave_acceso = updateAnalysis.newClaveAcceso
+            this.logger.log(
+              `🔑 Actualizando clave de acceso: ${updateAnalysis.newClaveAcceso}`,
+            )
           }
 
           const updatedSale = await this.saleRepository.update(
@@ -298,7 +305,7 @@ export class BillingWorker extends WorkerHost {
             this.entityManager,
           )
 
-          this.logger.log(`✅ Sale ${saleId} actualizada`)
+          this.logger.log(`✅ Sale ${saleId} actualizada con nueva información`)
 
           // ✅ VERIFICAR SI AHORA ESTÁ COMPLETADA
           if (this.isSaleCompleted(updatedSale)) {
@@ -312,6 +319,7 @@ export class BillingWorker extends WorkerHost {
               completed: true,
               removalResult,
               sale: updatedSale,
+              claveAcceso: updatedSale.clave_acceso, // ✅ INCLUIR CLAVE EN RESPONSE
             }
           }
 
@@ -320,6 +328,7 @@ export class BillingWorker extends WorkerHost {
             updated: true,
             sale: updatedSale,
             changes: updateAnalysis.reasons,
+            claveAcceso: updatedSale.clave_acceso, // ✅ INCLUIR CLAVE EN RESPONSE
           }
         }
 
@@ -328,6 +337,7 @@ export class BillingWorker extends WorkerHost {
           updated: false,
           message: 'Sin cambios necesarios',
           sale,
+          claveAcceso: sale.clave_acceso || claveAccesoFromAPI, // ✅ INCLUIR CLAVE ACTUAL
         }
       }
 
@@ -342,12 +352,67 @@ export class BillingWorker extends WorkerHost {
         error.message,
       )
 
-      // ✅ EN CASO DE ERROR, NO ELIMINAR EL JOB PARA QUE SE REINTENTE
       return {
         success: false,
         error: error.message,
         retry: true,
       }
+    }
+  }
+
+  // ✅ NUEVA FUNCIÓN PARA VERIFICAR ACTUALIZACIONES INCLUYENDO CLAVE DE ACCESO
+  private needsUpdateWithClaveAcceso(
+    sale: Sale,
+    apiData: any,
+  ): {
+    needsUpdate: boolean
+    newState?: string
+    newClaveAcceso?: string
+    reasons: string[]
+  } {
+    const reasons: string[] = []
+    let needsUpdate = false
+    let newState: string | undefined
+    let newClaveAcceso: string | undefined
+
+    // 1. Verificar cambio de estado
+    const currentState = (sale.estado_sri || 'PENDING')
+      .toString()
+      .toUpperCase()
+      .trim()
+    const apiState = this.mapApiStateToInternalState(apiData.estado)
+
+    if (apiState !== currentState) {
+      needsUpdate = true
+      newState = apiState
+      reasons.push(`Estado cambió: ${currentState} → ${apiState}`)
+    }
+
+    // 2. Verificar clave de acceso (MEJORADO)
+    const currentClave = sale.clave_acceso?.trim()
+    const apiClave = apiData.clave_acceso?.trim()
+
+    // ✅ SIEMPRE ACTUALIZAR LA CLAVE SI VIENE DEL API Y ES DIFERENTE
+    if (apiClave && apiClave !== currentClave) {
+      needsUpdate = true
+      newClaveAcceso = apiClave
+      reasons.push(
+        `Clave de acceso actualizada: ${currentClave || 'sin clave'} → ${apiClave}`,
+      )
+    }
+
+    // 3. Si no tenemos clave pero el comprobante existe, tomarla del API
+    if (apiClave && (!currentClave || currentClave.length === 0)) {
+      needsUpdate = true
+      newClaveAcceso = apiClave
+      reasons.push(`Nueva clave de acceso obtenida del API`)
+    }
+
+    return {
+      needsUpdate,
+      newState,
+      newClaveAcceso,
+      reasons,
     }
   }
 
@@ -592,9 +657,7 @@ export class BillingWorker extends WorkerHost {
     return authorizedStates.includes(normalizedState)
   }
 
-  /**
-   * Verifica si necesita actualizar la sale comparando estados y claves
-   */
+  // Reemplaza el método needsUpdate en el BillingWorker por este:
   private needsUpdate(
     sale: Sale,
     apiData: any,
@@ -622,25 +685,20 @@ export class BillingWorker extends WorkerHost {
       reasons.push(`Estado cambió: ${currentState} → ${apiState}`)
     }
 
-    // 2. Verificar clave de acceso
+    // 2. ✅ MEJORAR LÓGICA DE CLAVE DE ACCESO
     const currentClave = sale.clave_acceso?.trim()
     const apiClave = apiData.clave_acceso?.trim()
 
-    if (apiClave && (!currentClave || currentClave.length === 0)) {
-      needsUpdate = true
-      newClaveAcceso = apiClave
-      reasons.push(`Nueva clave de acceso disponible`)
-    }
-
-    // 3. Verificar si el estado es autorizado pero no tenemos clave
-    if (
-      this.isAuthorizedState(apiData.estado) &&
-      (!currentClave || currentClave.length === 0)
-    ) {
-      if (apiClave) {
+    // Siempre actualizar la clave si existe en el API y es diferente
+    if (apiClave) {
+      if (!currentClave || currentClave !== apiClave) {
         needsUpdate = true
         newClaveAcceso = apiClave
-        reasons.push(`Comprobante autorizado requiere clave de acceso`)
+        reasons.push(
+          currentClave
+            ? `Clave de acceso actualizada: ${currentClave.substring(0, 10)}... → ${apiClave.substring(0, 10)}...`
+            : `Nueva clave de acceso obtenida: ${apiClave.substring(0, 10)}...`,
+        )
       }
     }
 

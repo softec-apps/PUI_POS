@@ -109,7 +109,7 @@ export function ProductDetailView({ productId }: Props) {
 						</Link>
 
 						<ImageControl
-							recordData={product}
+							imageUrl={product?.photo?.path}
 							enableHover={false}
 							enableClick={false}
 							quality={10}
@@ -118,8 +118,8 @@ export function ProductDetailView({ productId }: Props) {
 						/>
 
 						<div className='flex-1'>
-							<div className='mb-2 line-clamp-1 break-words'>
-								<Typography variant='h3'>{product.name}</Typography>
+							<div className='mb-1 line-clamp-3 break-words'>
+								<Typography variant='h4'>{product.name}</Typography>
 							</div>
 
 							<div className='flex items-center justify-between'>
@@ -134,11 +134,6 @@ export function ProductDetailView({ productId }: Props) {
 
 									{product?.deletedAt && <Badge variant='destructive' text='Producto removido' />}
 								</div>
-
-								<Button variant='outline' size='sm'>
-									<Icons.dots className='h-4 w-4' />
-									Más
-								</Button>
 							</div>
 						</div>
 					</div>

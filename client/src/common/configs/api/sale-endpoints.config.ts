@@ -7,7 +7,8 @@ export const SALE_ENDPOINTS_CONFIG: ApiConfig = {
 	extraInvalidateKeys: [[ENDPOINT_API.PRODUCT], [ENDPOINT_API.CATEGORY]],
 	endpoints: {
 		list: { path: '', method: 'GET' },
-		create: { path: '', method: 'POST' },
+		createSimple: { path: 'simple', method: 'POST' },
+		createSri: { path: 'sri', method: 'POST' },
 		update: { path: '/:id', method: 'PUT', params: ['id'] },
 		softDelete: { path: '/:id', method: 'DELETE', params: ['id'] },
 		restore: { path: '/:id/restore', method: 'PATCH', params: ['id'] },

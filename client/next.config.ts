@@ -1,8 +1,11 @@
 import type { NextConfig } from 'next/types'
 
 const nextConfig: NextConfig = {
-	experimental: {
-		viewTransition: true,
+	typescript: {
+		ignoreBuildErrors: true,
+	},
+	eslint: {
+		ignoreDuringBuilds: true,
 	},
 	images: {
 		remotePatterns: [

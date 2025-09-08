@@ -25,8 +25,17 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Icons } from '@/components/icons'
 
-// Types
+// Types actualizados para múltiples pagos
+interface PaymentEntry {
+	id: string
+	method: string
+	amount: number
+	transferNumber?: string
+	timestamp: number
+}
+
 interface SaleData {
 	customerId: string
 	customer: {
@@ -42,6 +51,7 @@ interface SaleData {
 	items: {
 		productId: string
 		productName: string
+		image: string
 		productCode?: string
 		quantity: number
 		unitPrice: number
@@ -54,41 +64,26 @@ interface SaleData {
 		total: number
 		totalItems: number
 	}
-	payment: {
-		method: 'cash' | 'digital' | 'card'
-		receivedAmount: number
-		change: number
-		transferNumber?: string
-	}
+	payments: PaymentEntry[]
 	metadata: {
 		saleDate: string
 	}
 }
 
 interface CartSidebarProps {
-	onPlaceOrder: (saleData: SaleData) => Promise<void>
+	handleSriSale: (saleData: SaleData) => Promise<void>
+	handleSimpleSale: (saleData: SaleData) => Promise<void>
 }
 
-export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
+export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleSimpleSale }) => {
 	// Store hooks
-	const {
-		orderItems,
-		selectedPayment,
-		updateQuantity,
-		removeItem,
-		setPayment,
-		clearCart,
-		getSubtotal,
-		getTax,
-		getTotal,
-		getTotalItems,
-	} = useCartStore()
+	const { orderItems, updateQuantity, removeItem, clearCart, getSubtotal, getTax, getTotal, getTotalItems } =
+		useCartStore()
 	const { cartState, setCartState } = useCheckoutStore()
 	const { selectedCustomer, clearCustomer } = useCustomerStore()
 
-	// Local state for payment details
-	const [transferNumber, setTransferNumber] = useState<string>('')
-	const [receivedAmount, setReceivedAmount] = useState<string>('')
+	// Local state para múltiples pagos
+	const [payments, setPayments] = useState<PaymentEntry[]>([])
 
 	// Estado para el diálogo de nueva venta
 	const [showNewSaleDialog, setShowNewSaleDialog] = useState<boolean>(false)
@@ -105,20 +100,24 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 	const total = getTotal()
 	const totalItems = getTotalItems()
 
+	// Cálculos de pagos
+	const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0)
+	const remainingAmount = total - totalPaid
+	const changeAmount = remainingAmount < 0 ? Math.abs(remainingAmount) : 0
+	const isFullyPaid = remainingAmount <= 0.01 // Tolerancia para centavos
+
 	// Función para calcular la altura dinámica del ScrollArea
 	const calculateScrollAreaHeight = () => {
 		if (containerRef.current && headerRef.current && footerRef.current && orderItems.length > 0) {
-			// Usar requestAnimationFrame para asegurar que el DOM esté actualizado
 			requestAnimationFrame(() => {
 				const containerHeight = containerRef.current?.offsetHeight || 0
 				const headerHeight = headerRef.current?.offsetHeight || 0
 				const footerHeight = footerRef.current?.offsetHeight || 0
-				const padding = 32 // Espaciado adicional para evitar que se vea apretado
+				const padding = 32
 
 				const availableHeight = containerHeight - headerHeight - footerHeight - padding
-				const newHeight = Math.max(availableHeight, 200) // Mínimo 200px
+				const newHeight = Math.max(availableHeight, 200)
 
-				// Solo actualizar si hay un cambio significativo (evitar renders innecesarios)
 				setScrollAreaHeight(prev => (Math.abs(prev - newHeight) > 5 ? newHeight : prev))
 			})
 		}
@@ -126,29 +125,26 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 
 	// Effect para recalcular altura cuando cambie el contenido
 	useEffect(() => {
-		const timer = setTimeout(calculateScrollAreaHeight, 100) // Debounce para evitar cálculos excesivos
+		const timer = setTimeout(calculateScrollAreaHeight, 100)
 		return () => clearTimeout(timer)
-	}, [orderItems, selectedCustomer, selectedPayment, transferNumber, receivedAmount])
+	}, [orderItems, selectedCustomer, payments])
 
-	// Effect para observar cambios en todos los elementos relevantes
+	// Effects para ResizeObserver y eventos de ventana
 	useEffect(() => {
 		const observers: ResizeObserver[] = []
 
-		// Observar cambios en el contenedor principal
 		if (containerRef.current) {
 			const containerObserver = new ResizeObserver(() => calculateScrollAreaHeight())
 			containerObserver.observe(containerRef.current)
 			observers.push(containerObserver)
 		}
 
-		// Observar cambios en el footer
 		if (footerRef.current) {
 			const footerObserver = new ResizeObserver(() => calculateScrollAreaHeight())
 			footerObserver.observe(footerRef.current)
 			observers.push(footerObserver)
 		}
 
-		// Observar cambios en el header
 		if (headerRef.current) {
 			const headerObserver = new ResizeObserver(() => calculateScrollAreaHeight())
 			headerObserver.observe(headerRef.current)
@@ -160,10 +156,8 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 		}
 	}, [])
 
-	// Effect para recalcular en eventos de ventana
 	useEffect(() => {
 		const handleResize = () => {
-			// Debounce para evitar cálculos excesivos durante el resize
 			clearTimeout(window._scrollResizeTimeout)
 			window._scrollResizeTimeout = setTimeout(calculateScrollAreaHeight, 150)
 		}
@@ -183,20 +177,12 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 		}
 	}, [])
 
-	// Reset payment fields when payment method changes
-	useEffect(() => {
-		setTransferNumber('')
-		setReceivedAmount('')
-	}, [selectedPayment])
-
-	// Reset payment states when customer is removed
+	// Reset payments when customer is removed
 	useEffect(() => {
 		if (!selectedCustomer) {
-			setPayment('cash')
-			setTransferNumber('')
-			setReceivedAmount('')
+			setPayments([])
 		}
-	}, [selectedCustomer, setPayment])
+	}, [selectedCustomer])
 
 	// Block reload during processing
 	useEffect(() => {
@@ -213,8 +199,6 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 
 	// Función para preparar los datos de la venta
 	const prepareSaleData = (): SaleData => {
-		const received = parseFloat(receivedAmount || '0')
-		const change = received - total
 		return {
 			customerId: selectedCustomer?.id || '',
 			customer: {
@@ -230,6 +214,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 			items: orderItems.map(item => ({
 				productId: item.id,
 				productName: item.name,
+				image: item?.image,
 				productCode: item.code,
 				quantity: item.quantity,
 				unitPrice: item.price,
@@ -242,58 +227,86 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 				total,
 				totalItems,
 			},
-			payment: {
-				method: selectedPayment as 'cash' | 'digital' | 'card',
-				receivedAmount: received,
-				change: change,
-				...(selectedPayment !== 'cash' &&
-					transferNumber && {
-						transferNumber: transferNumber.trim(),
-					}),
-			},
+			payments: payments.map(payment => ({
+				...payment,
+				// Asegurar que los métodos estén bien mapeados
+				method: payment.method as 'cash' | 'digital' | 'card',
+			})),
 			metadata: {
 				saleDate: new Date().toISOString(),
 			},
 		}
 	}
 
-	// Función de validación
+	// Función de validación actualizada
 	const validateSaleData = (saleData: SaleData): boolean => {
 		if (!saleData.customerId || !saleData.customer.id) return false
 		if (!saleData.items.length) return false
 		if (saleData.financials.total <= 0) return false
-		if (saleData.payment.method === 'cash') {
-			if (saleData.payment.receivedAmount < saleData.financials.total) return false
+		if (!saleData.payments.length) return false
+
+		// Validar que el total pagado cubra el monto total
+		const totalPaid = saleData.payments.reduce((sum, payment) => sum + payment.amount, 0)
+		if (totalPaid < saleData.financials.total - 0.01) return false // Tolerancia de 1 centavo
+
+		// Validar que los pagos no efectivo tengan número de transferencia/autorización
+		const nonCashPayments = saleData.payments.filter(payment => payment.method !== 'cash')
+		for (const payment of nonCashPayments) {
+			if (!payment.transferNumber?.trim()) return false
 		}
-		if (saleData.payment.method !== 'cash') {
-			if (!saleData.payment.transferNumber?.trim()) return false
-		}
+
 		return true
 	}
 
-	// Función mejorada para validar si se puede finalizar la orden
+	// Función para validar si se puede finalizar la orden
 	const canFinalizeOrder = () => {
-		// Validaciones básicas
-		if (!selectedCustomer || !selectedPayment || orderItems.length === 0) return false
+		if (!selectedCustomer || orderItems.length === 0) return false
+		if (payments.length === 0) return false
+		if (!isFullyPaid) return false
 
-		const received = parseFloat(receivedAmount || '0')
-		return received >= total && received > 0 && !isNaN(received)
+		// Validar números de transferencia para pagos no efectivo
+		const nonCashPayments = payments.filter(payment => payment.method !== 'cash')
+		for (const payment of nonCashPayments) {
+			if (!payment.transferNumber?.trim()) return false
+		}
+
+		return true
 	}
 
-	const handleFinalizeOrder = async () => {
+	const handleFinalizeSriSale = async () => {
 		setCartState('processing')
 		try {
 			const saleData = prepareSaleData()
 			if (!validateSaleData(saleData)) throw new Error('Datos de venta inválidos')
+
 			// Simulate payment processing
-			await new Promise(resolve => setTimeout(resolve, 2000))
-			await onPlaceOrder(saleData)
+			await handleSriSale(saleData)
+
 			// Reset state after success
 			setCartState('cart')
 			clearCart()
 			clearCustomer()
-			setTransferNumber('')
-			setReceivedAmount('')
+			setPayments([])
+		} catch (error) {
+			console.error('Error processing order:', error)
+			setCartState('cart')
+		}
+	}
+
+	const handleFinalizeSimpleSale = async () => {
+		setCartState('processing')
+		try {
+			const saleData = prepareSaleData()
+			if (!validateSaleData(saleData)) throw new Error('Datos de venta inválidos')
+
+			// Enviar datos al backend
+			await handleSimpleSale(saleData)
+
+			// Reset state after success
+			setCartState('cart')
+			clearCart()
+			clearCustomer()
+			setPayments([])
 		} catch (error) {
 			console.error('Error processing order:', error)
 			setCartState('cart')
@@ -307,12 +320,9 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 
 	// Función para confirmar nueva venta
 	const handleConfirmNewSale = () => {
-		// Limpiar el carrito y todos los datos
 		clearCart()
 		clearCustomer()
-		setTransferNumber('')
-		setReceivedAmount('')
-		setPayment('cash')
+		setPayments([])
 		setShowNewSaleDialog(false)
 	}
 
@@ -351,14 +361,19 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 											key={item.id}
 											item={item}
 											index={index}
-											onUpdateQuantity={updateQuantity}
+											onUpdateQuantity={(id, change) => {
+												const currentItem = orderItems.find(orderItem => orderItem.id === id)
+												if (currentItem) {
+													const newQuantity = currentItem.quantity + change
+													updateQuantity(id, Math.max(1, newQuantity))
+												}
+											}}
 											onRemoveItem={removeItem}
 										/>
 									))}
 								</div>
 							</ScrollArea>
 						) : (
-							// Empty State - Contenedor ajustado
 							<div className='flex h-full min-h-[300px] items-center justify-center overflow-hidden'>
 								<CartEmptyState />
 							</div>
@@ -368,49 +383,52 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 
 				{/* Footer con resumen y botón */}
 				{orderItems.length > 0 && (
-					<div ref={footerRef} className='w-full flex-shrink-0 space-y-4 pt-4 pb-6'>
-						{/* Customer Section - Solo si hay items */}
+					<div ref={footerRef} className='w-full flex-shrink-0 space-y-4 pb-6'>
+						{/* Customer Section */}
 						<CustomerSection />
 
-						{/* Payment Methods - Solo si hay items y cliente */}
+						{/* Payment Methods - Con soporte para múltiples pagos */}
 						{selectedCustomer && (
-							<PaymentMethods
-								selectedPayment={selectedPayment}
-								onSelectPayment={setPayment}
-								transferNumber={transferNumber}
-								onTransferNumberChange={setTransferNumber}
-								receivedAmount={receivedAmount}
-								onReceivedAmountChange={setReceivedAmount}
-								totalAmount={total}
-							/>
+							<PaymentMethods payments={payments} onPaymentsChange={setPayments} totalAmount={total} />
 						)}
 
+						{/* Price Summary actualizado */}
 						<PriceSummary
 							subtotal={subtotal}
 							tax={tax}
 							total={total}
-							receivedAmount={receivedAmount}
-							selectedPayment={selectedPayment}
+							totalPaid={totalPaid}
+							remainingAmount={remainingAmount}
+							changeAmount={changeAmount}
 						/>
 
-						<div className='flex w-full items-center justify-center gap-4'>
+						<div className='flex w-full items-center justify-between gap-4'>
 							<ActionButton
-								size='pos'
+								size='lg'
 								variant='destructive'
 								disabled={orderItems.length === 0}
 								onClick={handleNewSaleClick}
-								text='Nueva venta'
-								className='basis-1/2 text-lg font-semibold'
+								icon={<Icons.plus />}
 							/>
+							<div className='flex items-center gap-3'>
+								<ActionButton
+									size='lg'
+									variant='info'
+									disabled={!canFinalizeOrder()}
+									onClick={handleFinalizeSimpleSale}
+									icon={<Icons.shoppingCart className='size-6' />}
+									text='Simple'
+								/>
 
-							<ActionButton
-								size='pos'
-								variant='pos'
-								disabled={!canFinalizeOrder()}
-								onClick={handleFinalizeOrder}
-								text='Finalizar venta'
-								className='basis-1/2 text-lg font-semibold'
-							/>
+								<ActionButton
+									size='lg'
+									variant='success'
+									disabled={!canFinalizeOrder()}
+									onClick={handleFinalizeSriSale}
+									icon={<Icons.shoppingCart className='size-6' />}
+									text='Factura'
+								/>
+							</div>
 						</div>
 					</div>
 				)}
@@ -422,8 +440,8 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ onPlaceOrder }) => {
 					<DialogHeader>
 						<DialogTitle>¿Iniciar nueva venta?</DialogTitle>
 						<DialogDescription>
-							Se perderán todos los productos seleccionados, la información del cliente seleccionado y los datos de pago
-							ingresados. <strong>Esta acción no se puede deshacer.</strong>
+							Se perderán todos los productos seleccionados, la información del cliente seleccionado y todos los métodos
+							de pago configurados. <strong>Esta acción no se puede deshacer.</strong>
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter className='flex gap-2'>

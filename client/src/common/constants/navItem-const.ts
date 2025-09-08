@@ -82,13 +82,6 @@ export const ALL_NAV_ITEMS: NavConfig = [
 				isActive: false,
 				permission: PERMISSIONS.SALES,
 			},
-			{
-				title: 'Reportes',
-				url: ROUTE_PATH.ADMIN.REPORTS,
-				icon: 'chartArcs',
-				isActive: false,
-				permission: PERMISSIONS.REPORTS,
-			},
 		],
 	},
 	{

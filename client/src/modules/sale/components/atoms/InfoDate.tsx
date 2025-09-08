@@ -9,7 +9,6 @@ interface InfoDateProps {
 }
 
 export const InfoDate = ({ recordData }: InfoDateProps) => {
-	console.log(recordData)
 	return (
 		<div className='text-primary space-y-1 text-xs'>
 			<div className='space-y-1.5'>

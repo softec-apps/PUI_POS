@@ -1,0 +1,5 @@
+export enum StatusSRI {
+  AUTHORIZED = 'AUTHORIZED',
+  ERROR = 'ERROR',
+  NO_ELECTRONIC = 'NO_ELECTRONIC',
+}

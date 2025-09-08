@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Pagination } from '@/common/types/pagination'
-import { PaymentMethod } from '@/common/enums/sale.enum'
+import { StatusSRI } from '@/common/enums/sale.enum'
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { DEFAULT_PAGINATION } from '@/common/constants/pagination-const'
 import { DateFilters, DateRange, DateFilterType } from '@/common/types/pagination'
@@ -8,14 +8,14 @@ import { DateFilters, DateRange, DateFilterType } from '@/common/types/paginatio
 interface FilterState {
 	searchTerm: string
 	currentSort: string
-	currentPaymentMethod: PaymentMethod.CARD | PaymentMethod.CASH | PaymentMethod.DIGITAL | null
+	currentStatusSRI: StatusSRI.AUTHORIZED | StatusSRI.NO_ELECTRONIC | StatusSRI.ERROR | null
 	dateFilters: DateFilters
 }
 
 const INITIAL_FILTER_STATE: FilterState = {
 	searchTerm: '',
 	currentSort: '',
-	currentPaymentMethod: null,
+	currentStatusSRI: null,
 	dateFilters: {},
 }
 
@@ -85,7 +85,7 @@ export function usePagination() {
 
 			resetToFirstPage({
 				filters: {
-					paymentMethod: filters.currentPaymentMethod || undefined,
+					statusSRIs: filters.currentStatusSRI || undefined,
 					...cleanedDateFilters,
 				},
 			})
@@ -113,7 +113,7 @@ export function usePagination() {
 
 			resetToFirstPage({
 				filters: {
-					paymentMethod: filters.currentPaymentMethod || undefined,
+					estado_sri: filters.currentStatusSRI || undefined,
 					...cleanedDateFilters,
 				},
 			})
@@ -163,17 +163,10 @@ export function usePagination() {
 		[resetToFirstPage]
 	)
 
-	// PaymentMethod filtering (updated to include date filters)
-	const handlePaymentMethodChange = useCallback(
-		(
-			paymentMethod:
-				| PaymentMethod.FINAL_CONSUMER
-				| PaymentMethod.IDENTIFICATION_CARD
-				| PaymentMethod.PASSPORT
-				| PaymentMethod.RUC
-				| null
-		) => {
-			setFilters(prev => ({ ...prev, currentPaymentMethod: paymentMethod }))
+	// StatusSRI filtering (updated to include date filters)
+	const handleStatusSRIChange = useCallback(
+		(statusSRI: StatusSRI.CASH | StatusSRI.DIGITAL | StatusSRI.CARD | null) => {
+			setFilters(prev => ({ ...prev, currentStatusSRI: statusSRI }))
 
 			const cleanedDateFilters = Object.fromEntries(
 				Object.entries(filters.dateFilters).filter(([_, range]) => range && (range.startDate || range.endDate))
@@ -181,7 +174,7 @@ export function usePagination() {
 
 			resetToFirstPage({
 				filters: {
-					paymentMethod: paymentMethod || undefined,
+					estado_sri: statusSRI || undefined,
 					...cleanedDateFilters,
 				},
 			})
@@ -204,7 +197,7 @@ export function usePagination() {
 
 	const hasActiveFilters = useCallback(() => {
 		const hasDateFilters = Object.values(filters.dateFilters).some(range => range && (range.startDate || range.endDate))
-		return !!(filters.searchTerm || filters.currentSort || filters.currentPaymentMethod || hasDateFilters)
+		return !!(filters.searchTerm || filters.currentSort || filters.currentStatusSRI || hasDateFilters)
 	}, [filters])
 
 	const getActiveDateFilters = useCallback(() => {
@@ -227,7 +220,7 @@ export function usePagination() {
 		// Filter handlers
 		handleSearchChange,
 		handleSort,
-		handlePaymentMethodChange,
+		handleStatusSRIChange,
 		handleDateFilterChange,
 		clearDateFilter,
 		handleResetAll,

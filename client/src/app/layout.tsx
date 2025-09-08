@@ -23,9 +23,9 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-	title: 'Dovo POS',
+	title: 'PUI POS',
 	description:
-		'Dovo POS es un sistema de punto de venta (POS) diseñado para simplificar la gestión de ventas y productos en tu negocio.',
+		'PUI POS es un sistema de punto de venta (POS) diseñado para simplificar la gestión de ventas y productos en tu negocio.',
 	metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL!),
 }
 
