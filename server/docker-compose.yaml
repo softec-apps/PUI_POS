@@ -1,4 +1,19 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis-server
+    ports:
+      - ${DATABASE_PORT}:6379
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass  ${REDIS_PASSWORD}
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', 'pass_123@', 'ping']
+      interval: 30s
+      timeout: 3s
+      retries: 5
+
   postgres:
     image: postgres:17.4-alpine
     ports:
@@ -24,12 +39,6 @@ services:
     ports:
       - 8080:8080
 
-  # Uncomment to use redis
-  # redis:
-  #   image: redis:7-alpine
-  #   ports:
-  #     - 6379:6379
-
   api:
     build:
       context: .
@@ -38,4 +47,5 @@ services:
       - ${APP_PORT}:${APP_PORT}
 
 volumes:
+  redis_data:
   boilerplate-db:
