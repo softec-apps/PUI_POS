@@ -39,7 +39,7 @@ export const createTableColumns = (): ColumnDef<I_Sale>[] => [
 			const estado = row.original.estado_sri as StatusSRI | undefined
 
 			// Definir el color del Badge según estado
-			let variant: 'default' | 'destructive' | 'warning' | 'success' = 'default'
+			let variant: 'default' | 'destructive' | 'warning' | 'success' | 'secondary' | 'info' = 'default'
 			switch (estado) {
 				case StatusSRI.AUTHORIZED:
 					variant = 'success'
@@ -48,10 +48,11 @@ export const createTableColumns = (): ColumnDef<I_Sale>[] => [
 					variant = 'destructive'
 					break
 				case StatusSRI.NO_ELECTRONIC:
-					variant = 'default'
+					variant = 'info'
 					break
-				default:
-					variant = 'warning' // fallback si viene otro estado como PENDING
+				case StatusSRI.PROCESANDO:
+					variant = 'warning'
+					break
 			}
 
 			return <Badge variant={variant} text={StatusSRILabels_ES[estado ?? StatusSRI.NO_ELECTRONIC] || 'No aplica'} />

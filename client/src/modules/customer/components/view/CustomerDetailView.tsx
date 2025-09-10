@@ -18,7 +18,7 @@ import { PurchasesTab } from '../templates/DetailPurchasesTab'
 import { IdentificationTypeLabels_ES } from '@/common/enums/customer.enum'
 import { formatDate } from '@/common/utils/dateFormater-util'
 import { StatCard } from '@/components/layout/organims/StatCard'
-import { SoomFeature } from '@/components/layout/organims/SoomFeat'
+import { SoomFeatureBanner } from '@/components/layout/organims/SoomFeat'
 
 const SEARCH_DELAY = 300
 
@@ -180,13 +180,13 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
 						</TabsContent>
 
 						<TabsContent value='returns'>
-							<SoomFeature />
+							<SoomFeatureBanner />
 						</TabsContent>
 						<TabsContent value='quotes'>
-							<SoomFeature />
+							<SoomFeatureBanner />
 						</TabsContent>
 						<TabsContent value='proformas'>
-							<SoomFeature />
+							<SoomFeatureBanner />
 						</TabsContent>
 					</Tabs>
 				</div>
