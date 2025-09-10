@@ -83,6 +83,8 @@ export default registerAs<AppConfig>('app', () => {
       allowedHeaders:
         process.env.APP_CORS_ALLOWED_HEADERS || 'Content-Type, Authorization',
     },
-    apiFactusZen: process.env.BILLING_API_BASE_URL || 'http://127.0.0.1:8000',
+    apiFactusZen:
+      process.env.BILLING_API_BASE_URL ||
+      'https://facturacion.torre-estevez.com/api',
   }
 })
