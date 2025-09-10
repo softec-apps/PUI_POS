@@ -85,6 +85,6 @@ export default registerAs<AppConfig>('app', () => {
     },
     apiFactusZen:
       process.env.BILLING_API_BASE_URL ||
-      'https://facturacion.torre-estevez.com',
+      'https://facturacion.torre-estevez.com/api',
   }
 })

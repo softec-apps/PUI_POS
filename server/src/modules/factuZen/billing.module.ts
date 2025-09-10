@@ -29,7 +29,7 @@ import { QUEUE } from '@/common/constants/queue.const'
 import { SaleModule } from '@/modules/sales/sale.module'
 
 // Configuración
-const BILLING_BASE_URL = 'https://facturacion.torre-estevez.com'
+const BILLING_BASE_URL = 'https://facturacion.torre-estevez.com/api'
 
 // Providers con inyección de dependencias explícita
 const billingProviders: Provider[] = [
