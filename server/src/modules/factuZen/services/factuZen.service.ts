@@ -28,7 +28,7 @@ import { BillingFileInvoiceService } from '@/modules/factuZen/services/fileInvoi
 @Injectable()
 export class BillingService implements OnModuleInit {
   private readonly logger = new Logger(BillingService.name)
-  private readonly baseUrl: string = 'http://127.0.0.1:8000/api'
+  private readonly baseUrl: string = 'https://facturacion.torre-estevez.com/api'
 
   // Servicios especializados
   private _authService?: BillingAuthService

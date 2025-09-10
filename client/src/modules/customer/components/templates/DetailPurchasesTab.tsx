@@ -97,7 +97,6 @@ export function PurchasesTab({
 							<TableHeader>
 								<TableRow>
 									<TableHead>Código</TableHead>
-									<TableHead>Método</TableHead>
 									<TableHead>Productos</TableHead>
 									<TableHead>Sub total</TableHead>
 									<TableHead>Total</TableHead>
@@ -110,7 +109,6 @@ export function PurchasesTab({
 									recordsData.items.map((purchase: Purchase) => (
 										<TableRow key={purchase.id} className='hover:bg-muted/50'>
 											<TableCell>{purchase.code}</TableCell>
-											<TableCell>{purchase.paymentMethod}</TableCell>
 											<TableCell>{purchase.totalItems}</TableCell>
 											<TableCell>${formatPrice(purchase.subtotal)}</TableCell>
 											<TableCell>${formatPrice(purchase.total)}</TableCell>
