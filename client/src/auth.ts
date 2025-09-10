@@ -28,7 +28,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 			async authorize(credentials) {
 				try {
 					const { data } = await axios.post(
-						'http://localhost:4000/api/v1/auth/email/login',
+						// ❌ CAMBIAR ESTO:
+						// 'http://localhost:4000/api/v1/auth/email/login',
+						// ✅ POR ESTO:
+						`${process.env.API_URL}/api/v1/auth/email/login`,
 						{
 							email: credentials?.email,
 							password: credentials?.password,
@@ -164,9 +167,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 			// Solo para proveedor Google
 			if (account?.provider === 'google') {
 				try {
-					const { data } = await axios.post('http://localhost:4000/api/v1/auth/google/login', {
-						idToken: account.id_token,
-					})
+					const { data } = await axios.post(
+						// ❌ CAMBIAR ESTO:
+						// 'http://localhost:4000/api/v1/auth/google/login',
+						// ✅ POR ESTO:
+						`${process.env.API_URL}/api/v1/auth/google/login`,
+						{
+							idToken: account.id_token,
+						}
+					)
 
 					if (!data) {
 						console.error('Error registrando el usuario en el backend')

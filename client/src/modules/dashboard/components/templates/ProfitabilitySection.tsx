@@ -31,6 +31,7 @@ export const ProfitabilitySection: React.FC<ProfitabilitySectionProps> = React.m
 				value={metrics.profitMargin.toFixed(1)}
 				description='Ganancia sobre ingresos totales'
 				isLoading={loading}
+				isCurrency
 			/>
 
 			<KPICard
