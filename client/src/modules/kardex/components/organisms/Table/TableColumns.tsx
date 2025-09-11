@@ -10,6 +10,7 @@ import { Actions } from '@/modules/kardex/components/organisms/Actions'
 import { MovementTypeBadge } from '@/modules/kardex/components/atoms/MovementTypeBadge'
 
 interface TableColumnsOptions {
+	showReason?: boolean
 	showProductCode?: boolean
 	showMovementType?: boolean
 	showQuantity?: boolean
@@ -23,6 +24,7 @@ interface TableColumnsOptions {
 
 export const createTableColumns = (options: TableColumnsOptions = {}): ColumnDef<I_Kardex>[] => {
 	const {
+		showReason = true,
 		showProductCode = true,
 		showMovementType = true,
 		showQuantity = true,
@@ -58,6 +60,14 @@ export const createTableColumns = (options: TableColumnsOptions = {}): ColumnDef
 				/>
 			),
 			cell: ({ row }) => <div className='max-w-96 truncate'>{row.original.product.code}</div>,
+		})
+	}
+
+	if (showReason) {
+		cols.push({
+			accessorKey: 'reason',
+			header: 'Movimiento',
+			cell: ({ row }) => <div>{row.original.reason}</div>,
 		})
 	}
 
@@ -109,7 +119,7 @@ export const createTableColumns = (options: TableColumnsOptions = {}): ColumnDef
 		cols.push({
 			accessorKey: 'user.dni',
 			header: 'Responsable',
-			cell: ({ row }) => <div>{row?.original?.user?.dni}</div>,
+			cell: ({ row }) => <div>{row?.original?.user?.dni || '-'}</div>,
 		})
 	}
 
