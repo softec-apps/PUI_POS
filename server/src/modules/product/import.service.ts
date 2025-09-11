@@ -79,10 +79,8 @@ export class BulkProductImportService {
 
           const existingProduct = await this.findExistingProduct(productData)
 
-          // Dentro del bucle que procesa los productos:
-          const taxValue = Number(productData.taxPercent)
-
           // Validación de impuesto permitido
+          const taxValue = Number(productData.taxPercent)
           if (
             taxValue !== ALLOW_TAX.WITH_TAX &&
             taxValue !== ALLOW_TAX.EXEMPT_IVA
@@ -172,7 +170,6 @@ export class BulkProductImportService {
         // Crear entradas de Kardex para productos nuevos con stock
         savedProducts.forEach((product, index) => {
           const pendingResult = pendingResults[index]
-          // CORRECCIÓN: Validar que initialStock no sea undefined y sea mayor a 0
           if (
             pendingResult &&
             pendingResult.initialStock !== undefined &&
@@ -203,7 +200,7 @@ export class BulkProductImportService {
           }
         })
 
-        // Guardar entradas de Kardex en lote usando el método del repository
+        // Guardar entradas de Kardex en lote
         if (kardexEntries.length > 0)
           await this.kardexRepository.bulkCreate(kardexEntries, entityManager)
 
@@ -236,8 +233,7 @@ export class BulkProductImportService {
   }
 
   /**
-   * Resuelve los IDs de las relaciones (categoría, marca, proveedor)
-   * Crea automáticamente si no existen - VERSIÓN CON RUC ÚNICO
+   * Resuelve los IDs de las relaciones - SOLO BUSCA EXISTENTES
    */
   private async resolveRelationships(
     productData: BulkProductImportItemDto,
@@ -254,155 +250,85 @@ export class BulkProductImportService {
       supplierId?: string
     } = {}
 
-    // Resolver categoría por nombre (igual que antes)
+    // === RESOLVER CATEGORÍA - SOLO BUSCAR ===
     if (productData.category?.trim()) {
+      const categoryName = productData.category.trim()
+
       try {
         const existingCategory = await this.categoryRepository.findByField(
           'name',
-          productData.category.trim(),
+          categoryName,
         )
 
         if (existingCategory) {
           resolved.categoryId = existingCategory.id
+          console.log(
+            `Categoría encontrada: "${categoryName}" con ID: ${existingCategory.id}`,
+          )
         } else {
-          try {
-            const newCategory = await this.categoryRepository.create(
-              {
-                name: productData.category.trim(),
-                description: `Categoría creada automáticamente durante importación`,
-                photo: null,
-                status: CategoryStatus.ACTIVE,
-              },
-              entityManager,
-            )
-            resolved.categoryId = newCategory.id
-            console.log(
-              `Categoría creada exitosamente con ID: ${newCategory.id}`,
-            )
-          } catch (createError) {
-            console.log(`Error creando categoría: ${createError.message}`)
-            resolved.categoryId = importDto.categoryId
-          }
+          console.log(
+            `Categoría "${categoryName}" no existe, usando categoría por defecto`,
+          )
+          resolved.categoryId = importDto.categoryId
         }
       } catch (error) {
-        console.log(`Error procesando categoría: ${error.message}`)
+        console.log(
+          `Error buscando categoría "${categoryName}": ${error.message}`,
+        )
         resolved.categoryId = importDto.categoryId
       }
     } else {
       resolved.categoryId = importDto.categoryId
     }
 
-    // Resolver proveedor por nombre de compañía - CON RUC ÚNICO
+    // === RESOLVER PROVEEDOR - SOLO BUSCAR ===
     if (productData.companyName?.trim()) {
+      const companyName = productData.companyName.trim()
+
       try {
-        const existingSupplier = await this.supplierRepository.findByField(
+        let existingSupplier = await this.supplierRepository.findByField(
           'legalName',
-          productData.companyName.trim(),
+          companyName,
         )
+
+        if (!existingSupplier) {
+          existingSupplier = await this.supplierRepository.findByField(
+            'commercialName',
+            companyName,
+          )
+        }
 
         if (existingSupplier) {
           resolved.supplierId = existingSupplier.id
+          console.log(
+            `Proveedor encontrado: "${companyName}" con ID: ${existingSupplier.id}`,
+          )
         } else {
-          // Buscar por nombre comercial también
-          const existingByCommercial =
-            await this.supplierRepository.findByField(
-              'commercialName',
-              productData.companyName.trim(),
-            )
-
-          if (existingByCommercial) {
-            resolved.supplierId = existingByCommercial.id
-          } else {
-            // Generar RUC único en lugar de usar uno fijo
-            const uniqueRuc = this.generateUniqueRuc()
-
-            try {
-              const newSupplier = await this.supplierRepository.create(
-                {
-                  ruc: uniqueRuc,
-                  legalName: productData.companyName.trim(),
-                  commercialName: productData.companyName.trim(),
-                  status: SupplierStatus.ACTIVE,
-                },
-                entityManager,
-              )
-              resolved.supplierId = newSupplier.id
-              console.log(
-                `Proveedor creado exitosamente con ID: ${newSupplier.id} y RUC: ${uniqueRuc}`,
-              )
-            } catch (createError) {
-              console.log(`Error creando proveedor: ${createError.message}`)
-              // Si falla, intentar usar uno existente con nombre similar
-              const similarSupplier = await this.findSimilarSupplier(
-                productData.companyName.trim(),
-              )
-              if (similarSupplier) {
-                resolved.supplierId = similarSupplier.id
-              } else {
-                resolved.supplierId = importDto.supplierId
-              }
-            }
-          }
+          console.log(
+            `Proveedor "${companyName}" no existe, usando proveedor por defecto`,
+          )
+          resolved.supplierId = importDto.supplierId
         }
       } catch (error) {
-        console.log(`Error procesando proveedor: ${error.message}`)
+        console.log(
+          `Error buscando proveedor "${companyName}": ${error.message}`,
+        )
         resolved.supplierId = importDto.supplierId
       }
     } else {
       resolved.supplierId = importDto.supplierId
     }
 
-    // Usar brand por defecto si está disponible
+    // Usar brand por defecto
     resolved.brandId = productData.brandId || importDto.brandId
 
     return resolved
   }
 
   /**
-   * Genera un RUC único para nuevos proveedores - fake
-   */
-  private generateUniqueRuc(): string {
-    const timestamp = Date.now().toString()
-    const random = Math.floor(Math.random() * 1000)
-      .toString()
-      .padStart(3, '0')
-    // RUC ecuatoriano válido: 13 dígitos, empezando con 09 para personas jurídicas
-    return `09${timestamp.slice(-9)}${random}`.slice(0, 13)
-  }
-
-  /**
-   * Busca un proveedor con nombre similar
-   */
-  private async findSimilarSupplier(
-    companyName: string,
-  ): Promise<Supplier | null> {
-    try {
-      // Buscar proveedores que contengan el nombre
-      const suppliers = await this.supplierRepository.findByField(
-        'legalName',
-        companyName,
-      )
-      return suppliers
-    } catch (error) {
-      console.log(`Error buscando proveedor similar: ${error.message}`)
-      return null
-    }
-  }
-
-  /**
-   * Busca un producto existente por barcode o SKU
+   * Busca un producto existente por SKU
    */
   private async findExistingProduct(productData: BulkProductImportItemDto) {
-    /*
-    if (productData.barcode?.trim()) {
-      const byBarcode = await this.productRepository.findByField(
-        'barCode',
-        productData.barcode.trim(),
-      )
-      if (byBarcode) return byBarcode
-    }
-    */
-
     if (productData.sku?.trim()) {
       const bySku = await this.productRepository.findByField(
         'sku',
