@@ -187,7 +187,6 @@ export class BulkProductImportService {
 
             kardexEntries.push({
               product,
-              // CORRECCIÓN: Crear objeto User con el id
               user: { id: userId } as User,
               movementType: KardexMovementType.PURCHASE,
               quantity: initialStock,

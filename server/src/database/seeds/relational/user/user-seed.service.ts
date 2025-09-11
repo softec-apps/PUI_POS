@@ -27,7 +27,7 @@ export class UserSeedService {
 
   async run(): Promise<void> {
     await this.seedAdminUser()
-    await this.seedRegularUsers()
+    //await this.seedRegularUsers()
   }
 
   private async seedAdminUser(): Promise<void> {
