@@ -12,6 +12,7 @@ import { CategoryMapper } from '@/modules/categories/infrastructure/persistence/
 import { SupplierMapper } from '@/modules/suppliers/infrastructure/persistence/relational/mappers/supplier.mapper'
 import { TemplateMapper } from '@/modules/template/infrastructure/persistence/relational/mappers/template.mapper'
 import { AtributeMapper } from '@/modules/atributes/infrastructure/persistence/relational/mappers/atributes.mapper'
+import { FileEntity } from '@/modules/files/infrastructure/persistence/relational/entities/file.entity'
 
 export class ProductMapper {
   static toDomain(raw: ProductEntity): Product {
@@ -93,8 +94,13 @@ export class ProductMapper {
     persistenceEntity.deletedAt = domainEntity.deletedAt
 
     // Mapear relaciones si están presentes
-    if (domainEntity.photo)
-      persistenceEntity.photo = FileMapper.toPersistence(domainEntity.photo)
+    if (domainEntity.photo) {
+      persistenceEntity.photo = new FileEntity()
+      persistenceEntity.photo.id = domainEntity.photo.id
+      persistenceEntity.photo.path = domainEntity.photo.path
+    } else {
+      persistenceEntity.photo = null
+    }
 
     if (domainEntity.category)
       persistenceEntity.category = CategoryMapper.toPersistence(

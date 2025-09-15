@@ -39,7 +39,7 @@ import { FilesService } from '@/modules/files/files.service'
 import { KardexMovementType } from '@/modules/kardex/movement-type.enum'
 import { UserRepository } from '@/modules/users/infrastructure/persistence/user.repository'
 import { KardexRepository } from '@/modules/kardex/infrastructure/persistence/kardex.repository'
-import { Template } from '../template/domain/template'
+import { Template } from '@/modules/template/domain/template'
 
 @Injectable()
 export class ProductService {
@@ -235,6 +235,7 @@ export class ProductService {
     updateProductDto: UpdateProductDto,
     userId: string,
   ): Promise<ApiResponse<Product>> {
+    console.log(updateProductDto)
     return this.dataSource.transaction(async (entityManager) => {
       // Verificar que el producto exista antes de actualizar
       const existingProduct = await this.productRepository.findById(id)
@@ -268,9 +269,12 @@ export class ProductService {
       if (updateProductDto.price !== undefined)
         updateData.price = updateProductDto.price
 
-      // Actualización de propiedades numéricas
       if (updateProductDto.pricePublic !== undefined)
         updateData.pricePublic = updateProductDto.pricePublic
+
+      // *** CORRECCIÓN: Agregar la actualización del tax ***
+      if (updateProductDto.tax !== undefined)
+        updateData.tax = updateProductDto.tax
 
       // *** STOCK MANAGEMENT WITH KARDEX INTEGRATION ***
       let shouldCreateKardexEntry = false
@@ -294,8 +298,8 @@ export class ProductService {
           // Determine movement type based on stock change
           const movementType =
             stockAfter > stockBefore
-              ? KardexMovementType.ADJUSTMENT_IN // Stock increase
-              : KardexMovementType.ADJUSTMENT_OUT // Stock decrease (could also be ADJUSTMENT)
+              ? KardexMovementType.ADJUSTMENT_IN
+              : KardexMovementType.ADJUSTMENT_OUT
 
           stockMovementData = {
             stockBefore,
@@ -308,7 +312,7 @@ export class ProductService {
           // Validate sufficient stock for decreases
           if (stockAfter < 0) {
             throw new ConflictException({
-              message: MESSAGE_RESPONSE.CONFLIC.INSUFFICIENT_SCTOCK,
+              message: MESSAGE_RESPONSE.CONFLIC.INSUFFICIENT_STOCK,
             })
           }
         }
@@ -326,9 +330,12 @@ export class ProductService {
       if (updateProductDto.isVariant !== undefined)
         updateData.isVariant = updateProductDto.isVariant
 
-      // Manejo de relaciones con validación
+      // CORRECCIÓN: Manejo de relaciones - validar que el ID no esté vacío
       if (updateProductDto.brandId !== undefined) {
-        if (updateProductDto.brandId) {
+        if (
+          updateProductDto.brandId &&
+          updateProductDto.brandId.trim() !== ''
+        ) {
           const brand = await this.brandRepository.findById(
             updateProductDto.brandId,
           )
@@ -342,7 +349,10 @@ export class ProductService {
       }
 
       if (updateProductDto.templateId !== undefined) {
-        if (updateProductDto.templateId) {
+        if (
+          updateProductDto.templateId &&
+          updateProductDto.templateId.trim() !== ''
+        ) {
           const template = await this.templateRepository.findById(
             updateProductDto.templateId,
           )
@@ -350,11 +360,16 @@ export class ProductService {
             throw new NotFoundException(MESSAGE_RESPONSE.NOT_FOUND.TEMPLATE)
           }
           updateData.template = template
+        } else {
+          updateData.template = null
         }
       }
 
       if (updateProductDto.categoryId !== undefined) {
-        if (updateProductDto.categoryId) {
+        if (
+          updateProductDto.categoryId &&
+          updateProductDto.categoryId.trim() !== ''
+        ) {
           const category = await this.categoryRepository.findById(
             updateProductDto.categoryId,
           )
@@ -368,7 +383,10 @@ export class ProductService {
       }
 
       if (updateProductDto.supplierId !== undefined) {
-        if (updateProductDto.supplierId) {
+        if (
+          updateProductDto.supplierId &&
+          updateProductDto.supplierId.trim() !== ''
+        ) {
           const supplier = await this.supplierRepository.findById(
             updateProductDto.supplierId,
           )
@@ -381,9 +399,11 @@ export class ProductService {
         }
       }
 
-      // Manejo de la foto
+      // CORRECCIÓN: Manejo de la foto - cuando es null, se asigna null directamente
       if (updateProductDto.photo !== undefined) {
-        if (updateProductDto.photo?.id) {
+        if (updateProductDto.photo === null) {
+          updateData.photo = null
+        } else if (updateProductDto.photo?.id) {
           const fileObject = await this.filesService.findById(
             updateProductDto.photo.id,
           )
@@ -393,8 +413,6 @@ export class ProductService {
             })
           }
           updateData.photo = fileObject
-        } else if (updateProductDto.photo === null) {
-          updateData.photo = null
         }
       }
 
@@ -413,7 +431,8 @@ export class ProductService {
 
         // Calculate financial values for the stock movement
         const unitCost = updateProductDto.pricePublic || 0
-        const taxRate = 15
+        // *** CORRECCIÓN: Usar el tax actualizado o el existente ***
+        const taxRate = updateData.tax ?? existingProduct.tax ?? 0
         const subtotal = parseFloat(
           (stockMovementData.quantity * unitCost).toFixed(6),
         )
@@ -444,6 +463,33 @@ export class ProductService {
       return updatedResponse({
         resource: PATH_SOURCE.PRODUCT,
         message: MESSAGE_RESPONSE.UPDATED,
+      })
+    })
+  }
+
+  async softDelete(id: Category['id']): Promise<ApiResponse<void>> {
+    return this.dataSource.transaction(async (entityManager) => {
+      const user = await this.productRepository.findById(id)
+
+      if (!user) {
+        throw new NotFoundException({
+          message: MESSAGE_RESPONSE.NOT_FOUND.ID,
+        })
+      }
+
+      await this.productRepository.update(
+        id,
+        {
+          status: ProductStatus.INACTIVE,
+        },
+        entityManager,
+      )
+
+      await this.productRepository.softDelete(id, entityManager)
+
+      return deletedResponse({
+        resource: PATH_SOURCE.USER,
+        message: MESSAGE_RESPONSE.DELETED.SOFT,
       })
     })
   }

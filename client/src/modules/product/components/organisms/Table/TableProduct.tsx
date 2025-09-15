@@ -19,6 +19,8 @@ import { TableView } from '@/modules/product/components/organisms/ViewTable'
 import { ViewType } from '@/modules/product/components/molecules/ViewSelector'
 import { LoadingStates } from '@/modules/product/components/organisms/Table/StateLoading'
 import { createTableColumns } from '@/modules/product/components/organisms/Table/TableColumns'
+import { Table } from '@/components/ui/table'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
 interface TableProductProps {
 	loading: boolean
@@ -65,7 +67,11 @@ export function TableProduct({ recordsData, loading, viewType, onEdit, onHardDel
 				variants={animations.viewTransition}
 				layout>
 				<motion.div variants={animations.container} layout>
-					{viewType === 'table' && <TableView recordsData={table} />}
+					{viewType === 'table' && (
+						<Table className='w-full table-fixed overflow-hidden'>
+							<TableView recordsData={table} />
+						</Table>
+					)}
 					{viewType === 'card' && <CardView recordsData={table} onEdit={onEdit} onHardDelete={onHardDelete} />}
 					{viewType === 'list' && <ListView recordsData={table} onEdit={onEdit} onHardDelete={onHardDelete} />}
 				</motion.div>

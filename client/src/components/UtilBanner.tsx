@@ -56,23 +56,29 @@ const iconVariants = {
 
 export const UtilBanner = ({ title, description, icon }: Props) => {
 	return (
-		<div className='text-primary'>
-			<motion.div
-				variants={containerVariants}
-				initial='hidden'
-				animate='visible'
-				className='flex flex-col items-center gap-2'>
-				<CardTitle className='flex flex-col items-center gap-4 text-center'>
-					<motion.div variants={itemVariants} whileHover='hover' className='flex justify-center'>
-						<motion.div variants={iconVariants}>{icon}</motion.div>
+		<motion.div
+			variants={containerVariants}
+			initial='hidden'
+			animate='visible'
+			className='flex flex-col items-center gap-2'>
+			<CardTitle className='flex flex-col items-center gap-4 text-center'>
+				<motion.div variants={itemVariants} whileHover='hover' className='flex justify-center'>
+					<motion.div variants={iconVariants} className='text-primary'>
+						{icon}
 					</motion.div>
+				</motion.div>
 
-					<motion.div variants={itemVariants} className='space-y-2'>
-						<Typography variant='h6'>{title}</Typography>
-						{description && <Typography variant='small'>{description}</Typography>}
-					</motion.div>
-				</CardTitle>
-			</motion.div>
-		</div>
+				<motion.div variants={itemVariants} className='flex flex-col gap-1.5'>
+					<Typography variant='span' className='text-primary'>
+						{title}
+					</Typography>
+					{description && (
+						<Typography variant='small' className='text-muted-foreground text-xs'>
+							{description}
+						</Typography>
+					)}
+				</motion.div>
+			</CardTitle>
+		</motion.div>
 	)
 }

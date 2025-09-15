@@ -11,8 +11,8 @@ import { ProductSchema, ProductFormData } from '@/modules/product/types/product-
 
 export function useProductForm() {
 	const [categoryPage, setCategoryPage] = useState(1)
-	const [categorySearch, setCategorySearch] = useState('')
 	const [categoryOpen, setCategoryOpen] = useState(false)
+	const [categorySearch, setCategorySearch] = useState('')
 
 	const [brandPage, setBrandPage] = useState(1)
 	const [brandSearch, setBrandSearch] = useState('')

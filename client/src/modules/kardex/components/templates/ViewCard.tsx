@@ -83,23 +83,13 @@ export const CardView = ({ recordsData }: CardViewProps) => {
 										<div className='space-y-2'>
 											<InfoDate recordData={recordData} />
 
-											<Typography variant='h5' className='line-clamp-2 min-h-[2.5rem]'>
+											<Typography variant='h6' className='line-clamp-2 min-h-[2.5rem]'>
 												{recordData.product.name}
 											</Typography>
 
-											{recordData.product.description && (
-												<Typography variant='muted' className='line-clamp-2 text-sm'>
-													{recordData.product.description}
-												</Typography>
-											)}
-
-											{/* 
-											{recordData.reason && (
-												<Typography variant='muted' className='line-clamp-2 text-sm italic'>
-													{recordData.reason}
-												</Typography>
-											)}
-											*/}
+											<Typography variant='muted' className='line-clamp-2 text-xs italic'>
+												{recordData.reason}
+											</Typography>
 										</div>
 
 										<Separator />
@@ -107,49 +97,38 @@ export const CardView = ({ recordsData }: CardViewProps) => {
 										{/* Financial Info */}
 										<div className='space-y-2'>
 											<div className='flex items-center justify-between'>
-												<Typography variant='span' className='text-muted-foreground'>
+												<Typography variant='span' className='text-muted-foreground text-xs'>
 													Tipo
 												</Typography>
 												<MovementTypeBadge movementType={recordData.movementType} />
 											</div>
 
 											<div className='flex items-center justify-between'>
-												<Typography variant='span' className='text-muted-foreground'>
+												<Typography variant='span' className='text-muted-foreground text-xs'>
 													Cantidad
 												</Typography>
-												<Typography variant='span' className='font-medium'>
+												<Typography variant='span' className='text-xs font-medium'>
 													{recordData.quantity.toLocaleString()}
 												</Typography>
 											</div>
 
 											<div className='flex items-center justify-between'>
-												<Typography variant='span' className='text-muted-foreground'>
+												<Typography variant='span' className='text-muted-foreground text-xs'>
 													Cost unid.
 												</Typography>
-												<Typography variant='span' className='font-medium'>
+												<Typography variant='span' className='text-xs font-medium'>
 													${formatPrice(recordData.unitCost)}
 												</Typography>
 											</div>
 
 											<div className='flex items-center justify-between'>
-												<Typography variant='span' className='text-muted-foreground'>
+												<Typography variant='span' className='text-muted-foreground text-xs'>
 													Total
 												</Typography>
-												<Typography variant='span' className='text-primary font-bold'>
+												<Typography variant='span' className='text-primary text-xs font-bold'>
 													${formatPrice(recordData.total)}
 												</Typography>
 											</div>
-
-											{recordData.taxAmount > 0 && (
-												<div className='flex items-center justify-between'>
-													<Typography variant='span' className='text-muted-foreground'>
-														Impusto ({recordData.taxRate}%)
-													</Typography>
-													<Typography variant='span' className='text-orange-600 dark:text-orange-400'>
-														${formatPrice(recordData.taxAmount)}
-													</Typography>
-												</div>
-											)}
 										</div>
 
 										<Separator />
@@ -157,25 +136,25 @@ export const CardView = ({ recordsData }: CardViewProps) => {
 										{/* Stock Info */}
 										<div className='space-y-2'>
 											<div className='flex items-center justify-between'>
-												<Typography variant='span' className='text-muted-foreground'>
+												<Typography variant='span' className='text-muted-foreground text-xs'>
 													Stock antes
 												</Typography>
-												<Typography variant='span' className='font-mono'>
+												<Typography variant='span' className='font-mono text-xs'>
 													{recordData.stockBefore}
 												</Typography>
 											</div>
 
 											<div className='flex items-center justify-between'>
-												<Typography variant='span' className='text-muted-foreground'>
+												<Typography variant='span' className='text-muted-foreground text-xs'>
 													Stock Actual
 												</Typography>
-												<Typography variant='span' className='font-mono'>
+												<Typography variant='span' className='font-mono text-xs'>
 													{recordData.stockAfter}
 												</Typography>
 											</div>
 
 											<div className='flex items-center justify-between'>
-												<Typography variant='span' className='text-muted-foreground'>
+												<Typography variant='span' className='text-muted-foreground text-xs'>
 													Cambio
 												</Typography>
 												<div className='flex items-center gap-1'>
@@ -186,7 +165,7 @@ export const CardView = ({ recordsData }: CardViewProps) => {
 													)}
 													<Typography
 														variant='span'
-														className={`font-mono ${
+														className={`font-mono text-xs ${
 															isPositiveChange ? 'text-green-600 dark:text-green-400' : 'text-destructive'
 														}`}>
 														{isPositiveChange ? '+' : ''}
@@ -210,7 +189,7 @@ export const CardView = ({ recordsData }: CardViewProps) => {
 											</Avatar>
 
 											<div className='flex w-full items-center justify-between'>
-												<Typography variant='small' className='font-medium'>
+												<Typography variant='small' className='text-xs font-medium'>
 													{recordData.user.firstName} {recordData.user?.lastName?.charAt(0)}
 												</Typography>
 												<UserRoleBadge role={recordData.user.role} />

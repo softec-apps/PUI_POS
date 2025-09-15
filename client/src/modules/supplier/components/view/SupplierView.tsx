@@ -149,48 +149,52 @@ export function SupplierView() {
 
 	if (supplierData.data.hasError) return <ErrorState type='fatal' />
 
-	if (supplierData.data.isEmpty) return <EmptyState onCreate={modal.openCreate} />
-
 	return (
 		<div className='flex flex-1 flex-col space-y-6'>
-			<Header onCreateClick={modal.openCreate} onRefresh={handleFiltersRefresh} totalRecords={totalRealRecords} />
+			{supplierData.data.isEmpty ? (
+				<EmptyState onCreate={modal.openCreate} />
+			) : (
+				<>
+					<Header onCreateClick={modal.openCreate} onRefresh={handleFiltersRefresh} totalRecords={totalRealRecords} />
 
-			<Filters
-				searchValue={pagination.searchTerm}
-				currentSort={pagination.currentSort}
-				currentStatus={pagination.currentStatus}
-				dateFilters={pagination.dateFilters}
-				isRefreshing={isRefreshing}
-				onRefresh={handleFiltersRefresh}
-				onStatusChange={pagination.handleStatusChange}
-				onSearchChange={pagination.handleSearchChange}
-				onSort={pagination.handleSort}
-				onDateFilterChange={pagination.handleDateFilterChange}
-				onClearDateFilter={pagination.clearDateFilter}
-				onResetAll={pagination.handleResetAll}
-				viewType={viewType}
-				onViewChange={setViewType}
-			/>
+					<Filters
+						searchValue={pagination.searchTerm}
+						currentSort={pagination.currentSort}
+						currentStatus={pagination.currentStatus}
+						dateFilters={pagination.dateFilters}
+						isRefreshing={isRefreshing}
+						onRefresh={handleFiltersRefresh}
+						onStatusChange={pagination.handleStatusChange}
+						onSearchChange={pagination.handleSearchChange}
+						onSort={pagination.handleSort}
+						onDateFilterChange={pagination.handleDateFilterChange}
+						onClearDateFilter={pagination.clearDateFilter}
+						onResetAll={pagination.handleResetAll}
+						viewType={viewType}
+						onViewChange={setViewType}
+					/>
 
-			<TableData
-				recordsData={supplierData.data.items}
-				loading={supplierData.loading}
-				onEdit={modal.openEdit}
-				onHardDelete={modal.openHardDelete}
-				onSoftDelete={modal.openSoftDelete}
-				onRestore={modal.openRestore}
-				viewType={viewType}
-			/>
+					<TableData
+						recordsData={supplierData.data.items}
+						loading={supplierData.loading}
+						onEdit={modal.openEdit}
+						onHardDelete={modal.openHardDelete}
+						onSoftDelete={modal.openSoftDelete}
+						onRestore={modal.openRestore}
+						viewType={viewType}
+					/>
 
-			<PaginationControls
-				loading={supplierData.loading}
-				pagination={pagination.pagination}
-				onPrevPage={pagination.handlePrevPage}
-				onPageChange={pagination.handlePageChange}
-				onNextPage={handleNextPage}
-				onLimitChange={pagination.handleLimitChange}
-				metaDataPagination={supplierData.data.pagination}
-			/>
+					<PaginationControls
+						loading={supplierData.loading}
+						pagination={pagination.pagination}
+						onPrevPage={pagination.handlePrevPage}
+						onPageChange={pagination.handlePageChange}
+						onNextPage={handleNextPage}
+						onLimitChange={pagination.handleLimitChange}
+						metaDataPagination={supplierData.data.pagination}
+					/>
+				</>
+			)}
 
 			<Modals modal={modal} onSubmit={handleModalSubmit} onDelete={handleModalDelete} onRestore={handleModalRestore} />
 		</div>

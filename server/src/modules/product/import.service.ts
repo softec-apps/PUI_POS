@@ -50,6 +50,10 @@ export class BulkProductImportService {
     const results: ProductImportResult[] = []
     let processedCount = 0
 
+    // Cache para categorías y proveedores ya resueltos
+    const categoryCache = new Map<string, string>()
+    const supplierCache = new Map<string, string>()
+
     return await this.dataSource.transaction(async (entityManager) => {
       const newProducts: Partial<Product>[] = []
       const kardexEntries: Partial<Kardex>[] = []
@@ -61,20 +65,77 @@ export class BulkProductImportService {
         taxPercent?: number
       }[] = []
 
+      // PRIMERO: Pre-resolver todas las categorías y proveedores únicos
+      const uniqueCategories = new Set<string>()
+      const uniqueSuppliers = new Set<string>()
+
+      // Recopilar todas las categorías y proveedores únicos
+      for (const productData of importDto.products) {
+        if (productData.category?.trim()) {
+          uniqueCategories.add(productData.category.trim())
+        }
+        if (productData.legalName?.trim()) {
+          uniqueSuppliers.add(productData.legalName.trim())
+        }
+      }
+
+      // Resolver categorías únicas
+      for (const categoryName of uniqueCategories) {
+        try {
+          const categoryId = await this.findOrCreateCategory(
+            categoryName,
+            entityManager,
+          )
+          categoryCache.set(categoryName, categoryId)
+        } catch (error) {
+          console.error(`Error resolviendo categoría "${categoryName}":`, error)
+          // Si falla una categoría, usar la por defecto si existe
+          if (importDto.categoryId) {
+            categoryCache.set(categoryName, importDto.categoryId)
+          } else {
+            throw new BadRequestException(
+              `No se pudo procesar la categoría "${categoryName}" y no hay categoría por defecto configurada`,
+            )
+          }
+        }
+      }
+
+      // Resolver proveedores únicos
+      for (const supplierName of uniqueSuppliers) {
+        try {
+          const supplierId = await this.findOrCreateSupplier(
+            supplierName,
+            entityManager,
+          )
+          supplierCache.set(supplierName, supplierId)
+        } catch (error) {
+          console.error(`Error resolviendo proveedor "${supplierName}":`, error)
+          // Si falla un proveedor, usar el por defecto si existe
+          if (importDto.supplierId) {
+            supplierCache.set(supplierName, importDto.supplierId)
+          }
+          // Los proveedores son opcionales, no lanzamos error
+        }
+      }
+
+      // SEGUNDO: Procesar cada producto con las relaciones ya resueltas
       for (const [index, productData] of importDto.products.entries()) {
         processedCount++
 
         try {
           // Validaciones básicas
-          if (!productData.itemName?.trim())
+          if (!productData.itemName?.trim()) {
             throw new BadRequestException(
               'El nombre del producto es obligatorio',
             )
+          }
 
-          const resolvedIds = await this.resolveRelationships(
+          // Resolver relaciones desde el cache
+          const resolvedIds = await this.resolveRelationshipsFromCache(
             productData,
             importDto,
-            entityManager,
+            categoryCache,
+            supplierCache,
           )
 
           const existingProduct = await this.findExistingProduct(productData)
@@ -201,8 +262,9 @@ export class BulkProductImportService {
         })
 
         // Guardar entradas de Kardex en lote
-        if (kardexEntries.length > 0)
+        if (kardexEntries.length > 0) {
           await this.kardexRepository.bulkCreate(kardexEntries, entityManager)
+        }
 
         savedProducts.forEach((prod, i) => {
           results.push({
@@ -233,12 +295,14 @@ export class BulkProductImportService {
   }
 
   /**
-   * Resuelve los IDs de las relaciones - SOLO BUSCA EXISTENTES
+   * Resuelve los IDs de las relaciones - BUSCA EXISTENTES O CREA NUEVOS
+   * Ahora maneja los errores de transacción correctamente
    */
-  private async resolveRelationships(
+  private async resolveRelationshipsFromCache(
     productData: BulkProductImportItemDto,
     importDto: BulkProductImportDto,
-    entityManager: any,
+    categoryCache: Map<string, string>,
+    supplierCache: Map<string, string>,
   ): Promise<{
     categoryId?: string
     brandId?: string
@@ -250,79 +314,165 @@ export class BulkProductImportService {
       supplierId?: string
     } = {}
 
-    // === RESOLVER CATEGORÍA - SOLO BUSCAR ===
+    // === RESOLVER CATEGORÍA ===
     if (productData.category?.trim()) {
       const categoryName = productData.category.trim()
+      resolved.categoryId = categoryCache.get(categoryName)
 
-      try {
-        const existingCategory = await this.categoryRepository.findByField(
-          'name',
-          categoryName,
-        )
-
-        if (existingCategory) {
-          resolved.categoryId = existingCategory.id
-          console.log(
-            `Categoría encontrada: "${categoryName}" con ID: ${existingCategory.id}`,
-          )
-        } else {
-          console.log(
-            `Categoría "${categoryName}" no existe, usando categoría por defecto`,
-          )
-          resolved.categoryId = importDto.categoryId
-        }
-      } catch (error) {
-        console.log(
-          `Error buscando categoría "${categoryName}": ${error.message}`,
-        )
+      if (!resolved.categoryId && importDto.categoryId) {
         resolved.categoryId = importDto.categoryId
       }
-    } else {
+    } else if (importDto.categoryId) {
       resolved.categoryId = importDto.categoryId
     }
 
-    // === RESOLVER PROVEEDOR - SOLO BUSCAR ===
-    if (productData.companyName?.trim()) {
-      const companyName = productData.companyName.trim()
+    // === RESOLVER PROVEEDOR ===
+    if (productData.legalName?.trim()) {
+      const supplierName = productData.legalName.trim()
+      resolved.supplierId = supplierCache.get(supplierName)
 
-      try {
-        let existingSupplier = await this.supplierRepository.findByField(
-          'legalName',
-          companyName,
-        )
-
-        if (!existingSupplier) {
-          existingSupplier = await this.supplierRepository.findByField(
-            'commercialName',
-            companyName,
-          )
-        }
-
-        if (existingSupplier) {
-          resolved.supplierId = existingSupplier.id
-          console.log(
-            `Proveedor encontrado: "${companyName}" con ID: ${existingSupplier.id}`,
-          )
-        } else {
-          console.log(
-            `Proveedor "${companyName}" no existe, usando proveedor por defecto`,
-          )
-          resolved.supplierId = importDto.supplierId
-        }
-      } catch (error) {
-        console.log(
-          `Error buscando proveedor "${companyName}": ${error.message}`,
-        )
+      if (!resolved.supplierId && importDto.supplierId) {
         resolved.supplierId = importDto.supplierId
       }
-    } else {
+    } else if (importDto.supplierId) {
       resolved.supplierId = importDto.supplierId
     }
 
-    // Usar brand por defecto
+    // === RESOLVER MARCA ===
     resolved.brandId = productData.brandId || importDto.brandId
 
     return resolved
+  }
+
+  /**
+   * Busca o crea una categoría usando SAVEPOINT para manejar errores de transacción
+   */
+  private async findOrCreateCategory(
+    categoryName: string,
+    entityManager: any,
+  ): Promise<string> {
+    // 1. Buscar si ya existe
+    const category = await this.categoryRepository.findByField(
+      'name',
+      categoryName,
+    )
+
+    if (category) {
+      return category.id
+    }
+
+    // 2. Crear nueva categoría
+    const newCategoryData = {
+      name: categoryName,
+      status: CategoryStatus.ACTIVE,
+      description: `Categoría creada automáticamente desde importación masiva`,
+    }
+
+    const createdCategory = await this.categoryRepository.create(
+      newCategoryData,
+      entityManager,
+    )
+
+    return createdCategory.id
+  }
+
+  /**
+   * Busca o crea un proveedor usando SAVEPOINT para manejar errores de transacción
+   */
+  /**
+   * Busca o crea un proveedor usando SAVEPOINT para manejar errores de transacción
+   */
+  private async findOrCreateSupplier(
+    legalName: string,
+    entityManager: any,
+  ): Promise<string> {
+    // 1. Buscar si ya existe por nombre legal
+    const supplier = await this.supplierRepository.findByField(
+      'legalName',
+      legalName,
+    )
+
+    if (supplier) {
+      return supplier.id
+    }
+
+    // 2. Generar RUC ecuatoriano válido
+    const ruc = this.generateEcuadorianRUC()
+
+    // 3. Crear nuevo proveedor
+    const newSupplierData = {
+      ruc: ruc,
+      legalName: legalName,
+      commercialName: legalName,
+      status: SupplierStatus.ACTIVE,
+    }
+
+    const createdSupplier = await this.supplierRepository.create(
+      newSupplierData,
+      entityManager,
+    )
+
+    return createdSupplier.id
+  }
+
+  /**
+   * Genera un RUC ecuatoriano válido
+   * Estructura del RUC: 0XXXXXXXXXXX (13 dígitos)
+   * - Primer dígito: 0 para personas naturales, 1-9 para empresas
+   * - Siguientes 9 dígitos: número de cédula o identificación
+   * - Últimos 3 dígitos: 001 para comerciantes individuales
+   */
+  private generateEcuadorianRUC(): string {
+    // Persona natural (0) o empresa (1-9)
+    const tipoEmpresa = Math.floor(Math.random() * 10) // 0-9
+
+    // Generar 9 dígitos aleatorios para la identificación
+    let identificacion = ''
+    for (let i = 0; i < 9; i++) {
+      identificacion += Math.floor(Math.random() * 10)
+    }
+
+    // Últimos 3 dígitos (001 para comerciantes individuales)
+    const establecimiento = '001'
+
+    // Construir RUC completo
+    const ruc = `${tipoEmpresa}${identificacion}${establecimiento}`
+
+    // Validar que el RUC cumple con el algoritmo de verificación
+    return this.validateRUC(ruc) ? ruc : this.generateEcuadorianRUC()
+  }
+
+  /**
+   * Valida un RUC ecuatoriano usando el algoritmo de verificación
+   */
+  private validateRUC(ruc: string): boolean {
+    // Debe tener exactamente 13 dígitos
+    if (!/^\d{13}$/.test(ruc)) {
+      return false
+    }
+
+    // Los dos últimos dígitos deben ser 001 para este caso
+    if (ruc.substring(10, 13) !== '001') {
+      return false
+    }
+
+    // Algoritmo de validación de cédula/RUC ecuatoriano
+    const coefficients = [2, 1, 2, 1, 2, 1, 2, 1, 2]
+    const digits = ruc.substring(0, 9).split('').map(Number)
+    let total = 0
+
+    for (let i = 0; i < coefficients.length; i++) {
+      let product = digits[i] * coefficients[i]
+      if (product > 9) {
+        product -= 9
+      }
+      total += product
+    }
+
+    const checkDigit = total % 10 === 0 ? 0 : 10 - (total % 10)
+    const providedCheckDigit = parseInt(ruc[9], 10)
+
+    return checkDigit === providedCheckDigit
   }
 
   /**
@@ -412,11 +562,7 @@ export class BulkProductImportService {
           barcode: this.getExcelValue(row, headers, 'UPC/EAN/ISBN'),
           itemName: this.getExcelValue(row, headers, 'Nombre Artículo') || '',
           category: this.getExcelValue(row, headers, 'Categoría'),
-          companyName: this.getExcelValue(
-            row,
-            headers,
-            'Nombre de la Compañia',
-          ),
+          legalName: this.getExcelValue(row, headers, 'Nombre de la Compañia'),
           costPrice: this.parseNumber(
             this.getExcelValue(row, headers, 'Precio al Por Mayor'),
           ),
@@ -594,12 +740,12 @@ export class BulkProductImportService {
           )
         }
 
-        const companyName = this.getExcelValue(
+        const legalName = this.getExcelValue(
           row,
           headers,
           'Nombre de la Compañia',
         )
-        if (!companyName || companyName.trim() === '') {
+        if (!legalName || legalName.trim() === '') {
           warnings.push(
             `Fila ${i + 1}: Se recomienda especificar el nombre de la compañía`,
           )

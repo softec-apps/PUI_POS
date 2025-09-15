@@ -85,8 +85,17 @@ export const KPICard = ({
 	}
 
 	// Renderizar el valor con CountUp
+	// Renderizar el valor con CountUp
 	const renderAnimatedValue = (): ReactNode => {
 		const numericValue = getNumericValue()
+
+		// Detectar decimales en el valor
+		let decimals = 0
+		if (typeof value === 'number') {
+			decimals = value.toString().split('.')[1]?.length || 0
+		} else if (typeof value === 'string' && value.includes('.')) {
+			decimals = value.split('.')[1]?.length || 0
+		}
 
 		return (
 			<CountUp
@@ -95,6 +104,7 @@ export const KPICard = ({
 				duration={animationDuration}
 				delay={animationDelay}
 				preserveValue
+				decimals={decimals} // 👈 Se adapta al valor real
 				formattingFn={formatDisplayValue}
 			/>
 		)

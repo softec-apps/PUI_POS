@@ -472,13 +472,12 @@ export class BillingWorker extends WorkerHost {
       this.logger.log('✅ Estado actualizado a PROCESSING')
 
       // ✅ 2. CREAR FACTURA EN FACTUZEN
-      const facturaResult =
-        await this.billingInvoiceService.createSimpleFactura(
-          puntoEmision,
-          clienteData,
-          productos,
-          formaPago,
-        )
+      const facturaResult = await this.billingInvoiceService.createFacturaSRI(
+        puntoEmision,
+        clienteData,
+        productos,
+        formaPago,
+      )
 
       this.logger.log(
         '✅ Factura creada exitosamente:',

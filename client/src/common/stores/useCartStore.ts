@@ -9,6 +9,7 @@ interface CartItem {
 	image?: string
 	code?: string
 	taxRate: number
+	discount?: number // Percentage discount (0-100)
 }
 
 interface PaymentEntry {
@@ -31,6 +32,7 @@ interface CartStore {
 	addItem: (item: Omit<CartItem, 'quantity'>) => void
 	removeItem: (id: string) => void
 	updateQuantity: (id: string, quantity: number) => void
+	updateDiscount: (id: string, discount: number) => void
 	clearCart: () => void
 
 	// Existing payment actions (kept for backward compatibility)
@@ -51,6 +53,9 @@ interface CartStore {
 	getRemainingAmount: () => number
 	getChangeAmount: () => number
 	getIsFullyPaid: () => boolean
+	getTotalDiscountAmount: () => number
+	getItemDiscountedPrice: (item: CartItem) => number
+	getItemTotalPrice: (item: CartItem) => number
 }
 
 export const useCartStore = create<CartStore>()(
@@ -75,7 +80,7 @@ export const useCartStore = create<CartStore>()(
 					}
 
 					return {
-						orderItems: [...state.orderItems, { ...newItem, quantity: 1 }],
+						orderItems: [...state.orderItems, { ...newItem, quantity: 1, discount: 0 }],
 					}
 				})
 			},
@@ -94,6 +99,15 @@ export const useCartStore = create<CartStore>()(
 
 				set(state => ({
 					orderItems: state.orderItems.map(item => (item.id === id ? { ...item, quantity } : item)),
+				}))
+			},
+
+			updateDiscount: (id, discount) => {
+				// Clamp discount between 0 and 100
+				const clampedDiscount = Math.max(0, Math.min(100, discount))
+
+				set(state => ({
+					orderItems: state.orderItems.map(item => (item.id === id ? { ...item, discount: clampedDiscount } : item)),
 				}))
 			},
 
@@ -140,18 +154,31 @@ export const useCartStore = create<CartStore>()(
 				set(() => ({ payments: [] }))
 			},
 
+			// Helper methods for discount calculations
+			getItemDiscountedPrice: (item: CartItem) => {
+				const discount = item.discount || 0
+				return item.price * (1 - discount / 100)
+			},
+
+			getItemTotalPrice: (item: CartItem) => {
+				const discountedPrice = get().getItemDiscountedPrice(item)
+				return discountedPrice * item.quantity
+			},
+
 			// Calculation methods
 			getSubtotal: () => {
 				const { orderItems } = get()
 				return orderItems.reduce((sum, item) => {
-					return sum + item.price * item.quantity
+					const discountedPrice = get().getItemDiscountedPrice(item)
+					return sum + discountedPrice * item.quantity
 				}, 0)
 			},
 
 			getTax: () => {
 				const { orderItems } = get()
 				return orderItems.reduce((sum, item) => {
-					const itemSubtotal = item.price * item.quantity
+					const discountedPrice = get().getItemDiscountedPrice(item)
+					const itemSubtotal = discountedPrice * item.quantity
 					const taxAmount = (itemSubtotal * item.taxRate) / 100
 					return sum + taxAmount
 				}, 0)
@@ -166,6 +193,15 @@ export const useCartStore = create<CartStore>()(
 			getTotalItems: () => {
 				const { orderItems } = get()
 				return orderItems.reduce((sum, item) => sum + item.quantity, 0)
+			},
+
+			getTotalDiscountAmount: () => {
+				const { orderItems } = get()
+				return orderItems.reduce((sum, item) => {
+					const originalPrice = item.price * item.quantity
+					const discountedPrice = get().getItemTotalPrice(item)
+					return sum + (originalPrice - discountedPrice)
+				}, 0)
 			},
 
 			// New payment calculation methods
@@ -188,9 +224,10 @@ export const useCartStore = create<CartStore>()(
 
 			getIsFullyPaid: () => {
 				const remainingAmount = get().getRemainingAmount()
-				return remainingAmount <= 0.01 // Tolerancia de 1 centavo
+				return remainingAmount <= 0.0 // Tolerancia de 0 centavo
 			},
 		}),
+
 		{
 			name: 'cart-storage',
 			// Solo persistir los datos esenciales

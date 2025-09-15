@@ -80,7 +80,7 @@ export function ProductFilters({
 			{/* Main Filters Container */}
 			<div className='flex flex-col justify-between gap-4 md:flex-row md:items-center'>
 				<motion.div
-					className='items-center gap-2 space-y-4 sm:flex sm:space-y-0'
+					className='flex items-center gap-2 sm:space-y-0'
 					initial={{ opacity: 0, x: -15 }}
 					animate={{ opacity: 1, x: 0 }}
 					transition={{ delay: 0 }}>

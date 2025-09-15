@@ -22,6 +22,7 @@ import { ListView } from '@/modules/kardex/components/templates/ViewList'
 import { TableView } from '@/modules/kardex/components/templates/ViewTable'
 import { LoadingStates } from '@/modules/kardex/components/templates/ViewSkeleton'
 import { createTableColumns } from '@/modules/kardex/components/organisms/Table/TableColumns'
+import { Table } from '@/components/ui/table'
 
 interface TableProps {
 	loading: boolean
@@ -117,7 +118,11 @@ export function TableData({
 
 		switch (viewType) {
 			case 'table':
-				return <TableView {...viewProps} />
+				return (
+					<Table className='w-full table-fixed overflow-hidden'>
+						<TableView {...viewProps} />
+					</Table>
+				)
 			case 'card':
 				return <CardView {...viewProps} />
 			case 'list':

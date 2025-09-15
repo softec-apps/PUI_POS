@@ -8,6 +8,7 @@ import { ProductFormData } from '@/modules/product/types/product-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
+import { useEffect } from 'react' // Importar useEffect
 
 interface BrandSelectorProps {
 	control: Control<ProductFormData>
@@ -20,6 +21,7 @@ interface BrandSelectorProps {
 	brandOpen: boolean
 	setBrandOpen: (open: boolean) => void
 	loadMoreBrands: () => void
+	currentBrand?: I_Brand // Nueva prop para la marca actual
 }
 
 export function BrandSelector({
@@ -32,12 +34,26 @@ export function BrandSelector({
 	setBrandSearch,
 	brandOpen,
 	setBrandOpen,
+	currentBrand, // Nueva prop
 }: BrandSelectorProps) {
+	// Efecto para buscar automáticamente la marca actual cuando se abre el selector
+	useEffect(() => {
+		if (brandOpen && currentBrand) {
+			setBrandSearch(currentBrand.name)
+		}
+	}, [brandOpen, currentBrand, setBrandSearch])
+
 	const brandOptions =
 		brands?.data?.items?.map(brand => ({
 			value: brand.id,
 			label: brand.name,
 		})) || []
+
+	// Si tenemos una marca actual que no está en las opciones, la agregamos
+	const allOptions =
+		currentBrand && !brandOptions.some(opt => opt.value === currentBrand.id)
+			? [{ value: currentBrand.id, label: currentBrand.name }, ...brandOptions]
+			: brandOptions
 
 	return (
 		<Card className='border-none bg-transparent p-0 shadow-none'>
@@ -63,7 +79,7 @@ export function BrandSelector({
 						type='command'
 						label='Selecciona una marca'
 						placeholder='Buscar marca...'
-						options={brandOptions}
+						options={allOptions} // Usar allOptions en lugar de brandOptions
 						commandOpen={brandOpen}
 						setCommandOpen={setBrandOpen}
 						commandSearchValue={brandSearch}

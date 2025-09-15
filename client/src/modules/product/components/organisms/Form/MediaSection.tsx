@@ -119,7 +119,6 @@ export function MediaSection({ control, setValue, watch, productData, currentRec
 						onFileChange={handleFileChange}
 						onTriggerFileInput={triggerFileInput}
 						onClearPreview={handleClearPreview}
-						shouldHideCurrentImage={removePhoto || false}
 					/>
 				</div>
 

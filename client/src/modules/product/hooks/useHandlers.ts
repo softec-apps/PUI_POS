@@ -7,10 +7,19 @@ interface Props {
 	modalState: ModalState
 	createRecord: (data: I_CreateProduct) => Promise<void>
 	updateRecord: (id: string, data: I_UpdateProduct) => Promise<void>
+	softDeleteRecord: (id: string) => Promise<void>
+	restoreRecord: (id: string) => Promise<void>
 	hardDeleteRecord: (id: string) => Promise<void>
 }
 
-export function useHandlers({ modalState, createRecord, updateRecord, hardDeleteRecord }: Props) {
+export function useHandlers({
+	modalState,
+	createRecord,
+	updateRecord,
+	softDeleteRecord,
+	restoreRecord,
+	hardDeleteRecord,
+}: Props) {
 	const handleFormSubmit = useCallback(
 		async (data: ProductFormData) => {
 			try {
@@ -40,6 +49,34 @@ export function useHandlers({ modalState, createRecord, updateRecord, hardDelete
 	// Modal handlers
 	const handleEdit = useCallback((record: I_Product) => modalState.openEditDialog(record), [modalState])
 
+	const handleConfirmSoftDelete = useCallback(async () => {
+		if (!modalState.recordToSoftDelete) return
+
+		try {
+			modalState.setIsSoftDeleting(true)
+			await softDeleteRecord(modalState.recordToSoftDelete.id)
+			modalState.closeSoftDeleteModal()
+		} catch (error) {
+			console.error('Delete error:', error)
+		} finally {
+			modalState.setIsSoftDeleting(false)
+		}
+	}, [modalState, softDeleteRecord])
+
+	const handleConfirmRestore = useCallback(async () => {
+		if (!modalState.recordToRestore) return
+
+		try {
+			modalState.setIsRestoring(true)
+			await restoreRecord(modalState.recordToRestore.id)
+			modalState.closeRestoreModal()
+		} catch (error) {
+			console.error('Restore error:', error)
+		} finally {
+			modalState.setIsRestoring(false)
+		}
+	}, [modalState, restoreRecord])
+
 	const handleConfirmHardDelete = useCallback(async () => {
 		if (!modalState.recordToHardDelete) return
 
@@ -63,6 +100,8 @@ export function useHandlers({ modalState, createRecord, updateRecord, hardDelete
 		handleEdit,
 
 		// Confirmation handlers
+		handleConfirmSoftDelete,
+		handleConfirmRestore,
 		handleConfirmHardDelete,
 	}
 }

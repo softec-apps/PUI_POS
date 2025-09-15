@@ -21,6 +21,9 @@ export class SaleItemMapper {
       taxRate: raw.taxRate,
       totalPrice: Number(raw.totalPrice),
       revenue: Number(raw.revenue),
+      discountAmount: Number(raw.discountAmount),
+      discountPercentage: Number(raw.discountPercentage),
+      taxAmount: Number(raw.taxAmount),
     })
     return domainEntity
   }
@@ -37,6 +40,9 @@ export class SaleItemMapper {
       taxRate: domainEntity.taxRate,
       totalPrice: domainEntity.totalPrice,
       revenue: domainEntity.revenue,
+      discountAmount: domainEntity.discountAmount,
+      discountPercentage: domainEntity.discountPercentage,
+      taxAmount: domainEntity.taxAmount,
     })
 
     // Manejo de producto
@@ -59,17 +65,16 @@ export class SaleItemMapper {
     return persistenceEntity
   }
 }
-
 export class SaleMapper {
   static toDomain(raw: SaleEntity): Sale {
     const domainEntity = new Sale()
     Object.assign(domainEntity, {
       id: raw.id,
       code: raw.code,
+      discountAmount: raw.discountAmount,
       customerId: raw.customerId,
       customer: raw.customer ? CustomerMapper.toDomain(raw.customer) : null,
       subtotal: Number(raw.subtotal),
-      taxRate: raw.taxRate,
       taxAmount: Number(raw.taxAmount),
       total: Number(raw.total),
       totalItems: raw.totalItems,
@@ -95,7 +100,7 @@ export class SaleMapper {
       code: domainEntity.code,
       customerId: domainEntity.customerId,
       subtotal: domainEntity.subtotal,
-      taxRate: domainEntity.taxRate,
+      discountAmount: domainEntity.discountAmount, // ✅ LÍNEA AGREGADA
       taxAmount: domainEntity.taxAmount,
       total: domainEntity.total,
       totalItems: domainEntity.totalItems,
@@ -103,7 +108,6 @@ export class SaleMapper {
       receivedAmount: domainEntity.receivedAmount,
       change: domainEntity.change,
       createdAt: domainEntity.createdAt ?? new Date(),
-
       estado_sri: domainEntity.estado_sri,
       comprobante_id: domainEntity.comprobante_id,
       clave_acceso: domainEntity.clave_acceso,
