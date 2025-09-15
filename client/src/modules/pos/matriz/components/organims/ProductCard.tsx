@@ -20,35 +20,33 @@ const itemVariants = {
 interface ProductCardProps {
 	product: I_Product
 	onAddToCart: (product: I_Product) => void
-	isSelected?: boolean
 	onSelect?: () => void
+	disabled?: boolean
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isSelected = false, onSelect }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onSelect, disabled }) => {
 	const [openDetail, setProductDetailOpen] = useState(false)
 
 	const isOutOfStock = product.stock === 0
+	const isDisabled = disabled || isOutOfStock
 
-	const handleCardClick = e => {
-		// Prevenir que el click en botones active la selección
-		if (e.target.closest('button')) return
-
+	const handleCardClick = () => {
+		if (isDisabled) return
 		if (onSelect) onSelect()
-
-		if (!isOutOfStock) onAddToCart(product)
+		onAddToCart(product)
 	}
 
 	return (
 		<>
 			<motion.div
 				variants={itemVariants}
-				whileHover={{ scale: isOutOfStock ? 1 : 1.02 }}
-				whileTap={{ scale: isOutOfStock ? 1 : 0.98 }}>
+				whileHover={{ scale: isDisabled ? 1 : 1.02 }}
+				whileTap={{ scale: isDisabled ? 1 : 0.98 }}>
 				<Card
 					className={cn(
-						'cursor-pointer border-2 p-0 transition-all duration-200 select-none',
+						'cursor-pointer border-2 p-0 transition-all duration-500 select-none',
 						'group relative overflow-hidden',
-						isOutOfStock ? 'cursor-not-allowed opacity-60' : 'hover:border-primary/50 hover:shadow-md'
+						isDisabled ? 'cursor-not-allowed opacity-60' : 'hover:border-primary/50 hover:shadow-md'
 					)}
 					onClick={handleCardClick}>
 					<CardContent className='p-0'>
@@ -71,7 +69,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
 							<div className='absolute bottom-2 left-2'>
 								<div
 									className={`text-primary-foreground rounded px-1.5 py-0.5 text-xs font-medium ${
-										product.stock === 0
+										product.stock === 0 || product.stock === 1
 											? 'bg-destructive'
 											: product.stock <= 5
 												? 'bg-amber-500 dark:bg-amber-400'
@@ -83,19 +81,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
 						</div>
 
 						{/* Información del producto */}
-						<div className='space-y-1 p-3'>
+						<div className='space-y-1 p-2'>
+							{/* Code del producto */}
+							<Typography variant='small' className='text-muted-foreground line-clamp-1 font-mono text-xs break-words'>
+								{product.barCode || '-'}
+							</Typography>
+
 							{/* Nombre del producto */}
-							<Typography variant='small' className='line-clamp-1 text-xs break-words'>
+							<Typography
+								variant='small'
+								className='text-primary line-clamp-3 h-[50px] overflow-hidden text-xs break-words tabular-nums'>
 								{product.name}
 							</Typography>
 
-							{/* Code del producto */}
-							<Typography variant='small' className='text-muted-foreground line-clamp-1 text-xs break-words'>
-								{product.code}
-							</Typography>
-
 							{/* Precio */}
-							<Typography variant='overline' className='text-primary/90 text-sm'>
+							<Typography variant='overline' className='text-primary/90 font-mono text-sm'>
 								${formatPrice(product.pricePublic)}
 							</Typography>
 						</div>

@@ -72,4 +72,29 @@ export class SaleItem {
     description: 'Precio total del ítem (incluyendo impuestos)',
   })
   totalPrice: number
+
+  @ApiProperty({
+    type: 'number',
+    example: 50.0,
+    description: 'Monto de descuento aplicado al ítem en dinero',
+    default: 0,
+  })
+  discountAmount: number = 0
+
+  @ApiProperty({
+    type: 'number',
+    example: 10.0,
+    description: 'Porcentaje de descuento aplicado al ítem',
+    default: 0,
+  })
+  discountPercentage: number = 0
+
+  @Exclude()
+  @ApiPropertyOptional({
+    type: 'number',
+    example: 10.0,
+    description: 'Total de impuestos',
+    default: 0,
+  })
+  taxAmount: number = 0
 }

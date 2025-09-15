@@ -137,8 +137,8 @@ export class CategoryController {
   }
 
   /**
-   * Restore a user.
-   * @param RestoreUserDto - Data transfer object for user restore.
+   * Restore a category.
+   * @param RestoreCategoryDto - Data transfer object for category restore.
    * @returns The API standard responsea
    */
   @Patch(':id/restore')

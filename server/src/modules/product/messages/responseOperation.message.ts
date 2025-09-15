@@ -10,7 +10,7 @@ export const MESSAGE_RESPONSE = {
   },
   CONFLIC: {
     NAME: 'Ya existe una producto con ese nombre',
-    INSUFFICIENT_SCTOCK: 'Stock insuficiente',
+    INSUFFICIENT_STOCK: 'Stock insuficiente',
   },
   NOT_FOUND: {
     ID: 'No se encontro el producto por su ID',

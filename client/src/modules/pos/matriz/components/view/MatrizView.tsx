@@ -20,11 +20,19 @@ import { ProductCard, ProductCardSkeleton } from '@/modules/pos/matriz/component
 import { CategoryCard, CategoryCardSkeleton } from '@/modules/pos/matriz/components/organims/CategoryCard'
 import { useSale } from '@/common/hooks/useSale'
 import { Typography } from '@/components/ui/typography'
-import { NavbarPOSMatriz } from '@/modules/pos/pos/components/template/PosNavbar'
 import { FooterPublic } from '@/components/layout/templates/FooterPublic'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
 import { generateSaleReceiptPDF } from '../../hooks/generateSaleReceiptPDF'
 import { SaleToTicket } from '../../types/ticket'
+import api from '@/lib/axios'
+import { toast } from 'sonner'
+
+// Tipos para la respuesta del stock
+interface ProductStockResponse {
+	hasEnoughStock: boolean
+	currentStock: number
+	message?: string
+}
 
 const containerVariants = {
 	hidden: { opacity: 0 },
@@ -50,7 +58,7 @@ const InitialLoadingSpinner = () => (
 	</div>
 )
 
-// Types actualizados para múltiples pagos
+// Types actualizados para múltiples pagos y descuentos
 interface PaymentEntry {
 	id: string
 	method: string
@@ -79,15 +87,17 @@ interface SaleData {
 		quantity: number
 		unitPrice: number
 		totalPrice: number
+		discount: number
+		discountAmount: number
 	}[]
 	financials: {
 		subtotal: number
 		tax: number
-		taxRate: number
 		total: number
 		totalItems: number
+		totalDiscountAmount: number
 	}
-	payments: PaymentEntry[] // Cambiado de payment individual a payments array
+	payments: PaymentEntry[]
 	metadata: {
 		saleDate: string
 	}
@@ -99,15 +109,20 @@ export function MatrizView() {
 	const [selectedProductIndex, setSelectedProductIndex] = useState(-1)
 	const [isInitialLoading, setIsInitialLoading] = useState(true)
 
+	// Estados para validación de stock
+	const [isValidatingStock, setIsValidatingStock] = useState(false)
+	const [stockError, setStockError] = useState('')
+	const [availableStock, setAvailableStock] = useState<number>(0)
+
 	const debouncedSearchTerm = useDebounce(searchTerm, 300)
 	const searchInputRef = useRef<HTMLInputElement>(null)
 
 	const [page, setPage] = useState(1)
 
-	// Cart store
-	const { addItem } = useCartStore()
+	// 🔧 CORRECCIÓN: Usar orderItems en lugar de items
+	const { addItem, orderItems } = useCartStore()
 
-	const { recordsData: categoryData, loading: loadingCategories } = useCategory({ limit: 23 })
+	const { recordsData: categoryData, loading: loadingCategories } = useCategory({ limit: 41 })
 
 	// Solo cargar productos cuando hay una categoría seleccionada o hay búsqueda
 	const {
@@ -121,13 +136,50 @@ export function MatrizView() {
 		limit: 24,
 	})
 
+	// Función para verificar stock
+	const checkStock = async (productId: string, requestedQuantity: number): Promise<boolean> => {
+		try {
+			setIsValidatingStock(true)
+			setStockError('')
+
+			// Enviar la cantidad absoluta que el usuario quiere como query parameter
+			const response = await api.get<ProductStockResponse>(`/product/check/${productId}?quantity=${requestedQuantity}`)
+			const { hasEnoughStock, currentStock, message } = response.data
+
+			setAvailableStock(currentStock)
+
+			if (!hasEnoughStock) {
+				const errorMessage = message || `Solo hay ${currentStock} unidades disponibles`
+				setStockError(errorMessage)
+
+				toast.error('Stock insuficiente', {
+					description: `Solo quedan ${currentStock} unidades disponibles.`,
+				})
+
+				return false
+			}
+
+			return true
+		} catch (error: any) {
+			console.error('Error al verificar stock:', error)
+			const errorMessage = error.response?.data?.message || 'Error al verificar disponibilidad'
+			setStockError(errorMessage)
+
+			toast.error('Error del sistema', {
+				description: 'No se pudo verificar el stock disponible. Inténtalo de nuevo.',
+				duration: 3000,
+			})
+
+			return false
+		} finally {
+			setIsValidatingStock(false)
+		}
+	}
+
 	// Controlar el loading inicial - cuando las categorías terminan de cargar por primera vez
 	useEffect(() => {
 		if (!loadingCategories && categoryData) {
-			const timer = setTimeout(() => {
-				setIsInitialLoading(false)
-			}, 300) // Pequeño delay para suavizar la transición
-
+			const timer = setTimeout(() => setIsInitialLoading(false), 300) // Pequeño delay para suavizar la transición
 			return () => clearTimeout(timer)
 		}
 	}, [loadingCategories, categoryData])
@@ -150,21 +202,50 @@ export function MatrizView() {
 	// Encontrar la categoría seleccionada para mostrar su nombre
 	const currentCategory = categories.find(cat => cat.id === selectedCategory)
 
-	// Función para añadir al carrito
-	const handleAddToCart = product => {
-		addItem({
-			id: product.id,
-			name: product.name,
-			price: product.pricePublic,
-			image: product?.photo?.path,
-			code: product.code,
-			taxRate: product.tax,
-		})
+	// 🔧 FUNCIÓN CORREGIDA - handleAddToCart con validación de stock correcta
+	const handleAddToCart = async product => {
+		try {
+			// Usar orderItems del store (ya corregido arriba)
+			const existingItem = orderItems?.find(item => item.id === product.id)
+			const currentQuantityInCart = existingItem ? existingItem.quantity : 0
 
-		// Limpiar búsqueda después de añadir si hay coincidencia exacta
-		if (allProducts.length === 1 && debouncedSearchTerm.length > 0) {
-			setSearchTerm('')
-			searchInputRef.current?.focus()
+			// La nueva cantidad total sería la actual + 1 (porque siempre añadimos de 1 en 1)
+			const newTotalQuantity = currentQuantityInCart + 1
+
+			// Verificar stock antes de añadir al carrito
+			const hasStock = await checkStock(product.id, newTotalQuantity)
+
+			if (!hasStock) {
+				// El error ya se muestra en checkStock, no hacer nada más
+				return
+			}
+
+			// Si hay stock suficiente, añadir al carrito
+			addItem({
+				id: product.id,
+				name: product.name,
+				price: product.pricePublic,
+				image: product?.photo?.path,
+				code: product.code,
+				taxRate: product.tax,
+				discount: 0,
+			})
+
+			// Limpiar búsqueda después de añadir si hay coincidencia exacta
+			if (allProducts.length === 1 && debouncedSearchTerm.length > 0) {
+				setSearchTerm('')
+				searchInputRef.current?.focus()
+			}
+
+			// Toast de éxito
+			toast.success('Producto añadido', {
+				description: `Se añadió ${newTotalQuantity} ${newTotalQuantity === 1 ? 'unidad' : 'unidades'} de ${product.name}`,
+			})
+		} catch (error) {
+			console.error('Error al añadir producto al carrito:', error)
+			toast.error('Error', {
+				description: 'No se pudo añadir el producto al carrito. Inténtalo de nuevo.',
+			})
 		}
 	}
 
@@ -172,7 +253,7 @@ export function MatrizView() {
 	useEffect(() => {
 		if (allProducts.length === 1 && debouncedSearchTerm.length > 0) {
 			setSelectedProductIndex(0)
-			// Auto-añadir al carrito cuando hay solo un producto
+			// Auto-añadir al carrito cuando hay solo un producto (con validación)
 			handleAddToCart(allProducts[0])
 		} else if (allProducts.length > 1 && debouncedSearchTerm.length > 0) {
 			setSelectedProductIndex(0)
@@ -199,7 +280,7 @@ export function MatrizView() {
 
 	const handleSriSale = async (saleData: SaleData) => {
 		try {
-			console.log('🛒 Datos originales del frontend:', saleData)
+			console.log('🛒 Datos originales del frontend con descuentos:', saleData)
 
 			// --- Validar pagos ---
 			if (!saleData.payments || saleData.payments.length === 0) {
@@ -207,14 +288,14 @@ export function MatrizView() {
 			}
 
 			const totalPaid = saleData.payments.reduce((sum, p) => sum + p.amount, 0)
-			if (totalPaid < saleData.financials.total - 0.01) {
-				// tolerancia de 1 centavo
+			if (totalPaid < saleData.financials.total - 0.0) {
+				// tolerancia de 0 centavo
 				throw new Error(
 					`Total pagado insuficiente: $${totalPaid.toFixed(2)} / Total requerido: $${saleData.financials.total.toFixed(2)}`
 				)
 			}
 
-			// --- Formatear datos para backend ---
+			// --- Formatear datos para backend con información de descuentos ---
 			const formattedData = {
 				customerId: saleData.customerId,
 				payments: saleData.payments.map(p => ({
@@ -222,11 +303,15 @@ export function MatrizView() {
 					amount: p.amount,
 					...(p.transferNumber && { transferNumber: p.transferNumber }),
 				})),
-				items: saleData.items.map(i => ({ productId: i.productId, quantity: i.quantity })),
-				financials: saleData.financials,
+				items: saleData.items.map(i => ({
+					productId: i.productId,
+					quantity: i.quantity,
+					discountPercentage: i.discount,
+					discountAmount: i.discountAmount,
+				})),
 			}
 
-			console.log('📤 DATA TO BACKEND:', formattedData)
+			console.log('📤 DATA TO BACKEND (con descuentos):', formattedData)
 
 			// --- Llamada al backend ---
 			const response = await createSriSale(formattedData)
@@ -240,7 +325,7 @@ export function MatrizView() {
 				...backendSale,
 				receivedAmount: totalPaid,
 				change: Math.max(0, totalPaid - backendSale.total),
-				paymentMethods: backendSale.payments || saleData.payments, // asegurar que existan los métodos
+				paymentMethods: backendSale.payments || saleData.payments,
 				facturaInfo: {
 					attempted: backendSale.billing?.facturaResponse?.attempted || false,
 					success: backendSale.billing?.facturaResponse?.success || false,
@@ -254,19 +339,6 @@ export function MatrizView() {
 
 			// --- Generar PDF con los datos del backend ---
 			generateSaleReceiptPDF(receiptData)
-
-			// --- Log comparativo de totales ---
-			console.log('📊 Totales frontend vs backend:', {
-				frontend: saleData.financials,
-				backend: {
-					subtotal: backendSale.subtotal,
-					tax: backendSale.taxAmount,
-					total: backendSale.total,
-					items: backendSale.items?.length || 0,
-				},
-				totalPaid,
-				change: receiptData.change,
-			})
 
 			return response
 		} catch (error) {
@@ -284,23 +356,19 @@ export function MatrizView() {
 
 	const handleSimpleSale = async (saleData: SaleData) => {
 		try {
-			console.log('🛒 Datos originales del frontend:', saleData)
-
 			// Validar que existan pagos
-			if (!saleData.payments || saleData.payments.length === 0) {
-				throw new Error('No hay métodos de pago definidos')
-			}
+			if (!saleData.payments || saleData.payments.length === 0) throw new Error('No hay métodos de pago definidos')
 
 			// Validar que el total de pagos cubra el monto total
 			const totalPaid = saleData.payments.reduce((sum, payment) => sum + payment.amount, 0)
-			if (totalPaid < saleData.financials.total - 0.01) {
-				// Tolerancia de 1 centavo
+			if (totalPaid < saleData.financials.total - 0.0) {
+				// Tolerancia de 0 centavo
 				throw new Error(
 					`El total pagado ($${totalPaid.toFixed(2)}) es menor al total requerido ($${saleData.financials.total.toFixed(2)})`
 				)
 			}
 
-			// Formatear datos para el backend con soporte para múltiples pagos
+			// Formatear datos para el backend con soporte para múltiples pagos y descuentos
 			const formattedData = {
 				customerId: saleData.customerId,
 				payments: saleData.payments.map(payment => ({
@@ -310,23 +378,16 @@ export function MatrizView() {
 						transferNumber: payment.transferNumber,
 					}),
 				})),
-				// Solo enviar productId y quantity - el backend buscará el resto
+				// Enviar información completa de descuentos al backend
 				items: saleData.items.map(item => ({
 					productId: item.productId,
 					quantity: item.quantity,
+					discountPercentage: item.discount,
+					discountAmount: item.discountAmount,
 				})),
-				financials: saleData.financials,
 			}
 
-			console.log('📤 DATA TO BACKEND (con múltiples pagos):', formattedData)
-			console.log(
-				'💳 Pagos enviados:',
-				formattedData.payments.map(p => `${p.method}: $${p.amount}${p.transferNumber ? ` (${p.transferNumber})` : ''}`)
-			)
-			console.log(
-				'🔍 Items enviados:',
-				formattedData.items.map(item => `${item.productId} x${item.quantity}`)
-			)
+			console.log('📤 DATA TO BACKEND (con múltiples pagos y descuentos):', formattedData)
 
 			// El backend retornará los totales calculados para verificación
 			const response = await createSimpleSale(formattedData)
@@ -335,12 +396,18 @@ export function MatrizView() {
 			// Después de una venta exitosa, generar el PDF
 			if (response.data) {
 				// Usar directamente los datos de respuesta del backend
-				const receiptData = response.data
-
-				// Añadir información adicional si es necesario
-				receiptData.estado_sri = response.data.estado_sri
-				receiptData.receivedAmount = totalPaid
-				receiptData.change = Math.max(0, totalPaid - response.data.total)
+				const receiptData = {
+					...response.data,
+					// Mapear el campo discountAmount a discount para compatibilidad con el PDF
+					// Asegurar que todos los campos necesarios estén presentes
+					estado_sri: response.data.estado_sri,
+					receivedAmount: response.data.receivedAmount,
+					change: response.data.change,
+					// Convertir discountAmount string a número si es necesario
+					discount: response.data.discountAmount || response.data.totalDiscountAmount || 0,
+					discountAmount: parseFloat(response.data.discountAmount || '0'),
+					totalDiscountAmount: response.data.discountSummary?.totalDiscount || 0,
+				}
 
 				// Generar el PDF
 				generateSaleReceiptPDF(receiptData)
@@ -351,23 +418,25 @@ export function MatrizView() {
 				const backendTotals = response.data.calculatedTotals
 				const frontendTotals = saleData.financials
 
-				console.log('📊 Comparación de totales:')
+				console.log('📊 Comparación de totales (con descuentos):')
 				console.log('Frontend:', {
 					subtotal: frontendTotals.subtotal,
 					tax: frontendTotals.tax,
 					total: frontendTotals.total,
 					items: frontendTotals.totalItems,
 					totalPaid: totalPaid,
+					totalDiscountAmount: frontendTotals.totalDiscountAmount,
 				})
 				console.log('Backend:', {
 					subtotal: backendTotals.subtotal,
 					tax: backendTotals.taxAmount,
 					total: backendTotals.total,
 					items: backendTotals.totalItems,
+					totalDiscountAmount: backendTotals.totalDiscountAmount || 0,
 				})
 
 				// Alertar si hay diferencias significativas
-				const tolerance = 0.01
+				const tolerance = 0.0
 				if (Math.abs(frontendTotals.total - backendTotals.total) > tolerance) {
 					console.warn('⚠️ DIFERENCIA EN TOTALES:', {
 						frontend: frontendTotals.total,
@@ -417,10 +486,8 @@ export function MatrizView() {
 	}
 
 	return (
-		<div className='flex h-[calc(100vh-0.5rem)] min-h-[calc(100vh-0.5rem)] w-full gap-4'>
-			<div className='flex flex-1 flex-col space-y-4'>
-				<NavbarPOSMatriz />
-
+		<div className='flex h-[calc(100vh-0.5rem)] min-h-[calc(100vh-0.5rem)] w-full gap-4 pb-10'>
+			<div className='flex flex-1 flex-col space-y-3 pb-6'>
 				<div className='flex flex-shrink-0 items-center justify-between px-2 pr-4'>
 					<motion.div
 						key={selectedCategory ? 'category-selected' : 'categories'}
@@ -428,7 +495,7 @@ export function MatrizView() {
 						initial='hidden'
 						animate='visible'
 						exit='hidden'
-						className='flex items-center gap-4'>
+						className='flex items-center gap-3'>
 						{!selectedCategory ? (
 							<Typography variant='lead' className='uppercase'>
 								Categorías
@@ -437,9 +504,10 @@ export function MatrizView() {
 							<>
 								<ActionButton
 									onClick={handleBackToCategories}
-									icon={<Icons.iconArrowLeft className='h-4 w-4' />}
+									icon={<Icons.iconArrowLeft />}
 									variant='secondary'
-									size='lg'
+									size='icon'
+									className='h-9 w-9'
 								/>
 								<Typography variant='lead' className='uppercase'>
 									{currentCategory?.name}
@@ -450,24 +518,24 @@ export function MatrizView() {
 
 					{/* Barra de búsqueda */}
 					<div className='relative'>
-						<Icons.search className='text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform' />
+						<Icons.search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform' />
 						<Input
 							ref={searchInputRef}
 							placeholder='Buscar por nombre o códigos...'
 							value={searchTerm}
 							onChange={e => setSearchTerm(e.target.value)}
-							className={`bg-card focus:border-primary h-10 rounded-2xl border-2 pr-12 pl-12 ${
-								searchTerm && allProducts.length === 1 ? 'border-green-500 focus:border-green-500' : ''
-							}`}
+							className='bg-card focus:border-primary h-8 rounded-md border-2 pr-4 pl-9'
+							disabled={isValidatingStock}
 						/>
 						{searchTerm && (
-							<div className='absolute top-1/2 right-2 flex -translate-y-1/2 gap-1'>
+							<div className='absolute top-1/2 right-1 flex -translate-y-1/2 gap-1'>
 								<ActionButton
 									onClick={() => setSearchTerm('')}
 									icon={<Icons.x />}
-									variant='secondary'
-									size='sm'
-									className='text-muted-foreground hover:text-foreground rounded-full'
+									variant='ghost'
+									size='icon'
+									className='text-muted-foreground hover:text-foreground h-6 w-6 rounded-full'
+									disabled={isValidatingStock}
 								/>
 							</div>
 						)}
@@ -497,13 +565,22 @@ export function MatrizView() {
 										animate='visible'
 										className='grid grid-cols-2 gap-4 px-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
 										{allProducts.map((product, index) => (
-											<ProductCard
-												key={product.id}
-												product={product}
-												onAddToCart={handleAddToCart}
-												isSelected={selectedProductIndex === index}
-												onSelect={() => setSelectedProductIndex(index)}
-											/>
+											<div key={product.id} className='relative'>
+												{/* Card */}
+												<ProductCard
+													product={product}
+													onAddToCart={handleAddToCart}
+													onSelect={() => setSelectedProductIndex(index)}
+													disabled={isValidatingStock && selectedProductIndex === index}
+												/>
+
+												{/* Overlay con spinner solo en la card seleccionada */}
+												{isValidatingStock && selectedProductIndex === index && (
+													<div className='bg-popover/50 absolute inset-0 z-10 flex items-center justify-center rounded-2xl'>
+														<Icons.spinnerSimple className='text-primary h-6 w-6 animate-spin' />
+													</div>
+												)}
+											</div>
 										))}
 									</motion.div>
 								)}
@@ -541,13 +618,9 @@ export function MatrizView() {
 						)}
 					</div>
 				</ScrollArea>
-
-				<div className='px-4 pb-6'>
-					<FooterPublic />
-				</div>
 			</div>
 
-			{/* Sidebar del carrito con soporte para múltiples pagos */}
+			{/* Sidebar del carrito con soporte para múltiples pagos y descuentos */}
 			<CartSidebar handleSriSale={handleSriSale} handleSimpleSale={handleSimpleSale} />
 		</div>
 	)

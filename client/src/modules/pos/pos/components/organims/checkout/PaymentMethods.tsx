@@ -141,15 +141,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = ({ payments, onPaym
 	}
 
 	return (
-		<div className='space-y-4'>
-			<div className='flex items-center justify-between'>
-				<Typography variant='h6'>Métodos de pago</Typography>
+		<div>
+			<div className='flex items-center justify-between space-y-3'>
+				<Typography variant='p'>Métodos de pago</Typography>
 				{!isFullyPaid && (
 					<ActionButton
-						variant='secondary'
-						size='sm'
+						variant='ghost'
+						size='xs'
 						onClick={handleOpenDialog}
-						icon={<Plus className='h-4 w-4' />}
+						icon={<Icons.plus className='h-4 w-4' />}
 						text='Agregar'
 					/>
 				)}
@@ -157,14 +157,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = ({ payments, onPaym
 
 			{/* Lista de pagos agregados */}
 			{payments.length > 0 && (
-				<div className='bg-popover divide-y rounded-2xl'>
+				<div className='bg-popover divide-y rounded-2xl border'>
 					{payments.map(payment => {
 						const methodInfo = getMethodInfo(payment.method)
 						return (
 							<div key={payment.id}>
-								<div className='flex items-center justify-between p-2'>
-									<div className='flex items-center gap-3'>
-										{methodInfo?.icon && React.createElement(methodInfo.icon, { className: 'h-5 w-5' })}
+								<div className='flex items-center justify-between p-1'>
+									<div className='flex items-center gap-1'>
+										{methodInfo?.icon && React.createElement(methodInfo.icon, { className: 'h-4 w-4' })}
 										<div>
 											<Typography variant='small' className='font-medium'>
 												{methodInfo?.label}
@@ -185,9 +185,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = ({ payments, onPaym
 										<ActionButton
 											variant='ghost'
 											size='icon'
+											tooltip='Remover'
+											className='!text-destructive hover:!bg-destructive/20 h-7 w-7'
 											onClick={() => handleRemovePayment(payment.id)}
-											icon={<X className='h-4 w-4' />}
-											className='text-destructive hover:text-destructive'
+											icon={<Icons.trash className='h-3 w-3' />}
 										/>
 									</div>
 								</div>

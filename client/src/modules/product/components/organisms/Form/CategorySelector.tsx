@@ -8,6 +8,7 @@ import { ProductFormData } from '@/modules/product/types/product-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
+import { useEffect } from 'react' // Importar useEffect
 
 interface CategorySelectorProps {
 	control: Control<ProductFormData>
@@ -20,6 +21,7 @@ interface CategorySelectorProps {
 	categoryOpen: boolean
 	setCategoryOpen: (open: boolean) => void
 	loadMoreCategories: () => void
+	currentCategory?: I_Category // Nueva prop para la categoría actual
 }
 
 export function CategorySelector({
@@ -32,12 +34,26 @@ export function CategorySelector({
 	setCategorySearch,
 	categoryOpen,
 	setCategoryOpen,
+	currentCategory, // Nueva prop
 }: CategorySelectorProps) {
+	// Efecto para buscar automáticamente la categoría actual cuando se abre el selector
+	useEffect(() => {
+		if (categoryOpen && currentCategory) {
+			setCategorySearch(currentCategory.name)
+		}
+	}, [categoryOpen, currentCategory, setCategorySearch])
+
 	const categoryOptions =
 		categories?.data?.items?.map(category => ({
 			value: category.id,
 			label: category.name,
 		})) || []
+
+	// Si tenemos una categoría actual que no está en las opciones, la agregamos
+	const allOptions =
+		currentCategory && !categoryOptions.some(opt => opt.value === currentCategory.id)
+			? [{ value: currentCategory.id, label: currentCategory.name }, ...categoryOptions]
+			: categoryOptions
 
 	return (
 		<Card className='border-none bg-transparent p-0 shadow-none'>
@@ -64,11 +80,11 @@ export function CategorySelector({
 						type='command'
 						label='Selecciona una categoría'
 						placeholder='Buscar categoría...'
-						options={categoryOptions}
+						options={allOptions}
 						commandEmptyMessage={
 							loadingCategories ? <SpinnerLoader text='Buscando...' inline /> : 'No se encontrarón coincidencias'
 						}
-						shouldFilter={false} // Desactivar filtrado interno ya que se maneja externamente
+						shouldFilter={false}
 						commandOpen={categoryOpen}
 						setCommandOpen={setCategoryOpen}
 						commandSearchValue={categorySearch}

@@ -8,7 +8,7 @@ import {
 	RowSelectionState,
 	getFilteredRowModel,
 } from '@tanstack/react-table'
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { animations } from '@/lib/animations'
@@ -22,6 +22,7 @@ import { ListView } from '@/modules/sale/components/templates/ViewList'
 import { TableView } from '@/modules/sale/components/templates/ViewTable'
 import { LoadingStates } from '@/modules/sale/components/templates/ViewSkeleton'
 import { createTableColumns } from '@/modules/sale/components/organisms/Table/TableColumns'
+import { Table } from '@/components/ui/table'
 
 interface TableProps {
 	loading: boolean
@@ -86,7 +87,11 @@ export function TableData({
 
 		switch (viewType) {
 			case 'table':
-				return <TableView {...viewProps} />
+				return (
+					<Table className='w-full table-fixed overflow-hidden'>
+						<TableView {...viewProps} />
+					</Table>
+				)
 			case 'card':
 				return <CardView {...viewProps} />
 			case 'list':

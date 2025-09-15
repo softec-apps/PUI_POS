@@ -1,6 +1,7 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+
 import { Icons } from '@/components/icons'
+import React, { useState, useEffect } from 'react'
 import { Typography } from '@/components/ui/typography'
 import { formatDate } from '@/common/utils/dateFormater-util'
 import { formatTime } from '@/modules/dashboard/utils/timeUtils'
@@ -150,10 +151,12 @@ export const TimeSelector: React.FC<TimeSelectorProps> = ({ currentTime, dateRan
 			<div className='flex items-center gap-2'>
 				<Icons.sparkles className='h-4 w-4' />
 				<Select value={dateRange} onValueChange={onDateRangeChange}>
-					<SelectTrigger className='w-auto border-none shadow-none'>
+					<SelectTrigger className='w-auto shadow-none'>
 						<SelectValue placeholder='Seleccionar período' />
 					</SelectTrigger>
 					<SelectContent align='end' className='text-muted-foreground'>
+						<SelectItem value='today'>Hoy</SelectItem>
+						<SelectItem value='yesterday'>Ayer</SelectItem>
 						<SelectItem value='7'>Últimos 7 días</SelectItem>
 						<SelectItem value='15'>Últimos 15 días</SelectItem>
 						<SelectItem value='30'>Últimos 30 días</SelectItem>

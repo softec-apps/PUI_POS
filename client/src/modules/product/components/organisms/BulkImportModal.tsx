@@ -34,23 +34,81 @@ import { formatPrice } from '@/common/utils/formatPrice-util'
 import { useProduct } from '@/common/hooks/useProduct'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { TaxAllow, taxLabelsTraslateToEs } from '../../constants/product.constants'
 
 // ==================== SCHEMAS ====================
 const productEditSchema = z.object({
-	identification: z.string().max(20, 'Máximo 20 caracteres').min(1, 'Es requerida'),
+	identification: z.string().min(1, 'Es requerido').max(255, 'Máximo 255 caracteres'),
 	upcEanIsbn: z.preprocess(
 		value => (typeof value === 'number' ? value.toString() : value),
 		z.string().max(20, 'Máximo 20 caracteres').min(1, 'Es requerida')
 	),
 	itemName: z.string().min(1, 'Es requerido').max(255, 'Máximo 255 caracteres'),
 	category: z.string().max(255, 'Máximo 255 caracteres').min(1, 'Es requerida'),
-	companyName: z.string().max(255, 'Máximo 255 caracteres').min(1, 'Es requerida'),
-	wholesalePrice: z.number().nonnegative('Debe ser positivo').multipleOf(0.000001, 'Máximo 6 decimales').optional(),
-	unitPrice: z.number().positive('El precio de venta debe ser mayor a 0').multipleOf(0.000001, 'Máximo 6 decimales'),
-	stockQuantity: z.number().int('Debe ser un número entero').nonnegative('Debe ser positivo'),
-	taxPercentage: z.number().refine(val => val === 0 || val === 15, {
-		message: 'Debe ser 0% (exento) o 15% (con IVA)',
-	}),
+	legalName: z.string().max(255, 'Máximo 255 caracteres').min(1, 'Es requerida'),
+	wholesalePrice: z.preprocess(
+		val => {
+			if (val === '' || val === null || val === undefined) return undefined
+			if (typeof val === 'string') {
+				// Si es string, verificar que sea un número válido
+				if (!/^-?\d*\.?\d*$/.test(val)) return NaN // Esto forzará el error de validación
+				return Number(val)
+			}
+			return val
+		},
+		z
+			.number({ required_error: 'Campo requerido' })
+			.positive('Debe ser un número positivo')
+			.max(999999.999999, 'Máximo 6 dígitos y 6 decimales')
+			.refine(val => /^\d{1,6}(\.\d{1,6})?$/.test(val.toString()), {
+				message: 'Máximo 6 enteros y 6 decimales',
+			})
+	),
+	unitPrice: z.preprocess(
+		val => {
+			if (val === '' || val === null || val === undefined) return undefined
+			if (typeof val === 'string') {
+				// Si es string, verificar que sea un número válido
+				if (!/^-?\d*\.?\d*$/.test(val)) return NaN // Esto forzará el error de validación
+				return Number(val)
+			}
+			return val
+		},
+		z
+			.number({ required_error: 'Campo requerido' })
+			.positive('Debe ser un número positivo')
+			.max(999999.999999, 'Máximo 6 dígitos y 6 decimales')
+			.refine(val => /^\d{1,6}(\.\d{1,6})?$/.test(val.toString()), {
+				message: 'Máximo 6 enteros y 6 decimales',
+			})
+	),
+	stockQuantity: z.preprocess(
+		val => {
+			if (val === '' || val === null || val === undefined) return 0
+			if (typeof val === 'string') {
+				// Si es string, verificar que sea un número entero válido
+				if (!/^-?\d*$/.test(val)) return NaN // Esto forzará el error de validación
+				return Number(val)
+			}
+			return val
+		},
+		z.number({ required_error: 'Campo requerido' }).int('Debe ser un entero').min(1, 'Debe ser un número positivo')
+	),
+	taxPercentage: z.preprocess(val => {
+		// Si es string, convertir a número y luego al enum
+		if (typeof val === 'string') {
+			const numericValue = Number(val)
+			if (numericValue === 0) return TaxAllow.EXENTO
+			if (numericValue === 15) return TaxAllow.CON_IVA
+			return val // Si no es un valor válido, dejar que el enum validation falle
+		}
+		// Si ya es un número, convertir al enum
+		if (typeof val === 'number') {
+			if (val === 0) return TaxAllow.EXENTO
+			if (val === 15) return TaxAllow.CON_IVA
+		}
+		return val
+	}, z.nativeEnum(TaxAllow)),
 })
 
 // ==================== TYPES ====================
@@ -67,7 +125,7 @@ interface ProductPreview {
 	upcEanIsbn?: string
 	itemName?: string
 	category?: string
-	companyName?: string
+	legalName?: string
 	wholesalePrice?: number
 	unitPrice?: number
 	stockQuantity?: number
@@ -188,7 +246,7 @@ class DataNormalizer {
 			upcEanIsbn: data['UPC/EAN/ISBN'] || data.upcEanIsbn || '',
 			itemName: data['Nombre Artículo'] || data.itemName || '',
 			category: data['Categoría'] || data.category || '',
-			companyName: data['Nombre de la Compañia'] || data.companyName || '',
+			legalName: data['Nombre de la Compañia'] || data.legalName || '',
 			wholesalePrice: data['Precio al Por Mayor'] || data.wholesalePrice || 0,
 			unitPrice: data['Precio de Venta'] || data.unitPrice || 0,
 			stockQuantity: data['Cantidad en Stock'] || data.stockQuantity || 0,
@@ -209,8 +267,8 @@ class DataNormalizer {
 				return normalized.itemName || '-'
 			case 'category':
 				return normalized.category || '-'
-			case 'companyName':
-				return normalized.companyName || '-'
+			case 'legalName':
+				return normalized.legalName || '-'
 			case 'wholesalePrice':
 				return formatPrice(normalized?.wholesalePrice) || '-'
 			case 'unitPrice':
@@ -267,7 +325,7 @@ class ExcelManager {
 							rowData.push(item['Categoría'] || item.category || '')
 							break
 						case 'Nombre de la Compañia':
-							rowData.push(item['Nombre de la Compañia'] || item.companyName || '')
+							rowData.push(item['Nombre de la Compañia'] || item.legalName || '')
 							break
 						case 'Precio al Por Mayor':
 							rowData.push(item['Precio al Por Mayor'] || item.wholesalePrice || 0)
@@ -341,7 +399,7 @@ class TaxManager {
 				'UPC/EAN/ISBN': item['UPC/EAN/ISBN'] || normalized.upcEanIsbn,
 				'Nombre Artículo': item['Nombre Artículo'] || normalized.itemName,
 				Categoría: item['Categoría'] || normalized.category,
-				'Nombre de la Compañia': item['Nombre de la Compañia'] || normalized.companyName,
+				'Nombre de la Compañia': item['Nombre de la Compañia'] || normalized.legalName,
 				'Precio al Por Mayor': item['Precio al Por Mayor'] || normalized.wholesalePrice,
 				'Precio de Venta': item['Precio de Venta'] || normalized.unitPrice,
 				'Cantidad en Stock': item['Cantidad en Stock'] || normalized.stockQuantity,
@@ -349,7 +407,7 @@ class TaxManager {
 				upcEanIsbn: item.upcEanIsbn || normalized.upcEanIsbn,
 				itemName: item.itemName || normalized.itemName,
 				category: item.category || normalized.category,
-				companyName: item.companyName || normalized.companyName,
+				legalName: item.legalName || normalized.legalName,
 				wholesalePrice: item.wholesalePrice || normalized.wholesalePrice,
 				unitPrice: item.unitPrice || normalized.unitPrice,
 				stockQuantity: item.stockQuantity || normalized.stockQuantity,
@@ -397,7 +455,7 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 			upcEanIsbn: '',
 			itemName: '',
 			category: '',
-			companyName: '',
+			legalName: '',
 			wholesalePrice: 0,
 			unitPrice: 0,
 			stockQuantity: 0,
@@ -408,6 +466,12 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 	const taxOptions = [
 		{ value: '0', label: '0% - Exento de IVA' },
 		{ value: '15', label: '15% - Con IVA' },
+	]
+
+	// Crear las opciones usando directamente los valores del enum como strings
+	const typeOptions = [
+		{ value: TaxAllow.EXENTO.toString(), label: taxLabelsTraslateToEs[TaxAllow.EXENTO] },
+		{ value: TaxAllow.CON_IVA.toString(), label: taxLabelsTraslateToEs[TaxAllow.CON_IVA] },
 	]
 
 	// ==================== STATE MANAGEMENT ====================
@@ -611,7 +675,7 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 						'UPC/EAN/ISBN': formData.upcEanIsbn || '',
 						'Nombre Artículo': formData.itemName,
 						Categoría: formData.category || '',
-						'Nombre de la Compañia': formData.companyName || '',
+						'Nombre de la Compañia': formData.legalName || '',
 						'Precio al Por Mayor': formData.wholesalePrice || 0,
 						'Precio de Venta': formData.unitPrice,
 						'Cantidad en Stock': formData.stockQuantity || 0,
@@ -621,7 +685,7 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 						upcEanIsbn: formData.upcEanIsbn || '',
 						itemName: formData.itemName,
 						category: formData.category || '',
-						companyName: formData.companyName || '',
+						legalName: formData.legalName || '',
 						wholesalePrice: formData.wholesalePrice || 0,
 						unitPrice: formData.unitPrice,
 						stockQuantity: formData.stockQuantity || 0,
@@ -687,7 +751,7 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 				upcEanIsbn: normalized.upcEanIsbn || '',
 				itemName: normalized.itemName || '',
 				category: normalized.category || '',
-				companyName: normalized.companyName || '',
+				legalName: normalized.legalName || '',
 				wholesalePrice: normalized.wholesalePrice || 0,
 				unitPrice: normalized.unitPrice || 0,
 				stockQuantity: normalized.stockQuantity || 0,
@@ -959,7 +1023,7 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 																				{DataNormalizer.getDisplayValue(item, 'category')}
 																			</TableCell>
 																			<TableCell className='max-w-[200px] truncate'>
-																				{DataNormalizer.getDisplayValue(item, 'companyName')}
+																				{DataNormalizer.getDisplayValue(item, 'legalName')}
 																			</TableCell>
 																			<TableCell>${DataNormalizer.getDisplayValue(item, 'wholesalePrice')}</TableCell>
 																			<TableCell>${DataNormalizer.getDisplayValue(item, 'unitPrice')}</TableCell>
@@ -1063,7 +1127,7 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 
 				{/* Diálogo para editar fila */}
 				<Dialog open={editingRow !== null} onOpenChange={() => setEditingRow(null)}>
-					<DialogContent className='max-h-[80vh] min-w-3xl space-y-4 overflow-y-auto'>
+					<DialogContent className='max-h-[90vh] min-w-4xl space-y-4 overflow-y-auto'>
 						<DialogHeader>
 							<DialogTitle>Editar producto</DialogTitle>
 							<DialogDescription>
@@ -1116,7 +1180,7 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 										<UniversalFormField
 											required
 											control={form.control}
-											name='companyName'
+											name='legalName'
 											label='Compañía/Proveedor'
 											placeholder='Nombre de la compañía/Proveedor'
 											type='text'
@@ -1130,7 +1194,6 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 											name='wholesalePrice'
 											label='Costo'
 											type='number'
-											step='0.000001'
 											placeholder='0.00'
 										/>
 
@@ -1140,7 +1203,6 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 											name='unitPrice'
 											label='PVP'
 											type='number'
-											step='0.000001'
 											placeholder='0.00'
 										/>
 
@@ -1155,12 +1217,12 @@ export function BulkImportModal({ open, onOpenChange, onSuccess }: BulkImportMod
 
 										<UniversalFormField
 											required
+											label='Impuesto'
 											control={form.control}
 											name='taxPercentage'
-											label='Impuesto %'
-											type='number'
+											type='select'
 											options={taxOptions}
-											placeholder='Seleccione el impuesto'
+											placeholder='Seleccionar'
 										/>
 									</div>
 

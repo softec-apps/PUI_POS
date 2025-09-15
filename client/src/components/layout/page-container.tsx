@@ -19,5 +19,5 @@ export default function PageContainer({ children, scrollable = true }: PageConta
 		)
 	}
 
-	return <div className='min-h-[calc(100dvh-52px)] pt-4 pr-4 pl-2'>{children}</div>
+	return <div className='min-h-[calc(100dvh-52px)] px-2'>{children}</div>
 }

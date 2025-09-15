@@ -26,8 +26,8 @@ export const useSale = (paginationParams: UseSaleParams = {}) => {
 	const queryParams: Record<string, any> = {}
 
 	// Parámetros básicos
-	if (paginationParams.page !== undefined) queryParams.page = paginationParams.page
-	if (paginationParams.limit !== undefined) queryParams.limit = paginationParams.limit
+	if (paginationParams?.page !== undefined) queryParams.page = paginationParams.page
+	if (paginationParams?.limit !== undefined) queryParams.limit = paginationParams.limit
 
 	// ✅ Serializar filters como JSON si existe
 	if (paginationParams.filters && Object.keys(paginationParams.filters).length > 0)

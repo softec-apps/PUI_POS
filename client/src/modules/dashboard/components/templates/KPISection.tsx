@@ -27,6 +27,14 @@ export const KPISection: React.FC<KPISectionProps> = React.memo(({ metrics, date
 	return (
 		<section className='grid grid-cols-3 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
 			<KPICard
+				title='Ventas'
+				value={metrics.totalSales}
+				//growth={showGrowth ? metrics.salesGrowth : undefined}
+				description='Cantidad total de ventas realizadas'
+				isLoading={loading}
+			/>
+
+			<KPICard
 				title='Ingresos'
 				value={metrics.totalRevenue}
 				//growth={showGrowth ? metrics.revenueGrowth : undefined}
@@ -41,14 +49,6 @@ export const KPISection: React.FC<KPISectionProps> = React.memo(({ metrics, date
 				//growth={showGrowth ? metrics.profitGrowth : undefined}
 				isCurrency
 				description='Beneficio neto después de costos'
-				isLoading={loading}
-			/>
-
-			<KPICard
-				title='Ventas'
-				value={metrics.totalSales}
-				//growth={showGrowth ? metrics.salesGrowth : undefined}
-				description='Cantidad total de ventas realizadas'
 				isLoading={loading}
 			/>
 		</section>

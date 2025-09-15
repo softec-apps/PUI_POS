@@ -44,8 +44,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({ customers, onSelectC
 					onKeyDown={e => e.key === 'Enter' && onSelectCustomer(customer)}>
 					<div className='flex items-center justify-between'>
 						<Typography variant='small' className='font-semibold'>
-							{customer.firstName}
-							{customer.lastName}
+							{customer.firstName} {customer.lastName}
 						</Typography>
 
 						<Badge

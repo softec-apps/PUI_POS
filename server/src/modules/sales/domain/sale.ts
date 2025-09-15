@@ -40,13 +40,6 @@ export class Sale {
 
   @ApiProperty({
     type: 'number',
-    example: 15,
-    description: 'Tasa de impuesto (%) aplicada a la venta',
-  })
-  taxRate: number
-
-  @ApiProperty({
-    type: 'number',
     example: 150.123456,
     description: 'Monto de impuesto calculado para la venta',
   })
@@ -96,6 +89,13 @@ export class Sale {
     description: 'Monto total recibido del cliente (suma de todos los pagos)',
   })
   receivedAmount: number
+
+  @ApiProperty({
+    type: 'number',
+    example: 1200.123456,
+    description: 'Descuento de la venta',
+  })
+  discountAmount: number
 
   @ApiProperty({
     type: 'number',
