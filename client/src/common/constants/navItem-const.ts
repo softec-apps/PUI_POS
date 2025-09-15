@@ -8,11 +8,18 @@ export const ALL_NAV_ITEMS: NavConfig = [
 		permission: GROUP_PERMISSIONS.MAIN,
 		items: [
 			{
-				title: 'Dashboard',
+				title: 'Inicio',
 				url: ROUTE_PATH.ADMIN.DASHBOARD,
 				icon: 'dashboard',
 				isActive: false,
 				permission: PERMISSIONS.DASHBOARD,
+			},
+			{
+				title: 'POS',
+				url: ROUTE_PATH.ADMIN.POS,
+				icon: 'buildingStore',
+				isActive: false,
+				permission: PERMISSIONS.ADMINISTRATION,
 			},
 			{
 				title: 'Usuarios',

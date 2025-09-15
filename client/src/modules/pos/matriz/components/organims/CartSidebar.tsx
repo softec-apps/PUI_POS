@@ -56,13 +56,15 @@ interface SaleData {
 		quantity: number
 		unitPrice: number
 		totalPrice: number
+		discount: number
+		discountAmount: number
 	}[]
 	financials: {
 		subtotal: number
 		tax: number
-		taxRate: number
 		total: number
 		totalItems: number
+		totalDiscountAmount: number
 	}
 	payments: PaymentEntry[]
 	metadata: {
@@ -76,9 +78,22 @@ interface CartSidebarProps {
 }
 
 export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleSimpleSale }) => {
-	// Store hooks
-	const { orderItems, updateQuantity, removeItem, clearCart, getSubtotal, getTax, getTotal, getTotalItems } =
-		useCartStore()
+	// Store hooks - Updated to include discount methods
+	const {
+		orderItems,
+		updateQuantity,
+		updateDiscount,
+		removeItem,
+		clearCart,
+		getSubtotal,
+		getTax,
+		getTotal,
+		getTotalItems,
+		getTotalDiscountAmount,
+		getItemDiscountedPrice,
+		getItemTotalPrice,
+	} = useCartStore()
+
 	const { cartState, setCartState } = useCheckoutStore()
 	const { selectedCustomer, clearCustomer } = useCustomerStore()
 
@@ -99,6 +114,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 	const tax = getTax()
 	const total = getTotal()
 	const totalItems = getTotalItems()
+	const totalDiscountAmount = getTotalDiscountAmount()
 
 	// Cálculos de pagos
 	const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0)
@@ -179,9 +195,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 
 	// Reset payments when customer is removed
 	useEffect(() => {
-		if (!selectedCustomer) {
-			setPayments([])
-		}
+		if (!selectedCustomer) setPayments([])
 	}, [selectedCustomer])
 
 	// Block reload during processing
@@ -197,7 +211,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 		}
 	}, [cartState])
 
-	// Función para preparar los datos de la venta
+	// Función para preparar los datos de la venta con descuentos
 	const prepareSaleData = (): SaleData => {
 		return {
 			customerId: selectedCustomer?.id || '',
@@ -211,21 +225,29 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 				phone: selectedCustomer?.phone,
 				address: selectedCustomer?.address,
 			},
-			items: orderItems.map(item => ({
-				productId: item.id,
-				productName: item.name,
-				image: item?.image,
-				productCode: item.code,
-				quantity: item.quantity,
-				unitPrice: item.price,
-				totalPrice: item.price * item.quantity,
-			})),
+			items: orderItems.map(item => {
+				const originalPrice = item.price * item.quantity
+				const discountedTotalPrice = getItemTotalPrice(item)
+				const discountAmount = originalPrice - discountedTotalPrice
+
+				return {
+					productId: item.id,
+					productName: item.name,
+					image: item?.image,
+					productCode: item.code,
+					quantity: item.quantity,
+					unitPrice: item.price,
+					totalPrice: discountedTotalPrice,
+					discount: item.discount || 0,
+					discountAmount: discountAmount,
+				}
+			}),
 			financials: {
 				subtotal,
 				tax,
-				taxRate: 0.15,
 				total,
 				totalItems,
+				totalDiscountAmount,
 			},
 			payments: payments.map(payment => ({
 				...payment,
@@ -247,7 +269,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 
 		// Validar que el total pagado cubra el monto total
 		const totalPaid = saleData.payments.reduce((sum, payment) => sum + payment.amount, 0)
-		if (totalPaid < saleData.financials.total - 0.01) return false // Tolerancia de 1 centavo
+		if (totalPaid < saleData.financials.total - 0.0) return false // Tolerancia de 0 centavo
 
 		// Validar que los pagos no efectivo tengan número de transferencia/autorización
 		const nonCashPayments = saleData.payments.filter(payment => payment.method !== 'cash')
@@ -279,6 +301,19 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 			const saleData = prepareSaleData()
 			if (!validateSaleData(saleData)) throw new Error('Datos de venta inválidos')
 
+			// Log para debugging con información de descuentos
+			console.log('🛒 Datos de venta con descuentos:', {
+				...saleData,
+				itemsWithDiscounts: saleData.items.map(item => ({
+					name: item.productName,
+					originalPrice: item.unitPrice * item.quantity,
+					discount: item.discount,
+					discountAmount: item.discountAmount,
+					finalPrice: item.totalPrice,
+				})),
+				totalDiscount: saleData.financials.totalDiscountAmount,
+			})
+
 			// Simulate payment processing
 			await handleSriSale(saleData)
 
@@ -298,6 +333,19 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 		try {
 			const saleData = prepareSaleData()
 			if (!validateSaleData(saleData)) throw new Error('Datos de venta inválidos')
+
+			// Log para debugging con información de descuentos
+			console.log('🛒 Datos de venta simple con descuentos:', {
+				...saleData,
+				itemsWithDiscounts: saleData.items.map(item => ({
+					name: item.productName,
+					originalPrice: item.unitPrice * item.quantity,
+					discount: item.discount,
+					discountAmount: item.discountAmount,
+					finalPrice: item.totalPrice,
+				})),
+				totalDiscount: saleData.financials.totalDiscountAmount,
+			})
 
 			// Enviar datos al backend
 			await handleSimpleSale(saleData)
@@ -334,14 +382,10 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 
 	return (
 		<>
-			<div ref={containerRef} className='flex h-full w-full max-w-[24rem] flex-col overflow-hidden'>
+			<div ref={containerRef} className='flex h-full w-full max-w-[25rem] flex-col pb-1'>
 				{/* Header */}
 				<div ref={headerRef} className='flex-shrink-0'>
-					{orderItems.length !== 0 && (
-						<Typography variant='h6' className='mb-2'>
-							Productos ({totalItems})
-						</Typography>
-					)}
+					{orderItems.length !== 0 && <Typography variant='p'>Productos ({totalItems})</Typography>}
 				</div>
 
 				{/* Contenido principal con scroll dinámico */}
@@ -349,13 +393,13 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 					<AnimatePresence mode='popLayout'>
 						{orderItems.length > 0 ? (
 							<ScrollArea
-								className='w-full pr-4'
+								className='w-full pr-3'
 								style={{
 									height: scrollAreaHeight > 0 ? `${scrollAreaHeight}px` : '50vh',
-									minHeight: '270px',
+									minHeight: '255px',
 									maxHeight: '70vh',
 								}}>
-								<div className='space-y-2'>
+								<div className='divide-y'>
 									{orderItems.map((item, index) => (
 										<CartItem
 											key={item.id}
@@ -367,6 +411,9 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 													const newQuantity = currentItem.quantity + change
 													updateQuantity(id, Math.max(1, newQuantity))
 												}
+											}}
+											onUpdateDiscount={(id, discount) => {
+												updateDiscount(id, discount)
 											}}
 											onRemoveItem={removeItem}
 										/>
@@ -383,7 +430,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 
 				{/* Footer con resumen y botón */}
 				{orderItems.length > 0 && (
-					<div ref={footerRef} className='w-full flex-shrink-0 space-y-4 pb-6'>
+					<div ref={footerRef} className='w-full flex-shrink-0 space-y-3 pb-6'>
 						{/* Customer Section */}
 						<CustomerSection />
 
@@ -392,42 +439,45 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 							<PaymentMethods payments={payments} onPaymentsChange={setPayments} totalAmount={total} />
 						)}
 
-						{/* Price Summary actualizado */}
-						<PriceSummary
-							subtotal={subtotal}
-							tax={tax}
-							total={total}
-							totalPaid={totalPaid}
-							remainingAmount={remainingAmount}
-							changeAmount={changeAmount}
-						/>
-
-						<div className='flex w-full items-center justify-between gap-4'>
-							<ActionButton
-								size='lg'
-								variant='destructive'
-								disabled={orderItems.length === 0}
-								onClick={handleNewSaleClick}
-								icon={<Icons.plus />}
+						<div className='space-y-3'>
+							{/* Price Summary actualizado con descuentos */}
+							<PriceSummary
+								subtotal={subtotal}
+								tax={tax}
+								total={total}
+								totalPaid={totalPaid}
+								remainingAmount={remainingAmount}
+								changeAmount={changeAmount}
+								totalDiscountAmount={totalDiscountAmount}
 							/>
-							<div className='flex items-center gap-3'>
-								<ActionButton
-									size='lg'
-									variant='info'
-									disabled={!canFinalizeOrder()}
-									onClick={handleFinalizeSimpleSale}
-									icon={<Icons.shoppingCart className='size-6' />}
-									text='Simple'
-								/>
 
+							<div className='flex w-full items-center justify-between gap-4'>
 								<ActionButton
 									size='lg'
-									variant='success'
-									disabled={!canFinalizeOrder()}
-									onClick={handleFinalizeSriSale}
-									icon={<Icons.shoppingCart className='size-6' />}
-									text='Factura'
+									variant='destructive'
+									disabled={orderItems.length === 0}
+									onClick={handleNewSaleClick}
+									icon={<Icons.plus />}
 								/>
+								<div className='flex items-center gap-3'>
+									<ActionButton
+										size='lg'
+										variant='info'
+										disabled={!canFinalizeOrder()}
+										onClick={handleFinalizeSimpleSale}
+										icon={<Icons.shoppingCart className='size-6' />}
+										text='Simple'
+									/>
+
+									<ActionButton
+										size='lg'
+										variant='success'
+										disabled={!canFinalizeOrder()}
+										onClick={handleFinalizeSriSale}
+										icon={<Icons.shoppingCart className='size-6' />}
+										text='Factura'
+									/>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -436,7 +486,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 
 			{/* Diálogo de confirmación para nueva venta */}
 			<Dialog open={showNewSaleDialog} onOpenChange={setShowNewSaleDialog}>
-				<DialogContent className='sm:max-w-xl'>
+				<DialogContent className='bg-popover rounded-2xl sm:max-w-xl'>
 					<DialogHeader>
 						<DialogTitle>¿Iniciar nueva venta?</DialogTitle>
 						<DialogDescription>

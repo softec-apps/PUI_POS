@@ -200,6 +200,7 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 												setCategorySearch={setCategorySearch}
 												categoryOpen={categoryOpen}
 												setCategoryOpen={setCategoryOpen}
+												currentCategory={currentRecord?.category}
 											/>
 
 											<SupplierSelector
@@ -212,6 +213,7 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 												setSupplierSearch={setSupplierSearch}
 												supplierOpen={supplierOpen}
 												setSupplierOpen={setSupplierOpen}
+												currentSupplier={currentRecord?.supplier}
 											/>
 										</div>
 
@@ -226,6 +228,7 @@ export function ProductFormModal({ isOpen, currentRecord, onClose, onSubmit }: P
 												setBrandSearch={setBrandSearch}
 												brandOpen={brandOpen}
 												setBrandOpen={setBrandOpen}
+												currentBrand={currentRecord?.brand}
 											/>
 
 											{/* TODO: SOOM FEAT */}

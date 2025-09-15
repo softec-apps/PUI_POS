@@ -88,7 +88,7 @@ export const generateSaleReceiptPDF = (saleData: SaleToTicket = {}) => {
 	// === INFO VENTA ===
 	doc.setFontSize(6.5)
 	doc.setFont('Courier', 'normal')
-	doc.text(`Factura: ${saleData.id || ''}`, leftX, y)
+	doc.text(`Factura: ${saleData.id ? saleData.id.split('-').pop() : ''}`, leftX, y)
 	y += 4
 	doc.text(`Fecha: ${formatDate(saleData.createdAt || new Date())}`, leftX, y)
 	y += 4
@@ -129,8 +129,7 @@ export const generateSaleReceiptPDF = (saleData: SaleToTicket = {}) => {
 
 	// === TOTALES ===
 	const subtotal = saleData.subtotal ?? 0
-	const discount = saleData.discount ?? 0
-	const taxRate = saleData.taxRate ?? 0
+	const discount = saleData.discountAmount ?? 0
 	const tax = saleData.taxAmount ?? 0
 	const total = saleData.total ?? subtotal + tax - discount
 
@@ -138,17 +137,13 @@ export const generateSaleReceiptPDF = (saleData: SaleToTicket = {}) => {
 	right(formatPrice(subtotal))
 	y += 4
 
-	if (discount > 0) {
-		doc.text('Descuento:', 60, y, { align: 'right' })
-		right(formatPrice(discount))
-		y += 4
-	}
+	doc.text(`Impuestos:`, 60, y, { align: 'right' })
+	right(formatPrice(tax))
+	y += 4
 
-	if (tax > 0) {
-		doc.text(`IVA ${taxRate}%:`, 60, y, { align: 'right' })
-		right(formatPrice(tax))
-		y += 4
-	}
+	doc.text('Descuento:', 60, y, { align: 'right' })
+	right(formatPrice(discount))
+	y += 4
 
 	doc.setFont('Courier', 'bold')
 	doc.setFontSize(8.5)
@@ -173,11 +168,9 @@ export const generateSaleReceiptPDF = (saleData: SaleToTicket = {}) => {
 		})
 	}
 
-	if (saleData.change && saleData.change > 0) {
-		doc.text('Cambio:', 60, y, { align: 'right' })
-		right(formatPrice(saleData.change || 0))
-		y += 5
-	}
+	doc.text('Cambio:', 60, y, { align: 'right' })
+	right(formatPrice(saleData.change || 0))
+	y += 5
 
 	y += 5
 

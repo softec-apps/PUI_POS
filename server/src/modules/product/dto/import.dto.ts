@@ -60,7 +60,7 @@ export class BulkProductImportItemDto {
   })
   @IsOptional()
   @IsString()
-  companyName?: string
+  legalName?: string
 
   @ApiProperty({
     description: 'Precio al por mayor/costo',

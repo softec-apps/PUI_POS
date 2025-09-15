@@ -21,6 +21,7 @@ import { ProductFilters } from '@/modules/product/components/templates/Filters'
 import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { TableProduct } from '@/modules/product/components/organisms/Table/TableProduct'
 import { FatalErrorState, RetryErrorState } from '@/components/layout/organims/ErrorStateCard'
+import { restore } from 'pdfkit'
 
 export function ProductView() {
 	const [retryCount, setRetryCount] = useState(0)
@@ -61,6 +62,8 @@ export function ProductView() {
 		error: errorProduct,
 		createRecord,
 		updateRecord,
+		softDeleteRecord,
+		restoreRecord,
 		hardDeleteRecord,
 		refetchRecords,
 	} = useProduct(paginationParams)
@@ -76,6 +79,8 @@ export function ProductView() {
 		modalState,
 		createRecord,
 		updateRecord,
+		softDeleteRecord,
+		restoreRecord,
 		hardDeleteRecord,
 	})
 

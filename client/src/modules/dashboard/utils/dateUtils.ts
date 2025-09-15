@@ -3,6 +3,16 @@ export const getPeriodDates = (dateRange: string) => {
 	const startDate = new Date()
 
 	switch (dateRange) {
+		case 'today':
+			startDate.setHours(0, 0, 0, 0)
+			currentDate.setHours(23, 59, 59, 999)
+			break
+		case 'yesterday':
+			startDate.setDate(startDate.getDate() - 1)
+			startDate.setHours(0, 0, 0, 0)
+			currentDate.setDate(currentDate.getDate() - 1)
+			currentDate.setHours(23, 59, 59, 999)
+			break
 		case '7':
 			startDate.setDate(startDate.getDate() - 7)
 			break

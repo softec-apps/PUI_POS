@@ -23,7 +23,7 @@ export interface I_Product {
 	stock: number
 	category: I_Category | null
 	brand: I_Brand | null
-	suppplier: I_Supplier | null
+	supplier: I_Supplier | null
 	template: I_Template | null
 	createdAt: Date
 	updatedAt: Date

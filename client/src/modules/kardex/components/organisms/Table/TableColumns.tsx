@@ -66,7 +66,7 @@ export const createTableColumns = (options: TableColumnsOptions = {}): ColumnDef
 	if (showReason) {
 		cols.push({
 			accessorKey: 'reason',
-			header: 'Movimiento',
+			header: 'Motivo',
 			cell: ({ row }) => <div>{row.original.reason}</div>,
 		})
 	}
@@ -86,7 +86,7 @@ export const createTableColumns = (options: TableColumnsOptions = {}): ColumnDef
 	if (showQuantity) {
 		cols.push({
 			accessorKey: 'quantity',
-			header: 'Cant.',
+			header: 'Cnt',
 			cell: ({ row }) => <div>{row.original.quantity}</div>,
 		})
 	}
@@ -102,24 +102,32 @@ export const createTableColumns = (options: TableColumnsOptions = {}): ColumnDef
 	if (showUnitCost) {
 		cols.push({
 			accessorKey: 'unitCost',
-			header: 'Costo unt.',
+			header: 'Costo',
 			cell: ({ row }) => <div>${formatPrice(row.original.unitCost)}</div>,
 		})
 	}
 
-	if (showTotal) {
-		cols.push({
-			accessorKey: 'total',
-			header: 'Total',
-			cell: ({ row }) => <div>${formatPrice(row.original.total)}</div>,
-		})
+	{
+		/* 
+		if (showTotal) {
+			cols.push({
+				accessorKey: 'total',
+				header: 'Total',
+				cell: ({ row }) => <div>${formatPrice(row.original.total)}</div>,
+			})
+		}
+		*/
 	}
 
 	if (showResponsible) {
 		cols.push({
-			accessorKey: 'user.dni',
+			accessorKey: 'user.firstName',
 			header: 'Responsable',
-			cell: ({ row }) => <div>{row?.original?.user?.dni || '-'}</div>,
+			cell: ({ row }) => (
+				<div>
+					{row?.original?.user?.firstName} {row?.original?.user?.lastName}
+				</div>
+			),
 		})
 	}
 

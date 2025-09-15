@@ -581,6 +581,7 @@ export class BillingController {
         ivaPorcentaje: number
       }[]
       formaPago?: string
+      totalDescuento: number
     },
   ): Promise<{
     success: boolean
@@ -590,11 +591,11 @@ export class BillingController {
     try {
       this.logger.log(`💳 Creando factura simple para punto: ${puntoEmision}`)
 
-      const factura = await this.billingService.createSimpleFactura(
+      const factura = await this.billingService.createFacturaSRI(
         puntoEmision,
         simpleFacturaData.cliente,
         simpleFacturaData.productos,
-        simpleFacturaData.formaPago || '01', // Efectivo por defecto
+        simpleFacturaData.formaPago || '01',
       )
 
       return {

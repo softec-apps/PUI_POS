@@ -23,15 +23,13 @@ export const ROUTE_PATH = {
 		USER: '/dashboard/user',
 		BRANDS: '/dashboard/brand',
 		KARDEX: '/dashboard/kardex',
+		POS: '/dashboard/pos',
 		CONFIGURATION: {
 			LOCAL: '/dashboard/configuration/local',
 			BILLING: '/dashboard/configuration/billing',
 			PREFERENCE: '/dashboard/configuration/preferences',
 			PERSONALIZATION: '/dashboard/configuration/personalization',
 		},
-	},
-	POS: {
-		MAIN: '/pos',
 	},
 } as const
 
