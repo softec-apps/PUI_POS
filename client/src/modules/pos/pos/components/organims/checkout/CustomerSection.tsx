@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react'
 import { Typography } from '@/components/ui/typography'
-import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CustomerSearch } from './CustomerSearch'
 import { CustomerList } from './CustomerList'
@@ -32,6 +31,7 @@ export const CustomerSection: React.FC = () => {
 	const [selectedCustomer, setSelectedCustomer] = useState<I_CreateCustomer | null>(null)
 	const [shouldAutoSelect, setShouldAutoSelect] = useState(false)
 	const [dialogOpen, setDialogOpen] = useState(false)
+	const [searchingFinalConsumer, setSearchingFinalConsumer] = useState(false)
 
 	// Hook de datos (se mantiene igual)
 	const { recordsData, loading, error, createRecord, refetchRecords } = useCustomer({
@@ -60,7 +60,7 @@ export const CustomerSection: React.FC = () => {
 		return () => clearTimeout(timer)
 	}, [searchValue])
 
-	// Lógica de auto-selección (modificada para no limpiar la selección persistente)
+	// Lógica de auto-selección (modificada para incluir consumidor final)
 	useEffect(() => {
 		if (!loading && debouncedSearchValue.trim() !== '') {
 			if (customers.length === 0) {
@@ -77,10 +77,26 @@ export const CustomerSection: React.FC = () => {
 					setSelectedCustomer(customers[0])
 					setShouldAutoSelect(false)
 				}
+				// Si estamos buscando consumidor final, seleccionar automáticamente
+				if (searchingFinalConsumer) {
+					// Buscar por RUC de consumidor final o por nombre
+					const finalConsumerFound = customers.find(
+						customer =>
+							customer.identificationNumber === '9999999999999' ||
+							(customer.firstName?.toLowerCase().includes('consumidor') &&
+								customer.lastName?.toLowerCase().includes('final'))
+					)
+					if (finalConsumerFound) {
+						setSelectedCustomer(finalConsumerFound)
+						setSearchingFinalConsumer(false)
+						setSearchValue('')
+						setDebouncedSearchValue('')
+					}
+				}
 			}
 		}
 		// NO limpiar la selección si está vacío - podría ser un customer persistido
-	}, [debouncedSearchValue, customers, loading, shouldAutoSelect, storeSelectedCustomer])
+	}, [debouncedSearchValue, customers, loading, shouldAutoSelect, storeSelectedCustomer, searchingFinalConsumer])
 
 	// 🚀 SINCRONIZAR con el store cada vez que cambie la selección local
 	useEffect(() => setStoreSelectedCustomer(selectedCustomer), [selectedCustomer, setStoreSelectedCustomer])
@@ -141,6 +157,40 @@ export const CustomerSection: React.FC = () => {
 		setDialogOpen(false) // Cerrar el diálogo después de seleccionar
 	}
 
+	// 🆕 Función para buscar y seleccionar consumidor final
+	const handleSelectFinalConsumer = async () => {
+		setSearchingFinalConsumer(true)
+		setSearchValue('9999999999999') // Buscar por RUC de consumidor final
+
+		// Si no se encuentra por RUC, intentar con nombre
+		setTimeout(() => {
+			if (customers.length === 0) {
+				setSearchValue('consumidor final')
+			}
+		}, 500)
+
+		// Timeout para fallback si no se encuentra
+		setTimeout(() => {
+			if (searchingFinalConsumer) {
+				// Crear consumidor final por defecto si no se encuentra
+				const defaultFinalConsumer: I_CreateCustomer = {
+					customerType: 'final',
+					identificationType: '07',
+					identificationNumber: '9999999999999',
+					firstName: 'Consumidor',
+					lastName: 'Final',
+					address: '',
+					phone: '',
+					email: '',
+				}
+				setSelectedCustomer(defaultFinalConsumer)
+				setSearchingFinalConsumer(false)
+				setSearchValue('')
+				setDebouncedSearchValue('')
+			}
+		}, 2000)
+	}
+
 	const handleDeselectCustomer = () => {
 		setSelectedCustomer(null) // Estado local
 		// 👆 El useEffect se encarga de sincronizar con el store automáticamente
@@ -156,18 +206,28 @@ export const CustomerSection: React.FC = () => {
 	}
 
 	return (
-		<div className='space-y-2'>
-			{selectedCustomer && <Typography variant='h6'>Cliente</Typography>}
+		<div>
+			{selectedCustomer && <Typography variant='p'>Cliente</Typography>}
 
-			{/* Mostrar solo un botón inicialmente */}
+			{/* Mostrar botones o cliente seleccionado */}
 			{!selectedCustomer ? (
-				<ActionButton
-					onClick={handleOpenDialog}
-					text='Seleccionar cliente'
-					icon={<Icons.user />}
-					size='lg'
-					className='w-full'
-				/>
+				<div className='flex gap-2'>
+					<ActionButton
+						onClick={handleOpenDialog}
+						text='Seleccionar cliente'
+						icon={<Icons.user />}
+						size='lg'
+						className='flex-1'
+					/>
+					<ActionButton
+						onClick={handleSelectFinalConsumer}
+						text='Consumidor Final'
+						icon={<Icons.userCheck />}
+						variant='secondary'
+						size='lg'
+						className='flex-1'
+					/>
+				</div>
 			) : (
 				<SelectedCustomer customer={selectedCustomer} onDeselect={handleDeselectCustomer} />
 			)}

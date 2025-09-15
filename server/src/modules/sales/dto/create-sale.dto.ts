@@ -9,7 +9,6 @@ import {
   ArrayNotEmpty,
   ValidateNested,
   IsIn,
-  IsEmpty,
 } from 'class-validator'
 import { Type, Transform } from 'class-transformer'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
@@ -37,6 +36,34 @@ class CreateSaleItemDto {
   @Min(1, { message: 'La cantidad debe ser mayor a 0' })
   @Transform(({ value }) => Number(value))
   quantity: number
+
+  @ApiProperty({
+    type: 'number',
+    example: 50.0,
+    description: 'Monto de descuento aplicado al ítem en dinero',
+    default: 0,
+  })
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: 'El monto de descuento debe ser un número válido' },
+  )
+  @Min(0, { message: 'El monto de descuento no puede ser negativo' })
+  @Transform(({ value }) => Number(Number(value || 0).toFixed(6)))
+  discountAmount: number = 0
+
+  @ApiProperty({
+    type: 'number',
+    example: 10.0,
+    description: 'Porcentaje de descuento aplicado al ítem',
+    default: 0,
+  })
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: 'El porcentaje de descuento debe ser un número válido' },
+  )
+  @Min(0, { message: 'El porcentaje de descuento no puede ser negativo' })
+  @Transform(({ value }) => Number(Number(value || 0).toFixed(6)))
+  discountPercentage: number = 0
 }
 
 class PaymentMethodDto {
@@ -84,7 +111,7 @@ class PaymentMethodDto {
     { message: 'El monto debe ser un número válido' },
   )
   @Min(0.01, { message: 'El monto debe ser mayor a 0' })
-  @Transform(({ value }) => Number(Number(value).toFixed(2)))
+  @Transform(({ value }) => Number(Number(value).toFixed(6)))
   amount: number
 
   @ApiPropertyOptional({
@@ -96,85 +123,6 @@ class PaymentMethodDto {
   @IsString({ message: 'El número de pago debe ser texto' })
   @Transform(({ value }) => (value ? value.trim() : null))
   transferNumber?: string | null
-}
-
-// ✅ NUEVA CLASE: FinancialsDto
-class FinancialsDto {
-  @ApiProperty({
-    type: Number,
-    example: 120.0,
-    description: 'Subtotal antes de impuestos',
-    minimum: 0,
-  })
-  @IsNotEmpty({ message: 'El subtotal es requerido' })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
-    { message: 'El subtotal debe ser un número válido' },
-  )
-  @Min(0, { message: 'El subtotal no puede ser negativo' })
-  @Transform(({ value }) => Number(Number(value).toFixed(2)))
-  subtotal: number
-
-  @ApiProperty({
-    type: Number,
-    example: 18.0,
-    description: 'Monto del impuesto aplicado',
-    minimum: 0,
-  })
-  @IsNotEmpty({ message: 'El impuesto es requerido' })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
-    { message: 'El impuesto debe ser un número válido' },
-  )
-  @Min(0, { message: 'El impuesto no puede ser negativo' })
-  @Transform(({ value }) => Number(Number(value).toFixed(2)))
-  tax: number
-
-  @ApiProperty({
-    type: Number,
-    example: 0.15,
-    description: 'Tasa de impuesto aplicada (0.15 = 15%)',
-    minimum: 0,
-    maximum: 1,
-  })
-  @IsNotEmpty({ message: 'La tasa de impuesto es requerida' })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
-    { message: 'La tasa de impuesto debe ser un número válido' },
-  )
-  @Min(0, { message: 'La tasa de impuesto no puede ser negativa' })
-  @Transform(({ value }) => Number(Number(value).toFixed(4)))
-  taxRate: number
-
-  @ApiProperty({
-    type: Number,
-    example: 138.0,
-    description: 'Total final (subtotal + impuesto)',
-    minimum: 0,
-  })
-  @IsNotEmpty({ message: 'El total es requerido' })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
-    { message: 'El total debe ser un número válido' },
-  )
-  @Min(0, { message: 'El total no puede ser negativo' })
-  @Transform(({ value }) => Number(Number(value).toFixed(2)))
-  total: number
-
-  @ApiProperty({
-    type: Number,
-    example: 3,
-    description: 'Total de items en la venta',
-    minimum: 1,
-  })
-  @IsNotEmpty({ message: 'El total de items es requerido' })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
-    { message: 'El total de items debe ser un número válido' },
-  )
-  @Min(1, { message: 'Debe haber al menos 1 item' })
-  @Transform(({ value }) => Number(value))
-  totalItems: number
 }
 
 export class CreateSaleDto {
@@ -219,40 +167,4 @@ export class CreateSaleDto {
   @ValidateNested({ each: true })
   @Type(() => CreateSaleItemDto)
   items: CreateSaleItemDto[]
-
-  // ✅ NUEVO CAMPO: financials
-  @ApiProperty({
-    type: FinancialsDto,
-    description: 'Datos financieros de la venta calculados en el frontend',
-    example: {
-      subtotal: 120,
-      tax: 18,
-      taxRate: 0.15,
-      total: 138,
-      totalItems: 3,
-    },
-  })
-  @IsNotEmpty({ message: 'Los datos financieros son requeridos' })
-  @ValidateNested()
-  @Type(() => FinancialsDto)
-  financials: FinancialsDto
-
-  // ✅ CAMPO OPCIONAL: receivedAmount (calculado automáticamente desde payments)
-  @ApiPropertyOptional({
-    type: Number,
-    example: 120.0,
-    description:
-      'Monto total recibido del cliente (calculado automáticamente desde payments)',
-    minimum: 0,
-  })
-  @IsOptional()
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
-    { message: 'El monto recibido debe ser un número válido' },
-  )
-  @Min(0, { message: 'El monto recibido no puede ser negativo' })
-  @Transform(({ value }) =>
-    value !== undefined ? Number(Number(value).toFixed(2)) : undefined,
-  )
-  receivedAmount?: number
 }

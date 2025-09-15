@@ -11,10 +11,6 @@ export const CartEmptyState: React.FC = () => (
 		animate={{ opacity: 1, y: 0 }}
 		transition={{ delay: 0.3 }}
 		className='flex flex-col items-center justify-center py-20 text-center'>
-		<UtilBanner
-			icon={<ShoppingBag className='h-8 w-8' />}
-			title='Carrito vacío'
-			description='Agrega productos para comenzar tu venta'
-		/>
+		<UtilBanner icon={<ShoppingBag className='h-8 w-8' />} title='Carrito vacío' description='' />
 	</motion.div>
 )

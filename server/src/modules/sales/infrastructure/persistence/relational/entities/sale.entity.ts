@@ -19,7 +19,6 @@ import { SaleItemEntity } from '@/modules/sales/infrastructure/persistence/relat
 @Entity({ name: PATH_SOURCE.SALE })
 @Index(['customerId'])
 @Check(`"subtotal" >= 0`)
-@Check(`"taxRate" >= 0 AND "taxRate" <= 1`)
 @Check(`"taxAmount" >= 0`)
 @Check(`"total" >= 0`)
 export class SaleEntity extends EntityRelationalHelper {
@@ -53,14 +52,6 @@ export class SaleEntity extends EntityRelationalHelper {
   subtotal: number
 
   @Column({
-    type: 'int',
-    nullable: false,
-    default: 0,
-    comment: 'Tasa de impuesto (ej: 15 = 15%)',
-  })
-  taxRate: number
-
-  @Column({
     type: 'decimal',
     precision: 13,
     scale: 6,
@@ -79,6 +70,16 @@ export class SaleEntity extends EntityRelationalHelper {
     comment: 'Total de la venta',
   })
   total: number
+
+  @Column({
+    type: 'decimal',
+    precision: 13,
+    scale: 6,
+    nullable: false,
+    default: 0,
+    comment: 'Cantidad de descuenti de la venta',
+  })
+  discountAmount: number
 
   @Column({
     type: 'int',

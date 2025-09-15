@@ -72,7 +72,7 @@ export class ProductRelationalRepository implements ProductRepository {
       )
       if (filteredEntries.length > 0) {
         baseFilters = filteredEntries.reduce((acc, [key, value]) => {
-          acc[key as keyof ProductEntity] = value as any
+          acc[key as keyof ProductEntity] = value
           return acc
         }, {} as FindOptionsWhere<ProductEntity>)
       }

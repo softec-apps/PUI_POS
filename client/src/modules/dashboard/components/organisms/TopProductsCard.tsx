@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Icons } from '@/components/icons'
+import { Typography } from '@/components/ui/typography'
 import { formatPrice } from '@/common/utils/formatPrice-util'
 import { DashboardMetrics } from '@/modules/dashboard/types/dashboard'
 import { ImageControl } from '@/components/layout/organims/ImageControl'
@@ -22,17 +23,19 @@ export const TopProductsCard: React.FC<TopProductsCardProps> = ({ products }) =>
 				<div className='dark:bg-popover bg-muted/50 border-border/50 w-full rounded-2xl border'>
 					{products.length > 0 ? (
 						products.slice(0, 6).map((product, index) => (
-							<div key={`product-${product.id}-${index}`} className='flex items-center gap-4 px-4 py-3'>
-								<div className='bg-background flex h-10 w-10 items-center justify-center overflow-hidden rounded-md'>
-									<ImageControl
-										imageUrl={product?.photo?.path}
-										altText={product?.name}
-										enableClick={false}
-										enableHover={false}
-									/>
-								</div>
+							<div key={`product-${product.id}-${index}`} className='flex items-center gap-3 p-3'>
+								<ImageControl
+									imageUrl={product?.photo?.path}
+									altText={product?.name}
+									enableClick={false}
+									enableHover={false}
+									imageHeight={30}
+									imageWidth={40}
+								/>
 								<div className='w-full'>
-									<p className='text-primary truncate text-sm font-medium'>{product.name}</p>
+									<Typography variant='small' className='text-primary max-w-xs truncate text-xs'>
+										{product.name}
+									</Typography>
 									<div className='flex items-center justify-between'>
 										<p className='text-muted-foreground text-xs tabular-nums'>
 											{product.totalQuantity} {product.totalQuantity === 1 ? 'unidad vendida' : 'unidades vendidas'}

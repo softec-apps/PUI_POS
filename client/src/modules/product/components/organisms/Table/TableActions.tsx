@@ -11,13 +11,14 @@ import { useCallback } from 'react'
 interface Props {
 	recordData: I_Product
 	onEdit: (recordData: I_Product) => void
+	onSoftDelete: (recordData: I_Product) => void
+	onRestore: (recordData: I_Product) => void
 	onHardDelete: (recordData: I_Product) => void
 }
 
-export const TableActions = ({ recordData, onEdit, onHardDelete }: Props) => {
+export const TableActions = ({ recordData, onEdit, onSoftDelete, onRestore, onHardDelete }: Props) => {
 	const router = useRouter()
 
-	// ✅ Memoizar las funciones para evitar re-renders innecesarios
 	const handleViewDetails = useCallback(() => {
 		router.push(`${ROUTE_PATH.ADMIN.PRODUCT}/${recordData.id}`)
 	}, [router, recordData.id])
@@ -26,7 +27,15 @@ export const TableActions = ({ recordData, onEdit, onHardDelete }: Props) => {
 		onEdit(recordData)
 	}, [onEdit, recordData])
 
-	const handleDelete = useCallback(() => {
+	const handleSoftDelete = useCallback(() => {
+		onSoftDelete(recordData)
+	}, [onSoftDelete, recordData])
+
+	const handleRestore = useCallback(() => {
+		onRestore(recordData)
+	}, [onRestore, recordData])
+
+	const handleHardDelete = useCallback(() => {
 		onHardDelete(recordData)
 	}, [onHardDelete, recordData])
 
@@ -48,17 +57,40 @@ export const TableActions = ({ recordData, onEdit, onHardDelete }: Props) => {
 					<span>Editar</span>
 				</DropdownMenuItem>
 
+				{/* 
 				<DropdownMenuItem onClick={handleViewDetails} className='flex cursor-pointer items-center gap-2 rounded-xl'>
 					<Icons.eye />
 					<span>Detalles</span>
 				</DropdownMenuItem>
+				*/}
 
-				<DropdownMenuItem
-					onClick={handleDelete}
-					className='text-destructive hover:text-destructive flex cursor-pointer items-center gap-2 rounded-xl'>
-					<Icons.trash />
-					<span>Eliminar</span>
-				</DropdownMenuItem>
+				{recordData?.deletedAt ? (
+					<>
+						<DropdownMenuItem
+							variant='default'
+							onClick={handleRestore}
+							className='flex cursor-pointer items-center rounded-xl'>
+							<Icons.progressCheck />
+							<span>Restaurar</span>
+						</DropdownMenuItem>
+
+						<DropdownMenuItem
+							variant='destructive'
+							onClick={handleHardDelete}
+							className='flex cursor-pointer items-center rounded-xl'>
+							<Icons.trash />
+							<span>Eliminar</span>
+						</DropdownMenuItem>
+					</>
+				) : (
+					<DropdownMenuItem
+						variant='default'
+						onClick={handleSoftDelete}
+						className='flex cursor-pointer items-center rounded-xl'>
+						<Icons.progressX />
+						<span>Remover</span>
+					</DropdownMenuItem>
+				)}
 			</DropdownMenuContent>
 		</DropdownMenu>
 	)

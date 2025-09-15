@@ -1,13 +1,14 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Icons } from '@/components/icons'
 import { I_Supplier } from '@/common/types/modules/supplier'
 import { AlertMessage } from '@/components/layout/atoms/Alert'
-import { Control, UseFormSetValue, UseFormWatch } from 'react-hook-form'
-import { ProductFormData } from '@/modules/product/types/product-form'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod' // o la ruta que uses
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
+import { ProductFormData } from '@/modules/product/types/product-form'
+import { Control, UseFormSetValue, UseFormWatch } from 'react-hook-form'
+import { UniversalFormField } from '@/components/layout/atoms/FormFieldZod'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface SupplierSelectorProps {
 	control: Control<ProductFormData>
@@ -20,6 +21,7 @@ interface SupplierSelectorProps {
 	supplierOpen: boolean
 	setSupplierOpen: (open: boolean) => void
 	loadMoreSupplier: () => void
+	currentSupplier?: I_Supplier
 }
 
 export function SupplierSelector({
@@ -32,12 +34,25 @@ export function SupplierSelector({
 	setSupplierSearch,
 	supplierOpen,
 	setSupplierOpen,
+	currentSupplier,
 }: SupplierSelectorProps) {
+	console.log(currentSupplier)
+	// Efecto para buscar automáticamente el proveedor actual cuando se abre el selector
+	useEffect(() => {
+		if (supplierOpen && currentSupplier) setSupplierSearch(currentSupplier.legalName)
+	}, [supplierOpen, currentSupplier, setSupplierSearch])
+
 	const supplierOptions =
 		suppliers?.data?.items?.map(supplier => ({
 			value: supplier.id,
 			label: supplier.legalName,
 		})) || []
+
+	// Si tenemos un proveedor actual que no está en las opciones, lo agregamos
+	const allOptions =
+		currentSupplier && !supplierOptions.some(opt => opt.value === currentSupplier.id)
+			? [{ value: currentSupplier.id, label: currentSupplier.legalName }, ...supplierOptions]
+			: supplierOptions
 
 	return (
 		<Card className='border-none bg-transparent p-0 shadow-none'>
@@ -64,7 +79,7 @@ export function SupplierSelector({
 						type='command'
 						label='Selecciona un proveedor'
 						placeholder='Buscar proveedor...'
-						options={supplierOptions}
+						options={allOptions} // Usar allOptions en lugar de supplierOptions
 						commandOpen={supplierOpen}
 						setCommandOpen={setSupplierOpen}
 						commandSearchValue={supplierSearch}

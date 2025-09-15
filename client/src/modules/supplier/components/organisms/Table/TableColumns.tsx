@@ -74,7 +74,7 @@ export const createTableColumns = ({
 				className='p-0'
 				text={
 					<div className='text-muted-foreground hover:text-primary/95 flex items-center'>
-						Nombre commercial
+						Nombre comercial
 						{column.getIsSorted() === 'asc' ? (
 							<Icons.sortAscendingLetters className='ml-1 h-4 w-4 transition-all duration-500' />
 						) : column.getIsSorted() === 'desc' ? (

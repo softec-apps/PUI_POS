@@ -1,8 +1,8 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import { Icons } from '@/components/icons'
 import { Typography } from '@/components/ui/typography'
-import { motion } from 'framer-motion'
 
 type Props = {
 	text?: string
@@ -11,14 +11,16 @@ type Props = {
 
 export const SpinnerLoader = ({ text, inline = false }: Props) => {
 	return (
-		<div className={`flex items-center justify-center gap-2 ${inline ? 'flex-row' : 'flex-col gap-4'}`}>
-			<Icons.spinnerDecored className='animate-spin' />
+		<div className={`flex items-center justify-center gap-2 ${inline ? 'flex-row' : 'flex-col gap-2'}`}>
+			<Icons.spinnerDecored className='h-4 w-4 animate-spin' />
 			{text && (
 				<motion.div
 					initial={inline ? { opacity: 0, x: -10 } : { opacity: 0, y: -20 }}
 					animate={{ opacity: 1, x: 0, y: 0 }}
 					transition={{ duration: 0.3 }}>
-					<Typography variant='small'>{text}</Typography>
+					<Typography variant='small' className='text-muted-foreground text-xs'>
+						{text}
+					</Typography>
 				</motion.div>
 			)}
 		</div>

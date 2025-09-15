@@ -28,7 +28,7 @@ import { BillingFileInvoiceService } from '@/modules/factuZen/services/fileInvoi
 @Injectable()
 export class BillingService implements OnModuleInit {
   private readonly logger = new Logger(BillingService.name)
-  private readonly baseUrl: string = 'https://facturacion.torre-estevez.com/api'
+  private readonly baseUrl: string = process.env.BILLING_API_BASE_URL as string
 
   // Servicios especializados
   private _authService?: BillingAuthService
@@ -175,7 +175,7 @@ export class BillingService implements OnModuleInit {
     return this.invoiceService.createFactura(puntoEmision, facturaData)
   }
 
-  async createSimpleFactura(
+  async createFacturaSRI(
     puntoEmision: string,
     clienteData: {
       tipoIdentificacion: string
@@ -191,10 +191,11 @@ export class BillingService implements OnModuleInit {
       cantidad: number
       precioUnitario: number
       ivaPorcentaje: number
+      descuento?: number
     }[],
     formaPago: string = '01',
   ): Promise<any> {
-    return this.invoiceService.createSimpleFactura(
+    return this.invoiceService.createFacturaSRI(
       puntoEmision,
       clienteData,
       productos,

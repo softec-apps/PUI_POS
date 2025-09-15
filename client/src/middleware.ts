@@ -8,11 +8,7 @@ const adminRoutes = Object.values(ROUTE_PATH.ADMIN).flatMap(route =>
 	typeof route === 'string' ? route : Object.values(route)
 )
 
-const posRoutes = Object.values(ROUTE_PATH.POS).flatMap(route =>
-	typeof route === 'string' ? route : Object.values(route)
-)
-
-const protectedRoutes = [...adminRoutes, ...posRoutes]
+const protectedRoutes = [...adminRoutes]
 
 export async function middleware(request: NextRequest) {
 	try {
@@ -21,35 +17,39 @@ export async function middleware(request: NextRequest) {
 
 		const isProtected = protectedRoutes.some(route => typeof route === 'string' && pathname.startsWith(route))
 		const isSignInPage = pathname.startsWith(ROUTE_PATH.AUTH.SIGNIN)
-		const isPosPage = pathname.startsWith(ROUTE_PATH.POS.MAIN)
+		const isPosPage = pathname.startsWith(ROUTE_PATH.ADMIN.POS)
 
-		// ✅ AGREGAR: Excluir rutas de autenticación
+		// ✅ Excluir rutas de autenticación
 		const isAuthRoute =
 			pathname.startsWith('/api/auth') || pathname.startsWith(ROUTE_PATH.AUTH.SIGNIN) || pathname.startsWith('/auth')
 
-		// No sesión y accede a ruta protegida
+		// 🔒 No sesión y accede a ruta protegida
 		if (!session && isProtected) return NextResponse.redirect(new URL(ROUTE_PATH.AUTH.SIGNIN, request.url))
 
 		if (session) {
 			const role = session?.user?.role?.name
 
-			// Login con sesión activa
+			// 🔑 Ya logueado intenta ir a /signin → redirigir según rol
 			if (isSignInPage) {
-				if (role === ALLOW_ROLES.CASHIER) return NextResponse.redirect(new URL(ROUTE_PATH.POS.MAIN, request.url))
+				if (role === ALLOW_ROLES.CASHIER || role === ALLOW_ROLES.MANAGER)
+					return NextResponse.redirect(new URL(ROUTE_PATH.ADMIN.POS, request.url))
+
 				return NextResponse.redirect(new URL(ROUTE_PATH.ADMIN.DASHBOARD, request.url))
 			}
 
-			// Solo cashier puede estar en /pos
-			if (isPosPage && role !== ALLOW_ROLES.CASHIER)
+			// 🔒 Solo cashier o manager pueden estar en /pos
+			if (isPosPage && role !== ALLOW_ROLES.CASHIER && role !== ALLOW_ROLES.MANAGER)
 				return NextResponse.redirect(new URL(ROUTE_PATH.ADMIN.DASHBOARD, request.url))
 
-			// Cashier no puede entrar a rutas fuera de /pos, EXCEPTO rutas de auth
+			// 🔒 Cashier NO puede entrar a rutas fuera de /pos (excepto auth)
 			if (role === ALLOW_ROLES.CASHIER && !isPosPage && !isAuthRoute)
-				return NextResponse.redirect(new URL(ROUTE_PATH.POS.MAIN, request.url))
+				return NextResponse.redirect(new URL(ROUTE_PATH.ADMIN.POS, request.url))
 
-			// Redirección desde "/" según el rol
+			// 🏠 Redirección desde "/" según rol
 			if (pathname === ROUTE_PATH.HOME) {
-				if (role === ALLOW_ROLES.CASHIER) return NextResponse.redirect(new URL(ROUTE_PATH.POS.MAIN, request.url))
+				if (role === ALLOW_ROLES.CASHIER || role === ALLOW_ROLES.MANAGER)
+					return NextResponse.redirect(new URL(ROUTE_PATH.ADMIN.POS, request.url))
+
 				return NextResponse.redirect(new URL(ROUTE_PATH.ADMIN.DASHBOARD, request.url))
 			}
 		}

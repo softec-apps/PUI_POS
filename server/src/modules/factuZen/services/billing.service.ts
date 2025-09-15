@@ -304,7 +304,8 @@ export class BillingInvoiceService {
   }
 
   // Método helper para crear factura con datos básicos
-  async createSimpleFactura(
+  // Método helper para crear factura con datos básicos
+  async createFacturaSRI(
     puntoEmision: string,
     clienteData: {
       tipoIdentificacion: string
@@ -319,10 +320,12 @@ export class BillingInvoiceService {
       descripcion: string
       cantidad: number
       precioUnitario: number
-      ivaPorcentaje: number // porcentaje real: 0, 5, 8, 12, 15
+      ivaPorcentaje: number
+      descuento?: number // ✅ Cantidad en dinero
     }[],
     formaPago: string = '01',
   ): Promise<any> {
+    console.log('PRODUCTOS', productos)
     this.logger.log(
       `Preparando factura simple para ${productos.length} productos`,
     )
@@ -343,25 +346,43 @@ export class BillingInvoiceService {
     }
 
     let totalSinImpuestos = 0
+    let totalDescuentos = 0
 
     const detalles = productos.map((producto) => {
-      const precioTotalDetalle = Number(
+      // Calcular subtotal sin descuento (precio original)
+      const subtotalSinDescuento = Number(
         (producto.cantidad * producto.precioUnitario).toFixed(2),
       )
-      totalSinImpuestos += precioTotalDetalle
+
+      // ✅ El descuento viene como cantidad en dinero
+      const valorDescuento = producto.descuento || 0
+
+      // Asegurar que el descuento no sea mayor que el subtotal
+      const descuentoAplicado = Math.min(valorDescuento, subtotalSinDescuento)
+
+      // Calcular subtotal después del descuento
+      const subtotalConDescuento = Number(
+        (subtotalSinDescuento - descuentoAplicado).toFixed(2),
+      )
+
+      totalSinImpuestos += subtotalConDescuento
+      totalDescuentos += descuentoAplicado
 
       const codigoPorcentaje =
         codigoPorcentajeIvaMap[producto.ivaPorcentaje] ?? 0
+
+      // Calcular IVA sobre el subtotal después del descuento
+      const valorIVA = Number(
+        (subtotalConDescuento * (producto.ivaPorcentaje / 100)).toFixed(2),
+      )
 
       const impuestos = [
         {
           codigo: 2, // IVA
           codigoPorcentaje: codigoPorcentaje,
           tarifa: producto.ivaPorcentaje,
-          baseImponible: precioTotalDetalle,
-          valor: Number(
-            (precioTotalDetalle * (producto.ivaPorcentaje / 100)).toFixed(2),
-          ),
+          baseImponible: subtotalConDescuento, // Base imponible es después del descuento
+          valor: valorIVA,
         },
       ]
 
@@ -371,51 +392,72 @@ export class BillingInvoiceService {
         descripcion: producto.descripcion,
         cantidad: producto.cantidad,
         precioUnitario: Number(producto.precioUnitario.toFixed(2)),
-        descuento: 0,
-        precioTotalSinImpuesto: precioTotalDetalle,
+        descuento: Number(descuentoAplicado.toFixed(2)),
+        precioTotalSinImpuesto: Number(subtotalConDescuento.toFixed(2)),
         impuestos,
       }
     })
 
     totalSinImpuestos = Number(totalSinImpuestos.toFixed(2))
+    totalDescuentos = Number(totalDescuentos.toFixed(2))
 
-    // Agrupar totalConImpuestos por codigoPorcentaje
-    const totalConImpuestosMap: Record<
-      number,
-      { base: number; valor: number; tarifa: number }
-    > = {}
-    detalles.forEach((detalle) => {
-      detalle.impuestos.forEach((imp) => {
-        if (!totalConImpuestosMap[imp.codigoPorcentaje]) {
-          totalConImpuestosMap[imp.codigoPorcentaje] = {
-            base: 0,
-            valor: 0,
-            tarifa: imp.tarifa,
-          }
-        }
-        totalConImpuestosMap[imp.codigoPorcentaje].base +=
-          detalle.precioTotalSinImpuesto
-        totalConImpuestosMap[imp.codigoPorcentaje].valor += imp.valor
-      })
-    })
-
-    const totalConImpuestos = Object.entries(totalConImpuestosMap).map(
-      ([codigoPorcentaje, data]) => ({
-        codigo: 2,
-        codigoPorcentaje: Number(codigoPorcentaje),
-        tarifa: data.tarifa,
-        baseImponible: Number(data.base.toFixed(2)),
-        valor: Number(data.valor.toFixed(2)),
-      }),
-    )
-
+    // Calcular total de IVA sumando todos los impuestos de los detalles
     const totalIVA = Number(
-      totalConImpuestos.reduce((sum, imp) => sum + imp.valor, 0).toFixed(2),
+      detalles
+        .reduce((sum, detalle) => {
+          const impuestosDetalle = detalle.impuestos.reduce(
+            (impSum, imp) => impSum + imp.valor,
+            0,
+          )
+          return sum + impuestosDetalle
+        }, 0)
+        .toFixed(2),
     )
+
     const importeTotal = Number((totalSinImpuestos + totalIVA).toFixed(2))
 
     this.logger.log(
-      `💰 Totales calculados - Sin impuestos: ${totalSinImpuestos}, IVA: ${totalIVA}, Total: ${importeTotal}`,
+      `💰 Totales calculados - Sin impuestos: ${totalSinImpuestos}, Descuentos: ${totalDescuentos}, IVA: ${totalIVA}, Total: ${importeTotal}`,
+    )
+
+    // Preparar totalConImpuestos para el SRI
+    interface ImpuestoAgrupado {
+      codigo: number
+      codigoPorcentaje: number
+      tarifa: number
+      baseImponible: number
+      valor: number
+    }
+
+    const totalConImpuestos = detalles
+      .flatMap((detalle) => detalle.impuestos)
+      .reduce(
+        (acumulador, impuesto) => {
+          const key = `${impuesto.codigoPorcentaje}-${impuesto.tarifa}`
+          if (!acumulador[key]) {
+            acumulador[key] = {
+              codigo: impuesto.codigo,
+              codigoPorcentaje: impuesto.codigoPorcentaje,
+              tarifa: impuesto.tarifa,
+              baseImponible: 0,
+              valor: 0,
+            }
+          }
+          acumulador[key].baseImponible += impuesto.baseImponible
+          acumulador[key].valor += impuesto.valor
+          return acumulador
+        },
+        {} as Record<string, ImpuestoAgrupado>,
+      )
+
+    const totalConImpuestosArray = Object.values(totalConImpuestos).map(
+      (imp) => ({
+        codigo: imp.codigo,
+        codigoPorcentaje: imp.codigoPorcentaje,
+        tarifa: imp.tarifa,
+        baseImponible: Number(imp.baseImponible.toFixed(2)),
+        valor: Number(imp.valor.toFixed(2)),
+      }),
     )
 
     const facturaData: CreateFacturaDto = {
@@ -424,10 +466,10 @@ export class BillingInvoiceService {
       razonSocialComprador: clienteData.razonSocial,
       identificacionComprador: clienteData.identificacion,
       direccionComprador: clienteData.direccion,
-      totalSinImpuestos,
-      totalDescuento: 0,
-      totalConImpuestos,
-      importeTotal,
+      totalSinImpuestos: totalSinImpuestos,
+      totalDescuento: totalDescuentos,
+      totalConImpuestos: totalConImpuestosArray,
+      importeTotal: importeTotal,
       pagos: [
         {
           formaPago,

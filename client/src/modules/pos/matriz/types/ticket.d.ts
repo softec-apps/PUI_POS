@@ -3,7 +3,7 @@ export interface SaleToTicket {
 	claveAcceso?: string
 	createdAt?: Date | string
 	subtotal?: number
-	discount?: number
+	discountAmount?: number
 	taxRate?: number
 	taxAmount?: number
 	total?: number

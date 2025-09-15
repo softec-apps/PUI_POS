@@ -26,18 +26,20 @@ export const CategoryCard: React.FC<CardProps> = ({ category, isSelected = false
 		<motion.div variants={itemVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
 			<Card
 				className={cn(
-					'h-auto cursor-pointer border-2 p-0 transition-all duration-500',
+					'flex h-auto cursor-pointer flex-col border-2 p-0 transition-all duration-500',
 					isSelected ? 'border-primary ring-primary/50 ring-2' : 'hover:border-primary/50'
 				)}
 				onClick={onSelect}>
 				<CardContent className='flex h-full flex-col p-0'>
-					<div className='bg-muted relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-t-2xl'>
-						{category?.photo ? (
+					<div className='bg-muted relative flex aspect-video w-full flex-shrink-0 items-center justify-center overflow-hidden rounded-t-2xl'>
+						{category?.name?.toLowerCase() === 'todos' ? (
+							<Icons.sparkles className='text-muted-foreground h-8 w-8' />
+						) : category?.photo ? (
 							<Image
 								src={category?.photo?.path}
 								alt={category?.name}
 								width={200}
-								height={200}
+								height={100}
 								unoptimized
 								className='h-full w-full object-cover transition-transform group-hover:scale-105'
 							/>
@@ -46,8 +48,14 @@ export const CategoryCard: React.FC<CardProps> = ({ category, isSelected = false
 						)}
 					</div>
 
-					<div className='bg-background rounded-b-2xl border-t p-2 text-center'>
-						<h3 className={cn('text-primary text-sm font-medium', isSelected && 'text-primary')}>{category?.name}</h3>
+					<div className='bg-background flex min-h-[50px] flex-shrink-0 items-center justify-center rounded-b-2xl border-t px-1 text-center'>
+						<h3
+							className={cn(
+								'text-primary line-clamp-2 text-xs leading-tight font-medium break-words',
+								isSelected && 'text-primary'
+							)}>
+							{category?.name}
+						</h3>
 					</div>
 				</CardContent>
 			</Card>
@@ -63,12 +71,9 @@ export const CategoryCardSkeleton: React.FC<SkeletonCardProps> = ({ count = 6 })
 	return (
 		<>
 			{Array.from({ length: count }).map((_, i) => (
-				<motion.div key={`category-skeleton-${i}`} variants={itemVariants} className='aspect-square w-full rounded-2xl'>
-					<Card className='border-border p-0'>
-						<Skeleton className='h-24 w-full rounded-t-2xl' />
-						<div className='px-2 pb-2'>
-							<Skeleton className='h-4 w-full' />
-						</div>
+				<motion.div key={`category-skeleton-${i}`} variants={itemVariants} className='aspect-video w-full rounded-2xl'>
+					<Card className='border-border flex-col p-0'>
+						<Skeleton className='h-24 w-full flex-shrink-0 rounded-2xl' />
 					</Card>
 				</motion.div>
 			))}

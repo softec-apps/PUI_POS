@@ -1,6 +1,6 @@
 import { I_Sale } from '@/common/types/modules/sale'
 import { DashboardMetrics } from '@/modules/dashboard/types/dashboard'
-import { getPeriodDates, getPreviousPeriodDates } from './dateUtils'
+import { getPeriodDates, getPreviousPeriodDates } from '@/modules/dashboard/utils/dateUtils'
 
 /**
  * Calcula todas las métricas avanzadas del dashboard a partir de los datos de ventas
@@ -88,9 +88,8 @@ const calculateBasicMetrics = (sales: I_Sale[]) => {
 
 	// Calcular ganancias brutas totales
 	const totalGrossProfit = sales.reduce((sum, sale) => {
-		if (sale.items && Array.isArray(sale.items)) {
+		if (sale.items && Array.isArray(sale.items))
 			return sum + sale.items.reduce((itemSum, item) => itemSum + (item.revenue || 0), 0)
-		}
 		return sum
 	}, 0)
 

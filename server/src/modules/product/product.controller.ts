@@ -12,6 +12,7 @@ import {
   Controller,
   SerializeOptions,
   Request,
+  Patch,
 } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { Roles } from '@/modules/roles/roles.decorator'
@@ -126,6 +127,37 @@ export class ProductController {
   }
 
   /**
+   * Soft delete a product (hard delete)
+   * @param param - Parameter containing the product ID to delete
+   * @returns The API standard response confirming deletion
+   * @warning This action is irreversible and will soft remove the product
+   */
+  @Delete(':id')
+  //@ProductApiDocs.hardDelete
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
+  async softDelete(@Param() param: ParamProductDto): Promise<ApiResponse> {
+    return await this.productService.softDelete(param.id)
+  }
+
+  /**
+   * Restore a product.
+   * @param RestoreProductDto - Data transfer object for product restore.
+   * @returns The API standard responsea
+   */
+  @Patch(':id/restore')
+  @ProductApiDocs.update
+  @Roles(RoleEnum.Admin, RoleEnum.Manager)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER] })
+  @HttpCode(HttpStatus.OK)
+  async restore(
+    @Param() param: ParamProductDto,
+  ): Promise<ApiResponse<Product>> {
+    return await this.productService.restore(param.id)
+  }
+
+  /**
    * Permanently delete a product (hard delete)
    * @param param - Parameter containing the product ID to delete
    * @returns The API standard response confirming deletion
@@ -140,7 +172,6 @@ export class ProductController {
     return await this.productService.hardDelete(param.id)
   }
 
-  /////////
   @Post('single')
   @HttpCode(HttpStatus.OK)
   @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)

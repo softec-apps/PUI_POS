@@ -84,4 +84,31 @@ export class SaleItemEntity extends EntityRelationalHelper {
     default: 0,
   })
   totalPrice: number
+
+  @Column({
+    type: 'decimal',
+    precision: 13,
+    scale: 6,
+    nullable: false,
+    default: 0,
+  })
+  discountAmount: number
+
+  @Column({
+    type: 'decimal',
+    precision: 13,
+    scale: 6,
+    nullable: false,
+    default: 0,
+  })
+  discountPercentage: number
+
+  @Column({
+    type: 'decimal',
+    precision: 13,
+    scale: 6,
+    nullable: false,
+    default: 0,
+  })
+  taxAmount: number
 }

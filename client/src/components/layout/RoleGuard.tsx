@@ -13,7 +13,7 @@ import { useUserData, clearUserCache } from '@/common/hooks/useSession'
 
 export interface Role {
 	id: number
-	name: 'admin' | 'manager'
+	name: 'admin' | 'manager' | 'cashier'
 }
 
 interface AuthGuardProps {
