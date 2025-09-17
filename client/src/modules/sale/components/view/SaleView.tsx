@@ -47,6 +47,7 @@ export function SaleView() {
 			sort: pagination.currentSort ? [pagination.currentSort] : undefined,
 			filters: {
 				estado_sri: pagination.currentStatusSRI || undefined,
+				userId: pagination.currentUser || undefined,
 				...cleanedDateFilters,
 			},
 		}
@@ -105,7 +106,9 @@ export function SaleView() {
 						searchValue={pagination.searchTerm}
 						currentSort={pagination.currentSort}
 						currentStatusSRI={pagination.currentStatusSRI}
+						currentUser={pagination.currentUser}
 						dateFilters={pagination.dateFilters}
+						onUserChange={pagination.handleUserChange}
 						isRefreshing={isRefreshing}
 						onRefresh={handleFiltersRefresh}
 						onStatusSRIChange={pagination.handleStatusSRIChange}

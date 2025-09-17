@@ -9,6 +9,7 @@ import { InfoDate } from '@/modules/sale/components/atoms/InfoDate'
 import { formatPrice } from '@/common/utils/formatPrice-util'
 import { Badge } from '@/components/layout/atoms/Badge'
 import { StatusSRI, StatusSRILabels_ES } from '@/common/enums/sale.enum'
+import { UserRoleBadge } from '@/modules/user/components/atoms/UserRoleBadge'
 
 const createHeader = (column: Column<I_Sale>, label: string) => {
 	return (
@@ -86,6 +87,25 @@ export const createTableColumns = (): ColumnDef<I_Sale>[] => [
 		accessorKey: 'total',
 		header: ({ column }) => createHeader(column, 'Total'),
 		cell: ({ row }) => <span>${formatPrice(row.original.total)}</span>,
+	},
+	{
+		accessorKey: 'total',
+		header: ({ column }) => createHeader(column, 'Total'),
+		cell: ({ row }) => (
+			<span>${formatPrice(row.original.items?.reduce((acc, item) => acc + (item.revenue || 0), 0))}</span>
+		),
+	},
+	{
+		accessorKey: 'user.firstName',
+		header: ({ column }) => createHeader(column, 'Reponsable'),
+		cell: ({ row }) => (
+			<div className='flex flex-col items-start justify-start'>
+				{/* 
+				<UserRoleBadge role={row.original?.user?.role} />
+				*/}
+				{row.original?.user?.firstName || '-'} {row.original?.user?.lastName || '-'}
+			</div>
+		),
 	},
 	{
 		accessorKey: 'createdAt',

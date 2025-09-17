@@ -14,8 +14,8 @@ export const UserRoleBadge = ({ role }: { role: I_User['role'] }) => {
 
 	return (
 		<Badge
-			variant={roleMap[role.name as keyof typeof roleMap]?.variant || 'secondary'}
-			text={roleMap[role.name as keyof typeof roleMap]?.text || 'Desconocido'}
+			variant={roleMap[role?.name as keyof typeof roleMap]?.variant || 'secondary'}
+			text={roleMap[role?.name as keyof typeof roleMap]?.text || '-'}
 		/>
 	)
 }

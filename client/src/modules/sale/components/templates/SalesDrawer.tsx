@@ -1,4 +1,6 @@
-import React, { useMemo, useState, useEffect } from 'react'
+'use client'
+
+import React, { useMemo, useState } from 'react'
 import {
 	Drawer,
 	DrawerContent,
@@ -6,15 +8,12 @@ import {
 	DrawerHeader,
 	DrawerTitle,
 	DrawerTrigger,
-	DrawerFooter,
-	DrawerClose,
 } from '@/components/ui/drawer'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useSale } from '@/common/hooks/useSale'
 import { ActionButton } from '@/components/layout/atoms/ActionButton'
 import { Icons } from '@/components/icons'
-import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
 import { FatalErrorState } from '@/components/layout/organims/ErrorStateCard'
 import { KPICard } from '@/components/layout/organims/KPICard'
 import { formatPrice } from '@/common/utils/formatPrice-util'
@@ -38,6 +37,30 @@ interface DailySummary {
 	digitalSales: number
 	digitalAmount: number
 	averageTicket: number
+	selectedUser: string | null
+}
+
+interface SaleItem {
+	id: string
+	code: string
+	total: number
+	taxAmount: number
+	totalItems: number
+	change?: number
+	paymentMethods: Array<{
+		amount: number
+		method: string
+	}>
+	items: Array<{
+		revenue: number
+	}>
+	user?: {
+		id: string
+		firstName: string
+		lastName: string
+		email: string
+	} | null
+	createdAt: string
 }
 
 const formatDate = (date: Date) => {
@@ -91,6 +114,7 @@ const normalizePaymentMethod = (method: string): string => {
 
 export function SalesDrawer({ trigger, onClose }: SalesDrawerProps) {
 	const [isOpen, setIsOpen] = useState(false)
+	const [selectedUserId, setSelectedUserId] = useState<string>('all')
 
 	// Obtener el rango de fechas para el día actual en formato ISO
 	const todayParams = useMemo(() => {
@@ -101,14 +125,13 @@ export function SalesDrawer({ trigger, onClose }: SalesDrawerProps) {
 
 		// Inicio del día (00:00:00.000)
 		const startOfDay = createLocalISODate(year, month, day, 0, 0, 0, 0)
-
 		// Final del día (23:59:59.999)
 		const endOfDay = createLocalISODate(year, month, day, 23, 59, 59, 999)
 
 		return {
 			search: '',
 			page: 1,
-			limit: 9999,
+			limit: 9999, // Trae todos los registros
 			filters: {
 				createdAt: {
 					startDate: startOfDay,
@@ -121,27 +144,40 @@ export function SalesDrawer({ trigger, onClose }: SalesDrawerProps) {
 	// Solo ejecutar el hook cuando el drawer esté abierto
 	const { recordsData, loading, error } = useSale(isOpen ? todayParams : undefined)
 
-	const salesData = recordsData?.data?.items || []
+	const salesData: SaleItem[] = recordsData?.data?.items || []
 
-	// Debug: agregar console.log para ver la estructura de datos
-	useEffect(() => {
-		if (salesData.length > 0) {
-			console.log('Datos de ventas:', salesData)
-			console.log('Primera venta:', salesData[0])
-			console.log('Métodos de pago de primera venta:', salesData[0]?.paymentMethods)
-		}
+	// Obtener lista única de vendedores/responsables para el filtro
+	const availableSellers = useMemo(() => {
+		const sellers = salesData
+			.filter(sale => sale.user)
+			.map(sale => ({
+				id: sale.user!.id,
+				name: `${sale.user!.firstName} ${sale.user!.lastName}`,
+				email: sale.user!.email,
+			}))
+
+		// Eliminar duplicados basándose en el ID
+		const uniqueSellers = sellers.filter((seller, index, self) => index === self.findIndex(s => s.id === seller.id))
+
+		return uniqueSellers
 	}, [salesData])
 
-	// Calcular el resumen diario
+	// Filtrar ventas por vendedor/responsable seleccionado
+	const filteredSalesData = useMemo(() => {
+		if (selectedUserId === 'all') return salesData
+		return salesData.filter(sale => sale.user?.id === selectedUserId)
+	}, [salesData, selectedUserId])
+
+	// Calcular el resumen diario CORREGIDO - Considerando el change
 	const dailySummary = useMemo<DailySummary>(() => {
 		const today = new Date()
 
 		const summary: DailySummary = {
 			date: today.toISOString().split('T')[0],
-			totalSales: salesData.length,
+			totalSales: filteredSalesData.length,
 			totalAmount: 0,
-			grossProfit: 0, // Ganancias brutas (revenue)
-			netProfit: 0, // Ganancias netas (revenue - costos)
+			grossProfit: 0,
+			netProfit: 0,
 			taxAmount: 0,
 			cashSales: 0,
 			cashAmount: 0,
@@ -150,11 +186,13 @@ export function SalesDrawer({ trigger, onClose }: SalesDrawerProps) {
 			digitalSales: 0,
 			digitalAmount: 0,
 			averageTicket: 0,
+			selectedUser: selectedUserId,
 		}
 
-		salesData.forEach(sale => {
+		filteredSalesData.forEach(sale => {
 			const amount = Number(sale.total) || 0
 			const tax = Number(sale.taxAmount) || 0
+			const change = Number(sale.change) || 0 // Considerar el cambio
 
 			summary.totalAmount += amount
 			summary.taxAmount += tax
@@ -164,55 +202,59 @@ export function SalesDrawer({ trigger, onClose }: SalesDrawerProps) {
 				sale.items.forEach(item => {
 					const revenue = Number(item.revenue) || 0
 					summary.grossProfit += revenue
-					summary.netProfit += revenue // En este caso, asumimos que revenue ya es ganancia neta
+					summary.netProfit += revenue - tax // Neto es revenue menos impuestos
 				})
 			}
 
-			// Procesar métodos de pago (pueden ser múltiples)
+			// CORRECCIÓN: Procesar TODOS los métodos de pago de cada venta
 			if (sale.paymentMethods && Array.isArray(sale.paymentMethods)) {
+				// Contador para métodos de pago en esta venta
+				let hasCash = false
+				let hasCard = false
+				let hasDigital = false
+
 				sale.paymentMethods.forEach(paymentMethod => {
 					const method = normalizePaymentMethod(paymentMethod.method)
-					const paymentAmount = Number(paymentMethod.amount) || 0
+					let paymentAmount = Number(paymentMethod.amount) || 0
+
+					// Si es efectivo, restar el cambio del monto
+					if (method === 'cash' && change > 0) paymentAmount = Math.max(0, paymentAmount - change)
 
 					switch (method) {
 						case 'cash':
-							// Solo incrementar sales count una vez por venta, no por método de pago
-							if (!sale._cashCounted) {
-								summary.cashSales++
-								sale._cashCounted = true
-							}
 							summary.cashAmount += paymentAmount
+							hasCash = true
 							break
 						case 'card':
-							if (!sale._cardCounted) {
-								summary.cardSales++
-								sale._cardCounted = true
-							}
 							summary.cardAmount += paymentAmount
+							hasCard = true
 							break
 						case 'digital':
-							if (!sale._digitalCounted) {
-								summary.digitalSales++
-								sale._digitalCounted = true
-							}
 							summary.digitalAmount += paymentAmount
+							hasDigital = true
 							break
 					}
 				})
+
+				// Contar la venta para cada método de pago utilizado
+				if (hasCash) summary.cashSales++
+				if (hasCard) summary.cardSales++
+				if (hasDigital) summary.digitalSales++
 			} else {
 				// Fallback: si no hay paymentMethods array, asumir efectivo
 				summary.cashSales++
-				summary.cashAmount += amount
+				// También considerar el cambio en el fallback
+				summary.cashAmount += Math.max(0, amount - change)
 			}
 		})
 
 		// Calcular ticket promedio
-		summary.averageTicket = summary.totalSales > 0 ? summary.totalAmount / summary.totalSales : 0
+		summary.averageTicket = summary.totalAmount / summary.totalSales
 
 		return summary
-	}, [salesData])
+	}, [filteredSalesData, selectedUserId])
 
-	// Datos de métodos de pago para la visualización
+	// Datos de métodos de pago para la visualización CORREGIDOS
 	const paymentMethods = useMemo(() => {
 		const methods = [
 			{
@@ -240,7 +282,7 @@ export function SalesDrawer({ trigger, onClose }: SalesDrawerProps) {
 
 		return methods.map(method => ({
 			...method,
-			percentage: dailySummary.totalAmount > 0 ? (method.amount / dailySummary.totalAmount) * 100 : 0,
+			percentage: (method.amount / dailySummary.totalAmount) * 100,
 		}))
 	}, [dailySummary])
 
@@ -248,129 +290,143 @@ export function SalesDrawer({ trigger, onClose }: SalesDrawerProps) {
 
 	const handleOpenChange = (open: boolean) => {
 		setIsOpen(open)
-		if (!open && onClose) {
-			onClose()
-		}
+		if (!open && onClose) onClose()
 	}
 
 	return (
 		<Drawer open={isOpen} onOpenChange={handleOpenChange}>
-			<DrawerTrigger>{trigger || <ActionButton icon={<Icons.moneyBag />} text='Cuadrar Ventas' />}</DrawerTrigger>
+			<DrawerTrigger>{trigger || <ActionButton icon={<Icons.moneyBag />} text='Cuadrar ventas' />}</DrawerTrigger>
 
-			<DrawerContent className='max-h-[85vh]'>
-				<div className='mx-auto flex h-full w-full max-w-4xl flex-col'>
-					<DrawerHeader className='flex-shrink-0'>
-						<DrawerTitle>Cuadre de ventas diarias</DrawerTitle>
-						<DrawerDescription>Resumen de las ventas del día {formatDate(new Date())}</DrawerDescription>
-					</DrawerHeader>
-
-					{/* Estado Vacío */}
-					{!hasData ? (
-						<Card className='border-none bg-transparent'>
-							<CardContent className='flex items-center justify-center py-12'>
-								<div className='text-muted-foreground text-center'>
-									<Icons.shoppingBag className='mx-auto mb-4 h-12 w-12 opacity-50' />
-									<p className='mb-2 text-lg font-medium'>No hay ventas registradas</p>
-									<p className='text-sm'>Para el día de hoy</p>
-								</div>
+			<DrawerContent>
+				{!hasData && !loading ? (
+					<div className='flex flex-1 items-center justify-center p-8'>
+						<Card className='border-none bg-transparent shadow-none'>
+							<CardContent className='py-8 text-center'>
+								<Icons.shoppingBag className='mx-auto mb-4 h-16 w-16 opacity-30' />
+								<h3 className='mb-2 text-lg font-semibold'>
+									{selectedUserId === 'all' ? 'No hay ventas registradas' : 'No hay ventas para este filtro'}
+								</h3>
+								<p className='text-muted-foreground max-w-md text-sm'>
+									{selectedUserId === 'all'
+										? 'Para el día de hoy no se han registrado ventas'
+										: 'Intenta con otro vendedor o selecciona "Todos"'}
+								</p>
 							</CardContent>
 						</Card>
-					) : (
-						<div className='flex-1 overflow-y-auto px-4'>
-							<div className='space-y-4 pb-4'>
-								{loading ? (
-									<div className='flex items-center justify-center py-20'>
-										<SpinnerLoader text='Cuadrando ventas...' />
-									</div>
-								) : error ? (
-									<div className='py-20'>
-										<FatalErrorState />
-									</div>
-								) : (
-									<>
-										{/* Grid de resumen principal - 2 columnas en md, 3 en lg */}
-										<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-											{/* Total de Ventas */}
-											<KPICard
-												title='Ventas'
-												value={dailySummary.totalSales}
-												description='Cantidad de ventas'
-												isLoading={loading}
-											/>
+					</div>
+				) : error ? (
+					<FatalErrorState />
+				) : (
+					<div className='mx-auto flex h-full w-full max-w-5xl flex-col'>
+						<DrawerHeader>
+							<DrawerTitle className='text-xl'>Cuadre de ventas diarias</DrawerTitle>
 
-											{/* Total Recaudado */}
-											<KPICard
-												title='Caja'
-												value={dailySummary.totalAmount}
-												isCurrency
-												description='Total recaudado en caja'
-												isLoading={loading}
-											/>
-
-											{/* Ganancias */}
-											<KPICard
-												title='Ganancias'
-												value={dailySummary.netProfit}
-												isCurrency
-												description='Ganancias netas del día'
-												isLoading={loading}
-											/>
-										</div>
-
-										{/* Desglose por Método de Pago */}
-										<Card className='border-none bg-transparent p-0'>
-											<CardHeader className='p-0'>
-												<CardTitle>Desglose por Método de Pago</CardTitle>
-												<CardDescription>Distribución de ventas según el método de pago</CardDescription>
-											</CardHeader>
-
-											<CardContent className='p-0'>
-												{/* Grid responsive para métodos de pago */}
-												<div className='grid grid-cols-1 gap-3 md:grid-cols-3'>
-													{paymentMethods.map(method => (
-														<Card className='border-border/50' key={method.method}>
-															<CardContent className='mb-2'>
-																<div className='flex items-center justify-between'>
-																	<div
-																		className={`flex items-center ${
-																			method.method === 'cash'
-																				? 'text-green-500 dark:text-green-300'
-																				: method.method === 'card'
-																					? 'text-blue-500 dark:text-blue-500'
-																					: 'text-purple-500 dark:text-purple-300'
-																		}`}>
-																		{method.label}
-																	</div>
-																	<div>{getPaymentMethodIcon(method.method)}</div>
-																</div>
-																<div
-																	className={`text-2xl font-bold ${
-																		method.method === 'cash'
-																			? 'text-green-600 dark:text-green-300'
-																			: method.method === 'card'
-																				? 'text-blue-600 dark:text-blue-300'
-																				: 'text-purple-600 dark:text-purple-300'
-																	}`}>
-																	{formatPrice(method.amount)}
-																</div>
-															</CardContent>
-
-															<CardFooter>
-																<span className='text-muted-foreground truncate text-xs'>
-																	Representa el {method.percentage.toFixed(1)}% de las ventas
-																</span>
-															</CardFooter>
-														</Card>
-													))}
+							<div className='flex items-center justify-between'>
+								<DrawerDescription className='text-sm'>
+									Resumen de las ventas del día {formatDate(new Date())}
+								</DrawerDescription>
+								<div className='flex flex-col gap-3 pt-3 sm:flex-row sm:items-center sm:gap-4'>
+									<Select value={selectedUserId} onValueChange={setSelectedUserId}>
+										<SelectTrigger className='w-auto'>
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent align='end'>
+											<SelectItem value='all'>
+												<div className='flex items-center gap-2'>
+													<Icons.userGroup className='h-4 w-4' />
+													Todos
 												</div>
-											</CardContent>
-										</Card>
-									</>
-								)}
+											</SelectItem>
+											{availableSellers.map(seller => (
+												<SelectItem key={seller.id} value={seller.id}>
+													<div className='flex items-center gap-2'>
+														<Icons.userCheck className='h-4 w-4' />
+														{seller.name}
+													</div>
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</div>
 							</div>
+						</DrawerHeader>
+
+						<div className='space-y-6 pb-5'>
+							{/* Grid de resumen principal - Mejorada la disposición */}
+							<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3'>
+								{/* Total de Ventas */}
+								<KPICard
+									title='Ventas'
+									value={dailySummary.totalSales}
+									description='Cantidad de ventas'
+									isLoading={loading}
+								/>
+								{/* Total Recaudado */}
+								<KPICard
+									title='Total Caja'
+									value={dailySummary.totalAmount}
+									isCurrency
+									description='Total recaudado'
+									isLoading={loading}
+								/>
+								{/* Ganancias */}
+								<KPICard
+									title='Ganancias Netas'
+									value={dailySummary.netProfit}
+									isCurrency
+									description='Ganancias del día'
+									isLoading={loading}
+								/>
+							</div>
+
+							{/* Desglose por Método de Pago - Mejorado */}
+							<Card className='border-none bg-transparent p-0'>
+								<CardHeader className='p-0'>
+									<CardTitle className='flex items-center gap-2'>
+										<Icons.creditCard className='h-5 w-5' />
+										Desglose por Método de Pago
+									</CardTitle>
+									<CardDescription>
+										Distribución de ventas según el método de pago (considerando cambio para efectivo)
+									</CardDescription>
+								</CardHeader>
+
+								<CardContent className='p-0'>
+									{/* Grid mejorado para métodos de pago */}
+									<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+										{paymentMethods
+											.filter(method => method.count > 0 || method.amount > 0)
+											.map(method => (
+												<Card
+													className='border-border/50 hover:border-border p-0 transition-colors'
+													key={method.method}>
+													<CardContent className='p-4'>
+														<div className='mb-3 flex items-center justify-between'>
+															<span className='text-sm font-medium'>{method.label}</span>
+															{getPaymentMethodIcon(method.method)}
+														</div>
+														<div
+															className={`mb-2 text-2xl font-bold ${
+																method.method === 'cash'
+																	? 'text-green-600 dark:text-green-400'
+																	: method.method === 'card'
+																		? 'text-blue-600 dark:text-blue-400'
+																		: 'text-purple-600 dark:text-purple-400'
+															}`}>
+															{formatPrice(method.amount)}
+														</div>
+														<div className='text-muted-foreground flex items-center justify-between text-xs'>
+															<span>Corresponde la total {method.percentage.toFixed(2)}% de ventas</span>
+														</div>
+													</CardContent>
+												</Card>
+											))}
+									</div>
+								</CardContent>
+							</Card>
 						</div>
-					)}
-				</div>
+					</div>
+				)}
 			</DrawerContent>
 		</Drawer>
 	)

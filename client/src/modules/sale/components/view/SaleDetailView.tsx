@@ -395,6 +395,7 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 											<TableHead>Cnt</TableHead>
 											<TableHead>PVP</TableHead>
 											<TableHead>Total</TableHead>
+											<TableHead>Ganancia</TableHead>
 											<TableHead>Acciones</TableHead>
 										</TableRow>
 									</TableHeader>
@@ -424,6 +425,7 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 												<TableCell>{item.quantity}</TableCell>
 												<TableCell>{formatPrice(item.unitPrice)}</TableCell>
 												<TableCell>{formatPrice(item.totalPrice)}</TableCell>
+												<TableCell>{formatPrice(item.revenue)}</TableCell>
 												<TableCell>
 													<Link href={`${ROUTE_PATH.ADMIN.PRODUCT}/${item.product.id}`}>
 														<ActionButton tooltip='Ver detalles' icon={<Icons.link />} size='icon' variant='ghost' />
@@ -490,7 +492,7 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 										Descuento
 									</Typography>
 									<Typography variant='small' className='font-medium text-emerald-600'>
-										-${formatPrice(saleData.discount ?? '')}
+										-${formatPrice(saleData?.discount ?? '')}
 									</Typography>
 								</div>
 
@@ -510,6 +512,15 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 									</Typography>
 									<Typography variant='span' className='text-lg font-bold'>
 										${formatPrice(saleData.total)}
+									</Typography>
+								</div>
+
+								<div className='flex items-center justify-between font-medium'>
+									<Typography variant='small' className='text-muted-foreground'>
+										Ganancia
+									</Typography>
+									<Typography variant='span' className='text-lg font-bold'>
+										${formatPrice(saleData.items?.reduce((acc, item) => acc + (item.revenue || 0), 0))}
 									</Typography>
 								</div>
 							</div>

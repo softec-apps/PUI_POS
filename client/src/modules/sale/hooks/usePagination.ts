@@ -8,6 +8,7 @@ import { DateFilters, DateRange, DateFilterType } from '@/common/types/paginatio
 interface FilterState {
 	searchTerm: string
 	currentSort: string
+	currentUser: string
 	currentStatusSRI: StatusSRI.AUTHORIZED | StatusSRI.NO_ELECTRONIC | StatusSRI.ERROR | null
 	dateFilters: DateFilters
 }
@@ -15,6 +16,7 @@ interface FilterState {
 const INITIAL_FILTER_STATE: FilterState = {
 	searchTerm: '',
 	currentSort: '',
+	currentUser: '',
 	currentStatusSRI: null,
 	dateFilters: {},
 }
@@ -85,12 +87,13 @@ export function usePagination() {
 
 			resetToFirstPage({
 				filters: {
-					statusSRIs: filters.currentStatusSRI || undefined,
+					estado_sri: filters.currentStatusSRI || undefined, // CAMBIO 3: corregir nombre del campo
+					user_id: filters.currentUser || undefined, // CAMBIO 4: agregar user_id
 					...cleanedDateFilters,
 				},
 			})
 		},
-		[filters, resetToFirstPage]
+		[filters.dateFilters, filters.currentStatusSRI, filters.currentUser, resetToFirstPage] // CAMBIO 5: dependencias específicas
 	)
 
 	const clearDateFilter = useCallback(
@@ -114,11 +117,12 @@ export function usePagination() {
 			resetToFirstPage({
 				filters: {
 					estado_sri: filters.currentStatusSRI || undefined,
+					user_id: filters.currentUser || undefined, // CAMBIO 6: agregar user_id
 					...cleanedDateFilters,
 				},
 			})
 		},
-		[filters, resetToFirstPage]
+		[filters.dateFilters, filters.currentStatusSRI, filters.currentUser, resetToFirstPage] // CAMBIO 7: dependencias específicas
 	)
 
 	const updatePaginationSearch = useCallback(
@@ -130,18 +134,14 @@ export function usePagination() {
 
 	// Debounced search effect
 	useEffect(() => {
-		if (debounceTimer.current) {
-			clearTimeout(debounceTimer.current)
-		}
+		if (debounceTimer.current) clearTimeout(debounceTimer.current)
 
 		debounceTimer.current = setTimeout(() => {
 			updatePaginationSearch(filters.searchTerm)
 		}, DEBOUNCE_DELAY)
 
 		return () => {
-			if (debounceTimer.current) {
-				clearTimeout(debounceTimer.current)
-			}
+			if (debounceTimer.current) clearTimeout(debounceTimer.current)
 		}
 	}, [filters.searchTerm, updatePaginationSearch])
 
@@ -163,9 +163,9 @@ export function usePagination() {
 		[resetToFirstPage]
 	)
 
-	// StatusSRI filtering (updated to include date filters)
+	// StatusSRI filtering
 	const handleStatusSRIChange = useCallback(
-		(statusSRI: StatusSRI.CASH | StatusSRI.DIGITAL | StatusSRI.CARD | null) => {
+		(statusSRI: StatusSRI.AUTHORIZED | StatusSRI.ERROR | StatusSRI.NO_ELECTRONIC | StatusSRI.PROCESANDO | null) => {
 			setFilters(prev => ({ ...prev, currentStatusSRI: statusSRI }))
 
 			const cleanedDateFilters = Object.fromEntries(
@@ -175,11 +175,34 @@ export function usePagination() {
 			resetToFirstPage({
 				filters: {
 					estado_sri: statusSRI || undefined,
+					user_id: filters.currentUser || undefined, // CAMBIO 8: agregar user_id
 					...cleanedDateFilters,
 				},
 			})
 		},
-		[filters.dateFilters, resetToFirstPage]
+		[filters.dateFilters, filters.currentUser, resetToFirstPage] // CAMBIO 9: agregar currentUser a dependencias
+	)
+
+	// User filtering - CORRECCIÓN PRINCIPAL
+	const handleUserChange = useCallback(
+		(userId: string | null) => {
+			// CAMBIO 10: recibir parámetro userId
+			// Actualizar el estado primero
+			setFilters(prev => ({ ...prev, currentUser: userId })) // CAMBIO 11: actualizar estado
+
+			const cleanedDateFilters = Object.fromEntries(
+				Object.entries(filters.dateFilters).filter(([_, range]) => range && (range.startDate || range.endDate))
+			)
+
+			resetToFirstPage({
+				filters: {
+					estado_sri: filters.currentStatusSRI || undefined, // CAMBIO 12: agregar estado_sri
+					user_id: userId || undefined, // CAMBIO 13: usar el parámetro userId en lugar del estado
+					...cleanedDateFilters,
+				},
+			})
+		},
+		[filters.dateFilters, filters.currentStatusSRI, resetToFirstPage]
 	)
 
 	// Reset all filters (updated)
@@ -197,7 +220,13 @@ export function usePagination() {
 
 	const hasActiveFilters = useCallback(() => {
 		const hasDateFilters = Object.values(filters.dateFilters).some(range => range && (range.startDate || range.endDate))
-		return !!(filters.searchTerm || filters.currentSort || filters.currentStatusSRI || hasDateFilters)
+		return !!(
+			filters.searchTerm ||
+			filters.currentSort ||
+			filters.currentStatusSRI ||
+			filters.currentUser ||
+			hasDateFilters
+		)
 	}, [filters])
 
 	const getActiveDateFilters = useCallback(() => {
@@ -221,6 +250,7 @@ export function usePagination() {
 		handleSearchChange,
 		handleSort,
 		handleStatusSRIChange,
+		handleUserChange,
 		handleDateFilterChange,
 		clearDateFilter,
 		handleResetAll,
