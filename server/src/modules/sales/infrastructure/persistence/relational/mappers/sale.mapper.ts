@@ -6,6 +6,7 @@ import { CustomerMapper } from '@/modules/customer/infrastructure/persistence/re
 import { ProductMapper } from '@/modules/product/infrastructure/persistence/relational/mappers/product.mapper'
 import { CustomerEntity } from '@/modules/customer/infrastructure/persistence/relational/entities/customer.entity'
 import { ProductEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product.entity'
+import { UserMapper } from '@/modules/users/infrastructure/persistence/relational/mappers/user.mapper'
 
 export class SaleItemMapper {
   static toDomain(raw: SaleItemEntity): SaleItem {
@@ -89,6 +90,8 @@ export class SaleMapper {
       estado_sri: raw.estado_sri,
       comprobante_id: raw.comprobante_id,
       clave_acceso: raw.clave_acceso,
+      // Responsable de la venta
+      user: raw.user ? UserMapper.toDomain(raw.user) : null,
     })
     return domainEntity
   }
@@ -100,7 +103,7 @@ export class SaleMapper {
       code: domainEntity.code,
       customerId: domainEntity.customerId,
       subtotal: domainEntity.subtotal,
-      discountAmount: domainEntity.discountAmount, // ✅ LÍNEA AGREGADA
+      discountAmount: domainEntity.discountAmount,
       taxAmount: domainEntity.taxAmount,
       total: domainEntity.total,
       totalItems: domainEntity.totalItems,
@@ -111,6 +114,7 @@ export class SaleMapper {
       estado_sri: domainEntity.estado_sri,
       comprobante_id: domainEntity.comprobante_id,
       clave_acceso: domainEntity.clave_acceso,
+      user: domainEntity.user?.id || null,
     })
 
     if (domainEntity.customer) {
