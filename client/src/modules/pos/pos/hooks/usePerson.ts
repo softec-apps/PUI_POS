@@ -54,9 +54,8 @@ interface UsePersonLookupReturn {
 	clearData: () => void
 }
 
-const API_BASE_URL = 'https://apipersonas.softecsa.com/api'
-const BEARER_TOKEN =
-	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwaXBlcnNvbmFzLnNvZnRlY3NhLmNvbS9hcGkvbG9naW4iLCJpYXQiOjE3NTc2MDMxMjQsImV4cCI6MTc4OTEzOTEyNCwibmJmIjoxNzU3NjAzMTI0LCJqdGkiOiJHem1IVkxYYXh0NUN2OHBKIiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.AS0S3Pa7z4a-G3n-NPa4wLEh5ARE0yf47ip9l87D8UE'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_PERSON
+const BEARER_TOKEN = process.env.API_BEARER_TOKEN_PERSON
 
 export const usePerson = (
 	identificationNumber: string,
