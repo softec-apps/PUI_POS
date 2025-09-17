@@ -53,9 +53,8 @@ interface UsePersonLookupReturn {
 	error: string | null
 	clearData: () => void
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_PERSON
-const BEARER_TOKEN = process.env.API_BEARER_TOKEN_PERSON
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_PERSON as string
+const BEARER_TOKEN = process.env.NEXT_PUBLIC_API_BEARER_TOKEN_PERSON as string
 
 export const usePerson = (
 	identificationNumber: string,
