@@ -1,3 +1,4 @@
+import { I_User } from '@/common/types/modules/user'
 import { I_Product } from '@/common/types/modules/product'
 import { I_Customer } from '@/common/types/modules/customer'
 
@@ -23,6 +24,7 @@ export interface I_SaleItem {
 	totalPrice: number
 	taxRate: number
 	productCode?: string
+	revenue: number
 }
 
 /** Body para creación/actualización de venta */
@@ -43,6 +45,7 @@ export interface I_Sale extends I_SaleBase {
 	total: number
 	totalItems: number
 	customer: I_Customer
+	user: I_User
 }
 
 /** DTO para creación de venta */

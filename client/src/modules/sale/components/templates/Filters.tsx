@@ -9,6 +9,7 @@ import { ViewSelector } from '@/components/layout/organims/ViewSelector'
 import { SearchInput } from '@/components/layout/organims/SearchInput'
 import { SortDropdown } from '@/modules/sale/components/organisms/Filters/SortDropdown'
 import { StatusSRIDropdown } from '@/modules/sale/components/organisms/Filters/StatusSRIDropdown'
+import { UserDropdown } from '@/modules/sale/components/organisms/Filters/UserDropdown'
 import { DateFiltersDropdown } from '@/modules/sale/components/organisms/Filters/DateFiltersDropdown'
 import { DateFilters, DateFilterType, DateRange } from '@/common/types/pagination'
 import { StatusSRI } from '@/common/enums/sale.enum'
@@ -18,10 +19,12 @@ interface FiltersProps {
 	isRefreshing: boolean
 	currentSort?: string
 	currentStatusSRI?: StatusSRI.AUTHORIZED | StatusSRI.NO_ELECTRONIC | StatusSRI.ERROR | null
+	currentUser?: string | null
 	dateFilters: DateFilters
 	onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 	onSort: (sortKey: string) => void
 	onStatusSRIChange: (statusSRI: StatusSRI.AUTHORIZED | StatusSRI.NO_ELECTRONIC | StatusSRI.ERROR | null) => void
+	onUserChange: (userId: string | null) => void
 	onDateFilterChange: (filterType: DateFilterType, range: DateRange) => void
 	onClearDateFilter: (filterType: DateFilterType) => void
 	onRefresh: () => void
@@ -35,10 +38,12 @@ export function Filters({
 	isRefreshing,
 	currentSort,
 	currentStatusSRI,
+	currentUser,
 	dateFilters,
 	onSearchChange,
 	onSort,
 	onStatusSRIChange,
+	onUserChange,
 	onDateFilterChange,
 	onClearDateFilter,
 	onRefresh,
@@ -53,6 +58,9 @@ export function Filters({
 
 	// Función para limpiar estado
 	const clearStatusSRI = () => onStatusSRIChange(null)
+
+	// Función para limpiar usuario
+	const clearUser = () => onUserChange(null)
 
 	// Función para limpiar todas las fechas
 	const clearAllDateFilters = () => Object.keys(dateFilters).forEach(key => onClearDateFilter(key as DateFilterType))
@@ -79,6 +87,7 @@ export function Filters({
 					initial={{ opacity: 0, x: 15 }}
 					animate={{ opacity: 1, x: 0 }}
 					transition={{ delay: 0 }}>
+					{/* Sort Filter */}
 					<div className='relative flex items-center gap-2'>
 						<SortDropdown currentSort={currentSort} onSort={onSort} />
 						{currentSort && currentSort !== '' && (
@@ -88,6 +97,7 @@ export function Filters({
 
 					<span className='text-muted-foreground'>|</span>
 
+					{/* Status SRI Filter */}
 					<div className='relative flex items-center gap-2'>
 						<StatusSRIDropdown currentStatusSRI={currentStatusSRI} onStatusSRIChange={onStatusSRIChange} />
 						{currentStatusSRI !== null && (
@@ -97,6 +107,17 @@ export function Filters({
 
 					<span className='text-muted-foreground'>|</span>
 
+					{/* User Filter - NEW */}
+					<div className='relative flex items-center gap-2'>
+						<UserDropdown currentUser={currentUser} onUserChange={onUserChange} />
+						{currentUser !== null && (
+							<ActionButton icon={<Icons.x />} onClick={clearUser} variant='ghost' size='sm' className='h-8 w-8' />
+						)}
+					</div>
+
+					<span className='text-muted-foreground'>|</span>
+
+					{/* Date Filters */}
 					<div className='relative flex items-center gap-2'>
 						<DateFiltersDropdown
 							dateFilters={dateFilters}
@@ -116,6 +137,7 @@ export function Filters({
 
 					<span className='text-muted-foreground'>|</span>
 
+					{/* Refresh Button */}
 					<ActionButton
 						icon={isRefreshing ? <Icons.refresh className='animate-spin' /> : <Icons.refresh />}
 						onClick={onRefresh}
