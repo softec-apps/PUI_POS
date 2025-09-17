@@ -66,6 +66,7 @@ export class SaleItemMapper {
     return persistenceEntity
   }
 }
+
 export class SaleMapper {
   static toDomain(raw: SaleEntity): Sale {
     const domainEntity = new Sale()
@@ -91,7 +92,7 @@ export class SaleMapper {
       comprobante_id: raw.comprobante_id,
       clave_acceso: raw.clave_acceso,
       // Responsable de la venta
-      user: raw.user ? UserMapper.toDomain(raw.user) : null,
+      userId: raw.user ? UserMapper.toDomain(raw.user) : null,
     })
     return domainEntity
   }
@@ -114,7 +115,7 @@ export class SaleMapper {
       estado_sri: domainEntity.estado_sri,
       comprobante_id: domainEntity.comprobante_id,
       clave_acceso: domainEntity.clave_acceso,
-      user: domainEntity.user?.id || null,
+      userId: domainEntity.user?.id,
     })
 
     if (domainEntity.customer) {

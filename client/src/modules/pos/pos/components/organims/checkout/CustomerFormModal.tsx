@@ -1,7 +1,7 @@
 'use client'
 
 import { z } from 'zod'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Icons } from '@/components/icons'
 import { useForm, FormProvider } from 'react-hook-form'
@@ -22,6 +22,9 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog'
+import { Loader2 } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { usePerson } from '@/modules/pos/pos/hooks/usePerson'
 
 const customerSchema = z
 	.object({
@@ -68,6 +71,10 @@ interface Props {
 }
 
 export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onClose, onSubmit }: Props) {
+	// Estado para controlar si se deben mostrar los campos adicionales
+	const [showAdditionalFields, setShowAdditionalFields] = useState(false)
+	const [hasSearched, setHasSearched] = useState(false)
+
 	const methods = useForm<CustomerFormData>({
 		resolver: zodResolver(customerSchema),
 		mode: 'onChange',
@@ -88,10 +95,27 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 		control,
 		formState,
 		formState: { errors, isValid, isDirty },
+		watch,
+		setValue,
 	} = methods
+
+	// Watch para obtener los valores actuales
+	const identificationNumber = watch('identificationNumber')
+	const identificationType = watch('identificationType')
+
+	// Hook para búsqueda de personas con debounce
+	const { personData, isLoading, error, clearData } = usePerson(
+		identificationNumber,
+		identificationType,
+		500 // 500ms de debounce
+	)
 
 	useEffect(() => {
 		if (isOpen) {
+			// Resetear estados
+			setShowAdditionalFields(false)
+			setHasSearched(false)
+
 			reset({
 				customerType: 'regular',
 				identificationType: '05',
@@ -101,14 +125,76 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 				email: '',
 				...defaultValues,
 			})
+
+			// Si hay defaultValues o currentCustomer, mostrar campos adicionales
+			if (defaultValues || currentCustomer) {
+				setShowAdditionalFields(true)
+				setHasSearched(true)
+			}
 		}
-	}, [isOpen, defaultValues, reset])
+	}, [isOpen, defaultValues, reset, currentCustomer])
+
+	// Efecto para limpiar datos cuando cambia el tipo de identificación
+	const prevIdentificationType = React.useRef(identificationType)
+	useEffect(() => {
+		if (prevIdentificationType.current !== identificationType) {
+			setValue('identificationNumber', '')
+			clearData()
+			// Limpiar también los campos que podrían haberse auto-completado
+			setValue('firstName', '')
+			setValue('lastName', '')
+			setValue('email', '')
+			// Ocultar campos adicionales al cambiar tipo
+			setShowAdditionalFields(false)
+			setHasSearched(false)
+		}
+		prevIdentificationType.current = identificationType
+	}, [identificationType, setValue, clearData])
+
+	// Efecto para manejar la respuesta de la búsqueda
+	useEffect(() => {
+		// Solo procesar si hay un número de identificación válido
+		if (!identificationNumber || identificationNumber.length < 3) {
+			setShowAdditionalFields(false)
+			setHasSearched(false)
+			return
+		}
+
+		// Si terminó la búsqueda completamente (sin importar el resultado)
+		if (!isLoading && hasSearched) {
+			setShowAdditionalFields(true)
+
+			// Auto-completar datos si se encontraron
+			if (personData) {
+				// Para personas naturales (CI)
+				if (personData.type_identification === 'CC' || identificationType === '05') {
+					setValue('firstName', personData.name || '')
+					setValue('lastName', personData.surname || '')
+					setValue('email', personData.email || '')
+				}
+				// Para personas jurídicas (RUC)
+				else if (personData.type_identification === 'RUC' || identificationType === '04') {
+					setValue('firstName', personData.name || '')
+					setValue('lastName', '') // Las personas jurídicas no tienen apellido
+					setValue('email', personData.email || '')
+				}
+			}
+		}
+		// Marcar que se está haciendo una búsqueda
+		else if (isLoading) {
+			setHasSearched(true)
+			setShowAdditionalFields(false) // Mantener ocultos durante la búsqueda
+		}
+	}, [personData, error, isLoading, setValue, identificationType, identificationNumber, hasSearched])
 
 	const handleFormSubmit = async (data: CustomerFormData) => {
 		try {
 			await onSubmit(data)
 			// Solo resetear si la operación fue exitosa
 			reset()
+			clearData()
+			setShowAdditionalFields(false)
+			setHasSearched(false)
 		} catch (error) {
 			console.error('Error al enviar formulario:', error)
 			// NO resetear el formulario en caso de error
@@ -118,11 +204,11 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 
 	const handleClose = () => {
 		reset()
+		clearData()
+		setShowAdditionalFields(false)
+		setHasSearched(false)
 		onClose()
 	}
-
-	const identificationType = methods.watch('identificationType')
-	useEffect(() => methods.setValue('identificationNumber', ''), [identificationType, methods])
 
 	if (!isOpen) return null
 
@@ -144,15 +230,19 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 						</DialogClose>
 					</div>
 
-					<DialogDescription>Completa los datos del cliente</DialogDescription>
+					<DialogDescription>
+						{!showAdditionalFields
+							? 'Ingresa el tipo y número de identificación para continuar'
+							: 'Completa los datos del cliente'}
+					</DialogDescription>
 				</DialogHeader>
 
 				<div className='flex-1 space-y-4 overflow-auto p-4'>
 					<FormProvider {...methods}>
 						<form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-4'>
 							<div className='space-y-8'>
-								{/* Información de identificación */}
-								<div className='space-y-8'>
+								{/* Información de identificación - Siempre visible */}
+								<div className='space-y-4'>
 									<div className='grid grid-cols-2 gap-4'>
 										<UniversalFormField
 											control={control}
@@ -168,15 +258,22 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 											showValidationIcons
 										/>
 
-										<UniversalFormField
-											control={control}
-											name='identificationNumber'
-											label='Número de identificación'
-											placeholder='Ej: 1234567890'
-											type='text'
-											required
-											showValidationIcons
-										/>
+										<div className='relative'>
+											<UniversalFormField
+												control={control}
+												name='identificationNumber'
+												label='Número de identificación'
+												placeholder='Ej: 1234567890'
+												type='text'
+												required
+												showValidationIcons
+											/>
+											{isLoading && (
+												<div className='bg-popover text-primary absolute top-1/2 right-3 z-50 -translate-y-1/2 transform'>
+													<Icons.spinnerSimple className='text-primary h-4 w-4 animate-spin' />
+												</div>
+											)}
+										</div>
 									</div>
 								</div>
 
@@ -199,7 +296,7 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 										placeholder='Ingresa el apellido'
 										type='text'
 										showValidationIcons
-										required
+										required={identificationType !== '04'} // No requerido para RUC
 									/>
 								</div>
 
@@ -217,13 +314,16 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 					</FormProvider>
 				</div>
 
-				<FormFooter
-					formState={formState}
-					isFormValid={isValid} // <-- antes pasabas isValid pero el prop se llama isFormValid
-					currentRecord={currentCustomer} // <-- antes usabas currentTemplate
-					onClose={handleClose}
-					onSubmit={handleSubmit(handleFormSubmit)}
-				/>
+				{/* Footer solo visible cuando termine la búsqueda y se muestren los campos adicionales */}
+				{!isLoading && showAdditionalFields && (
+					<FormFooter
+						formState={formState}
+						isFormValid={isValid}
+						currentRecord={currentCustomer}
+						onClose={handleClose}
+						onSubmit={handleSubmit(handleFormSubmit)}
+					/>
+				)}
 			</DialogContent>
 		</Dialog>
 	)
