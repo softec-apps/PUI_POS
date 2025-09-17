@@ -12,15 +12,24 @@ import { Transform, Type, plainToInstance } from 'class-transformer'
 import { SaleEntity } from '@/modules/sales/infrastructure/persistence/relational/entities/sale.entity'
 import { DateRangeDto } from '@/utils/dto/DateRangeDto'
 import { StatusSRI } from '@/modules/sales/sale.enum'
+import { User } from '@/modules/users/domain/user'
 
 export class FilterSaleDto {
+  @ApiPropertyOptional({
+    description: 'Filtrar por ID de usuario',
+    example: 'd7a2d85d-453c-4ed0-a2cf-c2099aafdfe4',
+  })
+  @IsOptional()
+  @IsUUID(4, { message: 'El ID del usuario debe ser un UUID válido' })
+  user?: User | null
+
   @ApiPropertyOptional({
     description: 'Filtrar por ID de cliente',
     example: 'd7a2d85d-453c-4ed0-a2cf-c2099aafdfe4',
   })
   @IsOptional()
   @IsUUID(4, { message: 'El ID de cliente debe ser un UUID válido' })
-  customerId?: string
+  userId?: string
 
   @ApiPropertyOptional({
     description: 'Filtrar por ID de cliente',

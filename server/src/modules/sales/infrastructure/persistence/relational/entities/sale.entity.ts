@@ -15,6 +15,7 @@ import { EntityRelationalHelper } from '@/utils/relational-entity-helper'
 
 import { CustomerEntity } from '@/modules/customer/infrastructure/persistence/relational/entities/customer.entity'
 import { SaleItemEntity } from '@/modules/sales/infrastructure/persistence/relational/entities/saleItem.entity'
+import { UserEntity } from '@/modules/users/infrastructure/persistence/relational/entities/user.entity'
 
 @Entity({ name: PATH_SOURCE.SALE })
 @Index(['customerId'])
@@ -150,4 +151,15 @@ export class SaleEntity extends EntityRelationalHelper {
     comment: 'UUID del comprobante de Factu Zen',
   })
   comprobante_id?: string | null
+
+  @ManyToOne(() => UserEntity, { onDelete: 'SET NULL', eager: false })
+  @JoinColumn({ name: 'userId' })
+  user?: UserEntity | null
+
+  @Column({
+    type: 'uuid',
+    nullable: true,
+    comment: 'UUID del usuario',
+  })
+  userId?: string | null
 }

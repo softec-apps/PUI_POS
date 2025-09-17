@@ -333,6 +333,7 @@ export class SaleService {
           }),
           clave_acceso: null,
           estado_sri: 'PENDING',
+          user: { id: userId } as any,
         },
         entityManager,
       )
@@ -716,8 +717,8 @@ export class SaleService {
           quantity: item.quantity,
           unitPrice: product.pricePublic,
           taxRate: product.tax || 0,
-          taxAmount: itemTaxConDescuento, // CORREGIDO: impuesto después del descuento
-          totalPrice: itemSubtotalConDescuento, // CORREGIDO: precio sin impuesto pero con descuento
+          taxAmount: itemTaxConDescuento,
+          totalPrice: itemSubtotalConDescuento,
           discountAmount: itemDiscount,
           discountPercentage: item.discountPercentage || 0,
         }
@@ -804,7 +805,7 @@ export class SaleService {
       const sale = await this.saleRepository.create(
         {
           customerId: createSaleDto.customerId,
-          subtotal: Number(subtotal.toFixed(6)), // DEBE SER 5.000000
+          subtotal: Number(subtotal.toFixed(6)),
           discountAmount: Number(totalDiscountAmount.toFixed(6)),
           taxAmount: Number(totalTax.toFixed(6)),
           total: Number(total.toFixed(6)),
@@ -838,7 +839,9 @@ export class SaleService {
           }),
           clave_acceso: null,
           estado_sri: 'NO_ELECTRONIC',
+          user: { id: userId } as any,
         },
+
         entityManager,
       )
 

@@ -1,6 +1,7 @@
 import { User } from '@/modules/users/domain/user'
 import { SaleItem } from '@/modules/sales/domain/saleItem'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { Customer } from '@/modules/customer/domain/customer'
 
 export class Sale {
   @ApiProperty({
@@ -25,11 +26,11 @@ export class Sale {
   customerId: string
 
   @ApiPropertyOptional({
-    type: () => User,
+    type: () => Customer,
     nullable: true,
     description: 'Cliente asociado a la venta',
   })
-  customer?: User | null
+  customer?: Customer | null
 
   @ApiProperty({
     type: 'number',
@@ -137,4 +138,17 @@ export class Sale {
     description: 'UUID del comprobante de Factu Zen',
   })
   comprobante_id?: string | null
+
+  @ApiProperty({
+    type: () => User,
+    description: 'Usuario que registró la venta',
+  })
+  user?: User | null
+
+  @ApiPropertyOptional({
+    type: 'string',
+    example: 'a57c798c-3809-4fb2-8331-5a03926ac158',
+    description: 'UUID del usuario',
+  })
+  userId?: string | null
 }

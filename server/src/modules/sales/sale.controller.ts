@@ -38,21 +38,6 @@ export class SaleController {
   constructor(private readonly saleService: SaleService) {}
 
   /**
-   * Create a new sale - Facturación SRI
-   */
-  @Post('sri')
-  @SaleApiDocs.create
-  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
-  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
-  @HttpCode(HttpStatus.CREATED)
-  async createSaleSri(
-    @Body() createSaleDto: CreateSaleDto,
-    @Request() req: any,
-  ): Promise<ApiResponse<Sale>> {
-    return await this.saleService.createSaleSri(createSaleDto, req.user.id)
-  }
-
-  /**
    * Create a new sale
    */
   @Post('simple')
@@ -65,6 +50,21 @@ export class SaleController {
     @Request() req: any,
   ): Promise<ApiResponse<Sale>> {
     return await this.saleService.createSimpleSale(createSaleDto, req.user.id)
+  }
+
+  /**
+   * Create a new sale - Facturación SRI
+   */
+  @Post('sri')
+  @SaleApiDocs.create
+  @Roles(RoleEnum.Admin, RoleEnum.Manager, RoleEnum.Cashier)
+  @SerializeOptions({ groups: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER] })
+  @HttpCode(HttpStatus.CREATED)
+  async createSaleSri(
+    @Body() createSaleDto: CreateSaleDto,
+    @Request() req: any,
+  ): Promise<ApiResponse<Sale>> {
+    return await this.saleService.createSaleSri(createSaleDto, req.user.id)
   }
 
   /**
