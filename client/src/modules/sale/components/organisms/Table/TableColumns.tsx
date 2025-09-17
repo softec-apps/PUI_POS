@@ -89,8 +89,8 @@ export const createTableColumns = (): ColumnDef<I_Sale>[] => [
 		cell: ({ row }) => <span>${formatPrice(row.original.total)}</span>,
 	},
 	{
-		accessorKey: 'total',
-		header: ({ column }) => createHeader(column, 'Total'),
+		accessorKey: 'items',
+		header: ({ column }) => createHeader(column, 'Ganancia'),
 		cell: ({ row }) => (
 			<span>${formatPrice(row.original.items?.reduce((acc, item) => acc + (item.revenue || 0), 0))}</span>
 		),
