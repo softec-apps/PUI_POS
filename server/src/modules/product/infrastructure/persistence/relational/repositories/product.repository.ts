@@ -63,121 +63,61 @@ export class ProductRelationalRepository implements ProductRepository {
     totalCount: number
     totalRecords: number
   }> {
-    // 1. Construir filtro exacto (AND)
-    let baseFilters: FindOptionsWhere<ProductEntity> = {}
+    const query = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.brand', 'brand')
+      .leftJoinAndSelect('product.supplier', 'supplier')
 
+    // 1️⃣ Filtros exactos (AND)
     if (filterOptions) {
-      const filteredEntries = Object.entries(filterOptions).filter(
-        ([_, value]) => value !== undefined && value !== null,
-      )
-      if (filteredEntries.length > 0) {
-        baseFilters = filteredEntries.reduce((acc, [key, value]) => {
-          acc[key as keyof ProductEntity] = value
-          return acc
-        }, {} as FindOptionsWhere<ProductEntity>)
+      for (const [key, value] of Object.entries(filterOptions)) {
+        if (value !== undefined && value !== null) {
+          query.andWhere(`product.${key} = :${key}`, { [key]: value })
+        }
       }
     }
 
-    // 2. Construir búsqueda textual (OR)
+    // 2️⃣ Búsqueda textual (OR)
     if (searchOptions?.trim()) {
       const searchTerm = `%${searchOptions.trim().toLowerCase()}%`
-      // Array OR con campos a buscar
-      const searchConditions = [
-        { code: ILike(searchTerm) },
-        { name: ILike(searchTerm) },
-        { description: ILike(searchTerm) },
-        { sku: ILike(searchTerm) },
-        { barCode: ILike(searchTerm) },
-      ]
+      query.andWhere(
+        `(LOWER(product.name) ILIKE :searchTerm OR 
+        LOWER(product.code) ILIKE :searchTerm OR 
+        LOWER(product.description) ILIKE :searchTerm OR 
+        LOWER(product.sku) ILIKE :searchTerm OR 
+        LOWER(product.barCode) ILIKE :searchTerm OR 
+        LOWER(category.name) ILIKE :searchTerm)`,
+        { searchTerm },
+      )
+    }
 
-      // Combinar baseFilters (AND) con búsqueda textual (OR)
-      // En TypeORM, se pasa un array para OR
-      const whereClause: FindOptionsWhere<ProductEntity>[] =
-        searchConditions.map((condition) => ({
-          ...baseFilters,
-          ...condition,
-        }))
-
-      // Preparar order
-      const orderClause = sortOptions?.length
-        ? sortOptions.reduce(
-            (acc, sort) => {
-              acc[sort.orderBy] = sort.order
-              return acc
-            },
-            {} as Record<string, any>,
-          )
-        : { createdAt: 'DESC' }
-
-      // Ejecutar consulta con whereClause (array = OR entre cada objeto)
-      const [entities, totalCount, totalRecords] = await Promise.all([
-        this.productRepository.find({
-          skip: (paginationOptions.page - 1) * paginationOptions.limit,
-          take: paginationOptions.limit,
-          where: whereClause,
-          order: orderClause,
-          withDeleted: true,
-          relations: [
-            PATH_SOURCE.CATEGORY,
-            PATH_SOURCE.BRAND,
-            PATH_SOURCE.SUPPLIER,
-          ],
-        }),
-        this.productRepository.count({
-          where: whereClause,
-          withDeleted: true,
-        }),
-        this.productRepository.count({
-          withDeleted: true,
-        }),
-      ])
-
-      return {
-        data: entities.map(ProductMapper.toDomain),
-        totalCount,
-        totalRecords,
+    // 3️⃣ Ordenamiento
+    if (sortOptions?.length) {
+      for (const sort of sortOptions) {
+        query.addOrderBy(
+          `product.${sort.orderBy}`,
+          sort.order.toUpperCase() as 'ASC' | 'DESC',
+        )
       }
     } else {
-      // Sin búsqueda textual: solo filtros exactos
-      const whereClause = baseFilters
+      query.addOrderBy('product.createdAt', 'DESC')
+    }
 
-      const orderClause = sortOptions?.length
-        ? sortOptions.reduce(
-            (acc, sort) => {
-              acc[sort.orderBy] = sort.order
-              return acc
-            },
-            {} as Record<string, any>,
-          )
-        : { createdAt: 'DESC' }
+    // 4️⃣ Paginación
+    query.skip((paginationOptions.page - 1) * paginationOptions.limit)
+    query.take(paginationOptions.limit)
 
-      const [entities, totalCount, totalRecords] = await Promise.all([
-        this.productRepository.find({
-          skip: (paginationOptions.page - 1) * paginationOptions.limit,
-          take: paginationOptions.limit,
-          where: whereClause,
-          order: orderClause,
-          withDeleted: true,
-          relations: [
-            PATH_SOURCE.CATEGORY,
-            PATH_SOURCE.BRAND,
-            PATH_SOURCE.SUPPLIER,
-          ],
-        }),
-        this.productRepository.count({
-          where: whereClause,
-          withDeleted: true,
-        }),
-        this.productRepository.count({
-          withDeleted: true,
-        }),
-      ])
+    // 5️⃣ Ejecutar consulta y contar
+    const [entities, totalCount] = await query.getManyAndCount()
+    const totalRecords = await this.productRepository.count({
+      withDeleted: true,
+    })
 
-      return {
-        data: entities.map(ProductMapper.toDomain),
-        totalCount,
-        totalRecords,
-      }
+    return {
+      data: entities.map(ProductMapper.toDomain),
+      totalCount,
+      totalRecords,
     }
   }
 

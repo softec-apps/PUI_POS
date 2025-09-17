@@ -153,6 +153,7 @@ export class SaleRelationalRepository implements SaleRepository {
         withDeleted: true,
         relations: {
           customer: true,
+          user: true,
           items: {
             product: true,
           },
