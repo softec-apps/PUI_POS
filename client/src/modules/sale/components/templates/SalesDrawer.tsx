@@ -17,6 +17,8 @@ import { Icons } from '@/components/icons'
 import { FatalErrorState } from '@/components/layout/organims/ErrorStateCard'
 import { KPICard } from '@/components/layout/organims/KPICard'
 import { formatPrice } from '@/common/utils/formatPrice-util'
+import { I_User } from '@/common/types/modules/user'
+import { I_Sale, I_SaleItem } from '@/common/types/modules/sale'
 
 interface SalesDrawerProps {
 	trigger?: React.ReactNode
@@ -38,29 +40,6 @@ interface DailySummary {
 	digitalAmount: number
 	averageTicket: number
 	selectedUser: string | null
-}
-
-interface SaleItem {
-	id: string
-	code: string
-	total: number
-	taxAmount: number
-	totalItems: number
-	change?: number
-	paymentMethods: Array<{
-		amount: number
-		method: string
-	}>
-	items: Array<{
-		revenue: number
-	}>
-	user?: {
-		id: string
-		firstName: string
-		lastName: string
-		email: string
-	} | null
-	createdAt: string
 }
 
 const formatDate = (date: Date) => {
@@ -144,7 +123,7 @@ export function SalesDrawer({ trigger, onClose }: SalesDrawerProps) {
 	// Solo ejecutar el hook cuando el drawer esté abierto
 	const { recordsData, loading, error } = useSale(isOpen ? todayParams : undefined)
 
-	const salesData: SaleItem[] = recordsData?.data?.items || []
+	const salesData: I_Sale[] = recordsData?.data?.items || []
 
 	// Obtener lista única de vendedores/responsables para el filtro
 	const availableSellers = useMemo(() => {

@@ -97,7 +97,7 @@ export const createTableColumns = (): ColumnDef<I_Sale>[] => [
 	},
 	{
 		accessorKey: 'user.firstName',
-		header: ({ column }) => createHeader(column, 'Reponsable'),
+		header: ({ column }) => createHeader(column, 'Responsable'),
 		cell: ({ row }) => (
 			<div className='flex flex-col items-start justify-start'>
 				{/* 

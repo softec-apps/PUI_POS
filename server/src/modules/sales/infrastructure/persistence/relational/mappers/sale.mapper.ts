@@ -7,6 +7,7 @@ import { ProductMapper } from '@/modules/product/infrastructure/persistence/rela
 import { CustomerEntity } from '@/modules/customer/infrastructure/persistence/relational/entities/customer.entity'
 import { ProductEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product.entity'
 import { UserMapper } from '@/modules/users/infrastructure/persistence/relational/mappers/user.mapper'
+import { UserEntity } from '@/modules/users/infrastructure/persistence/relational/entities/user.entity'
 
 export class SaleItemMapper {
   static toDomain(raw: SaleItemEntity): SaleItem {
@@ -92,7 +93,7 @@ export class SaleMapper {
       comprobante_id: raw.comprobante_id,
       clave_acceso: raw.clave_acceso,
       // Responsable de la venta
-      userId: raw.user ? UserMapper.toDomain(raw.user) : null,
+      user: raw.user ? UserMapper.toDomain(raw.user) : null,
     })
     return domainEntity
   }
@@ -115,8 +116,15 @@ export class SaleMapper {
       estado_sri: domainEntity.estado_sri,
       comprobante_id: domainEntity.comprobante_id,
       clave_acceso: domainEntity.clave_acceso,
-      userId: domainEntity.user?.id,
     })
+
+    // Manejo de la foto
+    if (domainEntity.user) {
+      persistenceEntity.user = new UserEntity()
+      persistenceEntity.user.id = domainEntity.user.id
+    } else {
+      persistenceEntity.user = null
+    }
 
     if (domainEntity.customer) {
       persistenceEntity.customer = new CustomerEntity()
