@@ -1,3 +1,4 @@
+import { I_Product } from '@/common/types/modules/product'
 import { MetaDataPagination, MetaResponse } from '@/common/types/pagination'
 
 export interface I_Supplier {
@@ -9,6 +10,7 @@ export interface I_Supplier {
 	createdAt: Date
 	updatedAt: Date
 	deletedAt: Date | null
+	product: I_Product
 }
 
 export interface I_CreateSupplier {

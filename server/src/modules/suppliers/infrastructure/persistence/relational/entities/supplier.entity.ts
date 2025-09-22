@@ -6,11 +6,13 @@ import {
   UpdateDateColumn,
   PrimaryGeneratedColumn,
   ManyToMany,
+  OneToMany,
 } from 'typeorm'
 import { SupplierStatus } from '@/modules/suppliers/status.enum'
 import { EntityRelationalHelper } from '@/utils/relational-entity-helper'
 import { BrandEntity } from '@/modules/brand/infrastructure/persistence/relational/entities/brand.entity'
 import { PATH_SOURCE } from '@/common/constants/pathSource.const'
+import { ProductEntity } from '@/modules/product/infrastructure/persistence/relational/entities/product.entity'
 
 @Entity({ name: PATH_SOURCE.SUPPLIER })
 export class SupplierEntity extends EntityRelationalHelper {
@@ -46,9 +48,6 @@ export class SupplierEntity extends EntityRelationalHelper {
   })
   status: SupplierStatus
 
-  @ManyToMany(() => BrandEntity, (brand) => brand.suppliers)
-  brands: BrandEntity[]
-
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date
 
@@ -57,4 +56,9 @@ export class SupplierEntity extends EntityRelationalHelper {
 
   @DeleteDateColumn({ type: 'timestamptz' })
   deletedAt: Date | null
+
+  @OneToMany(() => ProductEntity, (product) => product.supplier, {
+    eager: false,
+  })
+  product: ProductEntity[]
 }

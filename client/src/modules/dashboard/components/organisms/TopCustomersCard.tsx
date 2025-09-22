@@ -1,4 +1,7 @@
+/* eslint-disable react/jsx-key */
+
 'use client'
+
 import React from 'react'
 import { Icons } from '@/components/icons'
 import { formatPrice } from '@/common/utils/formatPrice-util'
@@ -19,6 +22,15 @@ export const TopCustomersCard: React.FC<TopCustomersCardProps> = ({ customers })
 		return icons[index] || <span className='text-muted-foreground text-xs font-medium'>#{index + 1}</span>
 	}
 
+	function formatCustomerName(firstName = '', lastName = '') {
+		const first = firstName.split(' ')[0] || '' // primer nombre
+		const lastParts = lastName.split(' ') // apellidos
+		const firstInitial = lastParts[0] ? lastParts[0][0] : '' // inicial del primer apellido
+		const secondInitial = lastParts[1] ? lastParts[1][0] : '' // inicial del segundo apellido
+		const initials = [firstInitial, secondInitial].filter(Boolean).join('.')
+		return `${first} ${initials ? initials + '.' : ''}`.trim()
+	}
+
 	return (
 		<Card className='w-full border-none bg-transparent p-0'>
 			<CardHeader className='p-0'>
@@ -37,7 +49,7 @@ export const TopCustomersCard: React.FC<TopCustomersCardProps> = ({ customers })
 								</div>
 								<div className='flex-1'>
 									<p className='mb-1 truncate text-sm font-medium'>
-										{customer.customer?.firstName} {customer.customer?.lastName}
+										{formatCustomerName(customer.customer?.firstName, customer.customer?.lastName)}
 									</p>
 									<div className='flex items-center justify-between'>
 										<p className='text-muted-foreground text-xs'>

@@ -177,6 +177,7 @@ export function SupplierView() {
 					<TableData
 						recordsData={supplierData.data.items}
 						loading={supplierData.loading}
+						onViewDetail={modal.openViewDetail}
 						onEdit={modal.openEdit}
 						onHardDelete={modal.openHardDelete}
 						onSoftDelete={modal.openSoftDelete}

@@ -841,7 +841,6 @@ export class SaleService {
           estado_sri: 'NO_ELECTRONIC',
           user: { id: userId } as any,
         },
-
         entityManager,
       )
 
