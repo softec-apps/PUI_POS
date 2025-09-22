@@ -9,6 +9,7 @@ import { Actions } from '@/modules/supplier/components/organisms/Actions'
 import { StatusBadge } from '@/modules/supplier/components/atoms/StatusBadge'
 
 interface createTableColumnsProps {
+	onViewDetail: (recordData: I_Supplier) => void
 	onEdit: (recordData: I_Supplier) => void
 	onSoftDelete: (recordData: I_Supplier) => void
 	onHardDelete: (recordData: I_Supplier) => void
@@ -16,6 +17,7 @@ interface createTableColumnsProps {
 }
 
 export const createTableColumns = ({
+	onViewDetail,
 	onEdit,
 	onSoftDelete,
 	onHardDelete,
@@ -124,6 +126,7 @@ export const createTableColumns = ({
 			<div className='flex justify-end'>
 				<Actions
 					recordData={row.original}
+					onViewDetail={onViewDetail}
 					onEdit={onEdit}
 					onSoftDelete={onSoftDelete}
 					onHardDelete={onHardDelete}

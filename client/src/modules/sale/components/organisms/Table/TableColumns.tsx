@@ -9,7 +9,6 @@ import { InfoDate } from '@/modules/sale/components/atoms/InfoDate'
 import { formatPrice } from '@/common/utils/formatPrice-util'
 import { Badge } from '@/components/layout/atoms/Badge'
 import { StatusSRI, StatusSRILabels_ES } from '@/common/enums/sale.enum'
-import { UserRoleBadge } from '@/modules/user/components/atoms/UserRoleBadge'
 
 const createHeader = (column: Column<I_Sale>, label: string) => {
 	return (
@@ -32,7 +31,12 @@ const createHeader = (column: Column<I_Sale>, label: string) => {
 	)
 }
 
-export const createTableColumns = (): ColumnDef<I_Sale>[] => [
+interface createTableColumnsProps {
+	onViewBillRSI: (recordData: I_Sale) => void
+	onViewVoucher: (recordData: I_Sale) => void
+}
+
+export const createTableColumns = ({ onViewBillRSI, onViewVoucher }: createTableColumnsProps): ColumnDef<I_Sale>[] => [
 	{
 		accessorKey: 'estado_sri',
 		header: ({ column }) => createHeader(column, 'Estado (SRI)'),
@@ -116,7 +120,7 @@ export const createTableColumns = (): ColumnDef<I_Sale>[] => [
 		id: 'actions',
 		cell: ({ row }) => (
 			<span className='flex justify-end'>
-				<Actions recordData={row.original} />
+				<Actions recordData={row.original} onViewBillRSI={onViewBillRSI} onViewVoucher={onViewVoucher} />
 			</span>
 		),
 	},

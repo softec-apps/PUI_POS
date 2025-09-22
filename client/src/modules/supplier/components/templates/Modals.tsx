@@ -2,15 +2,17 @@
 
 'use client'
 
+import { ModalType } from '@/modules/supplier/types/modal'
 import { I_Supplier } from '@/common/types/modules/supplier'
 import { FormModal } from '@/modules/supplier/components/organisms/Modal/ModalForm'
+import { ModalDetail } from '@/modules/supplier/components/organisms/Modal/ModalDetail'
+import { RestoreModal } from '@/modules/supplier/components/organisms/Modal/ModalRestore'
 import { HardDeleteModal } from '@/modules/supplier/components/organisms/Modal/ModalHardDelete'
 import { SoftDeleteModal } from '@/modules/supplier/components/organisms/Modal/ModalSoftDelete'
-import { RestoreModal } from '@/modules/supplier/components/organisms/Modal/ModalRestore'
 
 interface ModalsProps {
 	modal: {
-		type: 'create' | 'edit' | 'hardDelete' | 'softDelete' | 'restore' | null
+		type: ModalType
 		isOpen: boolean
 		record: I_Supplier | null
 		isLoading: boolean
@@ -27,12 +29,17 @@ export function Modals({ modal, onSubmit, onDelete, onRestore }: ModalsProps) {
 
 	return (
 		<>
+			<ModalDetail
+				isOpen={modal.type === 'view' && modal.isOpen}
+				currentRecord={modal.record}
+				onClose={modal.closeModal}
+			/>
+
 			<FormModal
 				isOpen={isFormModal && modal.isOpen}
 				currentRecord={modal.record}
 				onClose={modal.closeModal}
 				onSubmit={onSubmit}
-				isLoading={modal.isLoading}
 			/>
 
 			<SoftDeleteModal

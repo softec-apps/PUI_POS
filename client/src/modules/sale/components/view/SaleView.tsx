@@ -15,6 +15,8 @@ import { EmptyState } from '@/modules/sale/components/templates/EmptyState'
 import { ErrorState } from '@/components/layout/templates/ErrorState'
 import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { TableData } from '@/modules/sale/components/organisms/Table/TableData'
+import { Modals } from '@/modules/sale/components/templates/Modals'
+import { useModal } from '@/modules/sale/hooks/useModal'
 
 const SEARCH_DELAY = 500
 const MAX_RETRIES = 3
@@ -27,6 +29,7 @@ export function SaleView() {
 
 	// Hooks
 	const pagination = usePagination()
+	const modal = useModal()
 
 	// Debounce search
 	useEffect(() => {
@@ -121,7 +124,13 @@ export function SaleView() {
 						onViewChange={setViewType}
 					/>
 
-					<TableData recordsData={saleData.data.items} loading={saleData.loading} viewType={viewType} />
+					<TableData
+						recordsData={saleData.data.items}
+						loading={saleData.loading}
+						viewType={viewType}
+						onViewBillRSI={modal.openViewBillSRI}
+						onViewVoucher={modal.openViewVoucher}
+					/>
 
 					<PaginationControls
 						loading={saleData.loading}
@@ -134,6 +143,8 @@ export function SaleView() {
 					/>
 				</>
 			)}
+
+			<Modals modal={modal} />
 		</div>
 	)
 }

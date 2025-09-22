@@ -17,8 +17,8 @@ import { Icons } from '@/components/icons'
 import { FatalErrorState } from '@/components/layout/organims/ErrorStateCard'
 import { KPICard } from '@/components/layout/organims/KPICard'
 import { formatPrice } from '@/common/utils/formatPrice-util'
-import { I_User } from '@/common/types/modules/user'
-import { I_Sale, I_SaleItem } from '@/common/types/modules/sale'
+import { I_Sale } from '@/common/types/modules/sale'
+import { UtilBanner } from '@/components/UtilBanner'
 
 interface SalesDrawerProps {
 	trigger?: React.ReactNode
@@ -278,20 +278,16 @@ export function SalesDrawer({ trigger, onClose }: SalesDrawerProps) {
 
 			<DrawerContent>
 				{!hasData && !loading ? (
-					<div className='flex flex-1 items-center justify-center p-8'>
-						<Card className='border-none bg-transparent shadow-none'>
-							<CardContent className='py-8 text-center'>
-								<Icons.shoppingBag className='mx-auto mb-4 h-16 w-16 opacity-30' />
-								<h3 className='mb-2 text-lg font-semibold'>
-									{selectedUserId === 'all' ? 'No hay ventas registradas' : 'No hay ventas para este filtro'}
-								</h3>
-								<p className='text-muted-foreground max-w-md text-sm'>
-									{selectedUserId === 'all'
-										? 'Para el día de hoy no se han registrado ventas'
-										: 'Intenta con otro vendedor o selecciona "Todos"'}
-								</p>
-							</CardContent>
-						</Card>
+					<div className='flex flex-1 items-center justify-center p-20'>
+						<UtilBanner
+							icon={<Icons.shoppingBag className='text-muted-foreground h-12 w-12' />}
+							title={selectedUserId === 'all' ? 'No hay ventas registradas' : 'No hay ventas para este filtro'}
+							description={
+								selectedUserId === 'all'
+									? 'Para el día de hoy no se han registrado ventas'
+									: 'Intenta con otro vendedor o selecciona "Todos"'
+							}
+						/>
 					</div>
 				) : error ? (
 					<FatalErrorState />

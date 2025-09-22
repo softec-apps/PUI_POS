@@ -22,8 +22,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog'
-import { Loader2 } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { usePerson } from '@/modules/pos/pos/hooks/usePerson'
 
 const customerSchema = z
@@ -97,6 +95,7 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 		formState: { errors, isValid, isDirty },
 		watch,
 		setValue,
+		trigger, // Agregamos trigger para forzar validación
 	} = methods
 
 	// Watch para obtener los valores actuales
@@ -168,16 +167,21 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 			if (personData) {
 				// Para personas naturales (CI)
 				if (personData.type_identification === 'CC' || identificationType === '05') {
-					setValue('firstName', personData.name || '')
-					setValue('lastName', personData.surname || '')
-					setValue('email', personData.email || '')
+					setValue('firstName', personData.name || '', { shouldDirty: true, shouldValidate: true })
+					setValue('lastName', personData.surname || '', { shouldDirty: true, shouldValidate: true })
+					setValue('email', personData.email || '', { shouldDirty: true, shouldValidate: true })
 				}
 				// Para personas jurídicas (RUC)
 				else if (personData.type_identification === 'RUC' || identificationType === '04') {
-					setValue('firstName', personData.name || '')
-					setValue('lastName', '') // Las personas jurídicas no tienen apellido
-					setValue('email', personData.email || '')
+					setValue('firstName', personData.name || '', { shouldDirty: true, shouldValidate: true })
+					setValue('lastName', '', { shouldDirty: true, shouldValidate: true }) // Las personas jurídicas no tienen apellido
+					setValue('email', personData.email || '', { shouldDirty: true, shouldValidate: true })
 				}
+
+				// Forzar una nueva validación después de establecer los valores
+				setTimeout(() => {
+					trigger()
+				}, 100)
 			}
 		}
 		// Marcar que se está haciendo una búsqueda
@@ -185,7 +189,7 @@ export function CustomerFormModal({ isOpen, defaultValues, currentCustomer, onCl
 			setHasSearched(true)
 			setShowAdditionalFields(false) // Mantener ocultos durante la búsqueda
 		}
-	}, [personData, error, isLoading, setValue, identificationType, identificationNumber, hasSearched])
+	}, [personData, error, isLoading, setValue, identificationType, identificationNumber, hasSearched, trigger])
 
 	const handleFormSubmit = async (data: CustomerFormData) => {
 		try {

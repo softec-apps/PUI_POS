@@ -31,6 +31,7 @@ export const useModal = () => {
 		setLoading,
 
 		openCreate: () => openModal('create'),
+		openViewDetail: (record: I_Supplier) => openModal('view', record),
 		openEdit: (record: I_Supplier) => openModal('edit', record),
 		openHardDelete: (record: I_Supplier) => openModal('hardDelete', record),
 		openSoftDelete: (record: I_Supplier) => openModal('softDelete', record),

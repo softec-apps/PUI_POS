@@ -36,14 +36,6 @@ export class BrandEntity extends EntityRelationalHelper {
   products: ProductEntity[]
   */
 
-  @ManyToMany(() => SupplierEntity, (supplier) => supplier.brands)
-  @JoinTable({
-    name: 'brand_supplier',
-    joinColumn: { name: 'brandId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'supplierId', referencedColumnName: 'id' },
-  })
-  suppliers: SupplierEntity[]
-
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date
 

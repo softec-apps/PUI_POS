@@ -11,7 +11,6 @@ import { DateFilters, DateFilterType, DateRange } from '@/common/types/paginatio
 import { SalesDrawer } from './SalesDrawer'
 
 interface HeaderProps {
-	onCreateClick: () => void
 	onRefresh: () => void
 	totalRecords: number
 }
@@ -98,7 +97,7 @@ const EXPORT_CONFIG = {
 	},
 }
 
-export function Header({ onCreateClick, onRefresh, totalRecords }: HeaderProps) {
+export function Header({ onRefresh, totalRecords }: HeaderProps) {
 	const { recordsData, loading } = useSale({ limit: 9999 })
 	const { exportData } = useGenericExport(EXPORT_CONFIG)
 	const [exportDateFilters, setExportDateFilters] = useState<DateFilters>({})
