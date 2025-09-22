@@ -1,10 +1,12 @@
 import { Supplier } from '@/modules/suppliers/domain/supplier'
 import { SupplierStatus } from '@/modules/suppliers/status.enum'
 import { SupplierEntity } from '@/modules/suppliers/infrastructure/persistence/relational/entities/supplier.entity'
+import { ProductMapper } from '@/modules/product/infrastructure/persistence/relational/mappers/product.mapper'
 
 export class SupplierMapper {
   static toDomain(raw: SupplierEntity): Supplier {
     const domainEntity = new Supplier()
+
     domainEntity.id = raw.id
     domainEntity.ruc = raw.ruc
     domainEntity.legalName = raw.legalName
@@ -15,6 +17,12 @@ export class SupplierMapper {
     domainEntity.createdAt = raw.createdAt
     domainEntity.updatedAt = raw.updatedAt
     domainEntity.deletedAt = raw.deletedAt
+
+    if (raw.product && Array.isArray(raw.product)) {
+      domainEntity.product = raw.product.map(ProductMapper.toDomain)
+    } else {
+      domainEntity.product = []
+    }
 
     return domainEntity
   }

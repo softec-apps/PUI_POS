@@ -9,13 +9,13 @@ import {
 import { SupplierStatus } from '@/modules/suppliers/status.enum'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsEcuadorianRUC } from '@/common/validators/ecuadorian.validator'
+import { Product } from '@/modules/product/domain/product'
 
 export class Supplier {
   @ApiProperty({
     type: String,
     example: '63ee8a88-ed2e-4499-9190-e65ee225ee66',
   })
-  @Allow()
   id: string
 
   @ApiProperty({
@@ -74,8 +74,14 @@ export class Supplier {
   @ApiPropertyOptional({
     type: Date,
     example: '2024-07-01T09:00:00.000Z',
-    description: 'Fecha de eliminación lógica (si aplica)',
-    nullable: true,
   })
   deletedAt?: Date | null
+
+  @ApiPropertyOptional({
+    type: [Product],
+    description: 'Productos asociados a este proveedor',
+    nullable: true,
+  })
+  @IsOptional()
+  product?: Product[] | []
 }

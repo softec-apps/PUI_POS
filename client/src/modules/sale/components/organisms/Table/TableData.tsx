@@ -1,5 +1,4 @@
 'use client'
-
 import {
 	SortingState,
 	useReactTable,
@@ -8,13 +7,10 @@ import {
 	RowSelectionState,
 	getFilteredRowModel,
 } from '@tanstack/react-table'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-
 import { animations } from '@/lib/animations'
-
 import { I_Sale } from '@/common/types/modules/sale'
-
 import { EmptyState } from '@/components/layout/organims/EmptyState'
 import { ViewType } from '@/components/layout/organims/ViewSelector'
 import { CardView } from '@/modules/sale/components/templates/ViewCard'
@@ -28,6 +24,8 @@ interface TableProps {
 	loading: boolean
 	recordsData: I_Sale[]
 	viewType: ViewType
+	onViewBillRSI: (recordsData: I_Sale) => void // Fixed: corrected the prop name
+	onViewVoucher: (recordsData: I_Sale) => void
 	// Optional props for enhanced functionality
 	enableGlobalFilter?: boolean
 	enableRowSelection?: boolean
@@ -39,6 +37,8 @@ export function TableData({
 	recordsData,
 	loading,
 	viewType,
+	onViewBillRSI, // Fixed: corrected the prop name
+	onViewVoucher,
 	enableGlobalFilter = true,
 	enableRowSelection = true,
 	defaultSorting = [],
@@ -50,7 +50,14 @@ export function TableData({
 	const [globalFilter, setGlobalFilter] = useState('')
 
 	// Memoized columns to prevent unnecessary re-renders
-	const columns = useMemo(() => createTableColumns(), [])
+	const columns = useMemo(
+		() =>
+			createTableColumns({
+				onViewBillRSI, // Fixed: corrected parameter name
+				onViewVoucher,
+			}),
+		[onViewBillRSI, onViewVoucher]
+	)
 
 	// Memoized table configuration
 	const table = useReactTable({
@@ -75,14 +82,18 @@ export function TableData({
 		autoResetExpanded: false,
 	})
 
-	if (loading) return <LoadingStates viewType={viewType} />
+	const handleViewBillRSI = useCallback((recordData: I_Sale) => onViewBillRSI(recordData), [onViewBillRSI])
+	const handleViewVoucher = useCallback((recordData: I_Sale) => onViewVoucher(recordData), [onViewVoucher])
 
+	if (loading) return <LoadingStates viewType={viewType} />
 	if (!recordsData || recordsData.length === 0) return <EmptyState />
 
 	// Render view component based on viewType
 	const renderView = () => {
 		const viewProps = {
 			recordsData: table,
+			handleViewBillRSI,
+			handleViewVoucher,
 		}
 
 		switch (viewType) {

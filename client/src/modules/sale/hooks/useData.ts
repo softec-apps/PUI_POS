@@ -18,7 +18,7 @@ export const useSaleData = (params: UseSaleParams) => {
 		}
 
 		items.forEach(item => {
-			switch (item.paymentMethod) {
+			switch (item.paymentMethods) {
 				case PaymentMethod.CASH:
 					stats.cashMethodRecords++
 					break

@@ -21,6 +21,7 @@ import { SupplierRepository } from '@/modules/suppliers/infrastructure/persisten
 import { SupplierMapper } from '@/modules/suppliers/infrastructure/persistence/relational/mappers/supplier.mapper'
 import { SupplierEntity } from '@/modules/suppliers/infrastructure/persistence/relational/entities/supplier.entity'
 import { DateRangeDto } from '@/utils/dto/DateRangeDto'
+import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 
 @Injectable()
 export class SupplierRelationalRepository implements SupplierRepository {
@@ -108,6 +109,7 @@ export class SupplierRelationalRepository implements SupplierRepository {
       const baseSearchConditions = [
         { ruc: ILike(searchTerm) },
         { legalName: ILike(searchTerm) },
+        { commercialName: ILike(searchTerm) },
       ]
 
       if (Array.isArray(whereClause) || Object.keys(whereClause).length > 0) {
@@ -150,7 +152,6 @@ export class SupplierRelationalRepository implements SupplierRepository {
 
     // Consultas en paralelo para mejor rendimiento
     const [entities, totalCount, totalRecords] = await Promise.all([
-      // 1. Datos paginados (con filtros y excluir roleId = 1)
       this.supplierRepository.find({
         skip: (paginationOptions.page - 1) * paginationOptions.limit,
         take: paginationOptions.limit,
@@ -158,12 +159,10 @@ export class SupplierRelationalRepository implements SupplierRepository {
         order: orderClause,
         withDeleted: true,
       }),
-      // 2. Total CON filtros (para paginación, excluir roleId = 1)
       this.supplierRepository.count({
         where: whereClause,
         withDeleted: true,
       }),
-      // 3. Total SIN filtros (estadísticas brutas, excluir roleId = 1)
       this.supplierRepository.count({
         withDeleted: true,
       }),
@@ -180,6 +179,9 @@ export class SupplierRelationalRepository implements SupplierRepository {
     const entity = await this.supplierRepository.findOne({
       where: { id: String(id) },
       withDeleted: true,
+      relations: {
+        product: true,
+      },
     })
 
     return entity ? SupplierMapper.toDomain(entity) : null
@@ -224,10 +226,13 @@ export class SupplierRelationalRepository implements SupplierRepository {
 
     if (!existingEntity) throw new Error('Supplier not found')
 
+    // ✅ Crear un payload sin la propiedad 'product' para evitar conflictos
+    const { product, ...updatePayload } = payload
+
     const updatedEntity = await repository.save(
       repository.create({
         ...existingEntity,
-        ...payload,
+        ...updatePayload,
       }),
     )
 

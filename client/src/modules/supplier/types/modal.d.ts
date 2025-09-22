@@ -1,6 +1,6 @@
 import { I_Supplier } from '@/common/types/modules/supplier'
 
-export type ModalType = 'create' | 'edit' | 'hardDelete' | 'softDelete' | 'restore'
+export type ModalType = 'create' | 'edit' | 'view' | 'hardDelete' | 'softDelete' | 'restore'
 
 export interface ModalState {
 	type: ModalType | null

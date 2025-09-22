@@ -396,7 +396,7 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 											<TableHead>PVP</TableHead>
 											<TableHead>Total</TableHead>
 											<TableHead>Ganancia</TableHead>
-											<TableHead>Acciones</TableHead>
+											<TableHead></TableHead>
 										</TableRow>
 									</TableHeader>
 
@@ -417,18 +417,18 @@ export function SaleDetailView({ saleId }: SaleDetailViewProps) {
 																{item.product?.name}
 															</Typography>
 															<Typography variant='small' className='text-muted-foreground block'>
-																{item.product?.code}
+																{item.product?.code} • {item.product?.barCode}
 															</Typography>
 														</div>
 													</div>
 												</TableCell>
-												<TableCell>{item.quantity}</TableCell>
-												<TableCell>{formatPrice(item.unitPrice)}</TableCell>
-												<TableCell>{formatPrice(item.totalPrice)}</TableCell>
-												<TableCell>{formatPrice(item.revenue)}</TableCell>
+												<TableCell className='tabular-nums'>{item.quantity}</TableCell>
+												<TableCell className='tabular-nums'>${formatPrice(item.unitPrice)}</TableCell>
+												<TableCell className='tabular-nums'>${formatPrice(item.totalPrice)}</TableCell>
+												<TableCell className='tabular-nums'>${formatPrice(item.revenue)}</TableCell>
 												<TableCell>
 													<Link href={`${ROUTE_PATH.ADMIN.PRODUCT}/${item.product.id}`}>
-														<ActionButton tooltip='Ver detalles' icon={<Icons.link />} size='icon' variant='ghost' />
+														<ActionButton tooltip='Ver detalles' icon={<Icons.eye />} size='icon' variant='ghost' />
 													</Link>
 												</TableCell>
 											</TableRow>

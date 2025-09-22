@@ -28,6 +28,7 @@ interface TableProps {
 	recordsData: I_Supplier[]
 	viewType: ViewType
 	onEdit: (recordsData: I_Supplier) => void
+	onViewDetail: (recordsData: I_Supplier) => void
 	onSoftDelete: (recordsData: I_Supplier) => void
 	onHardDelete: (recordsData: I_Supplier) => void
 	onRestore: (recordsData: I_Supplier) => void
@@ -43,6 +44,7 @@ export function TableData({
 	loading,
 	viewType,
 	onEdit,
+	onViewDetail,
 	onSoftDelete,
 	onHardDelete,
 	onRestore,
@@ -58,8 +60,8 @@ export function TableData({
 
 	// Memoized columns to prevent unnecessary re-renders
 	const columns = useMemo(
-		() => createTableColumns({ onEdit, onSoftDelete, onHardDelete, onRestore }),
-		[onEdit, onSoftDelete, onHardDelete, onRestore]
+		() => createTableColumns({ onEdit, onViewDetail, onSoftDelete, onHardDelete, onRestore }),
+		[onEdit, onViewDetail, onSoftDelete, onHardDelete, onRestore]
 	)
 
 	// Memoized table configuration
@@ -86,10 +88,11 @@ export function TableData({
 	})
 
 	// Optimized handlers with useCallback
-	const handleEdit = useCallback((user: I_Supplier) => onEdit(user), [onEdit])
-	const handleSoftDelete = useCallback((user: I_Supplier) => onSoftDelete(user), [onSoftDelete])
-	const handleHardDelete = useCallback((user: I_Supplier) => onHardDelete(user), [onHardDelete])
-	const handleRestore = useCallback((user: I_Supplier) => onRestore(user), [onRestore])
+	const handleEdit = useCallback((recordData: I_Supplier) => onEdit(recordData), [onEdit])
+	const handleViewDetail = useCallback((recordData: I_Supplier) => onViewDetail(recordData), [onViewDetail])
+	const handleSoftDelete = useCallback((recordData: I_Supplier) => onSoftDelete(recordData), [onSoftDelete])
+	const handleHardDelete = useCallback((recordData: I_Supplier) => onHardDelete(recordData), [onHardDelete])
+	const handleRestore = useCallback((recordData: I_Supplier) => onRestore(recordData), [onRestore])
 
 	if (loading) return <LoadingStates viewType={viewType} />
 	if (!recordsData || recordsData.length === 0) return <EmptyState />
@@ -99,6 +102,7 @@ export function TableData({
 		const viewProps = {
 			recordsData: table,
 			onEdit: handleEdit,
+			onViewDetail: handleViewDetail,
 			onSoftDelete: handleSoftDelete,
 			onHardDelete: handleHardDelete,
 			onHandleRestore: handleRestore,
