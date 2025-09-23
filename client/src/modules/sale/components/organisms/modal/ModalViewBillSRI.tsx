@@ -16,13 +16,13 @@ import {
 } from '@/components/ui/dialog'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
 
-interface ModalBillSRIProps {
+interface ModalViewBillSRIProps {
 	isOpen: boolean
 	recordData: I_Sale | null
 	onClose: () => void
 }
 
-export function ModalBillSRI({ isOpen, recordData, onClose }: ModalBillSRIProps) {
+export function ModalViewBillSRI({ isOpen, recordData, onClose }: ModalViewBillSRIProps) {
 	const [pdfUrl, setPdfUrl] = useState<string>('')
 	const [isLoadingPreview, setIsLoadingPreview] = useState(false)
 	const [isDownloading, setIsDownloading] = useState<{ pdf: boolean; xml: boolean }>({
