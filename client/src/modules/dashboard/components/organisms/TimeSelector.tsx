@@ -25,7 +25,7 @@ export const TimeSelector: React.FC<TimeSelectorProps> = ({ currentTime, dateRan
 				const data = await response.json()
 
 				if (data) {
-					setLocation(`${data.country_name},`)
+					setLocation(`${data?.country_name},`)
 				} else {
 					setLocation('Ubicación por IP no disponible')
 				}
@@ -38,14 +38,14 @@ export const TimeSelector: React.FC<TimeSelectorProps> = ({ currentTime, dateRan
 		// Función para obtener la ubicación del usuario
 		const getLocation = async () => {
 			// Verificar si la geolocalización está disponible
-			if (!navigator.geolocation) {
+			if (!navigator?.geolocation) {
 				console.log('Geolocalización no soportada, usando IP')
 				await getLocationByIP()
 				return
 			}
 
 			// Verificar si estamos en HTTPS (requerido para geolocalización)
-			if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+			if (location?.protocol !== 'https:' && location?.hostname !== 'localhost') {
 				console.log('HTTPS requerido para geolocalización, usando IP')
 				await getLocationByIP()
 				return

@@ -10,9 +10,9 @@ interface TopPerformersSectionProps {
 }
 
 export const TopCustomersSection: React.FC<TopPerformersSectionProps> = ({ metrics }) => {
-	return <TopCustomersCard customers={metrics.topCustomers} />
+	return <TopCustomersCard customers={metrics?.topCustomers} />
 }
 
 export const TopProductsSection: React.FC<TopPerformersSectionProps> = ({ metrics }) => {
-	return <TopProductsCard products={metrics.topProducts} />
+	return <TopProductsCard products={metrics?.topProducts} />
 }

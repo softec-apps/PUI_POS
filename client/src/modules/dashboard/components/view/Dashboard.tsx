@@ -266,10 +266,10 @@ export function DashboardView() {
 
 			<ChartsSection
 				metrics={metrics}
-				dailySalesData={chartData.dailySalesData}
-				statusSriData={chartData.statusSriData}
-				paymentMethodData={chartData.paymentMethodData}
-				salesTrendData={chartData.salesTrendData}
+				dailySalesData={chartData?.dailySalesData}
+				statusSriData={chartData?.statusSriData}
+				paymentMethodData={chartData?.paymentMethodData}
+				salesTrendData={chartData?.salesTrendData}
 				chartOptions={chartOptions}
 				paymentMethodOptions={paymentMethodOptions}
 			/>

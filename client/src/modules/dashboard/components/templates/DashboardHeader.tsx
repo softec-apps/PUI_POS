@@ -13,9 +13,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ greeting, user
 	return (
 		<div className='flex flex-col gap-2'>
 			<Typography variant='h4' className='font-semibold'>
-				{greeting.text}, {userName} 👋
+				{greeting?.text}, {userName} 👋
 			</Typography>
-			<Typography variant='span'>Bienvenido de nuevo. {SITE_CONFIG.SLOGAN}</Typography>
+			<Typography variant='span'>Bienvenido de nuevo. {SITE_CONFIG?.SLOGAN}</Typography>
 		</div>
 	)
 }

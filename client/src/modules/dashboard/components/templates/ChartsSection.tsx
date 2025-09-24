@@ -31,7 +31,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({
 				<Card className='border-border/50 lg:col-span-2'>
 					<CardHeader>
 						<CardTitle>Ventas por día</CardTitle>
-						<CardDescription>Últimos {metrics.salesByDay.length} días del período seleccionado</CardDescription>
+						<CardDescription>Últimos {metrics?.salesByDay?.length} días del período seleccionado</CardDescription>
 					</CardHeader>
 					<CardContent>
 						<div className='h-64'>

@@ -13,11 +13,11 @@ interface KPISectionProps {
 // Función de comparación personalizada para evitar rerenders innecesarios
 const arePropsEqual = (prevProps: KPISectionProps, nextProps: KPISectionProps) => {
 	return (
-		prevProps.loading === nextProps.loading &&
-		prevProps.dateRange === nextProps.dateRange &&
-		prevProps.metrics.totalRevenue === nextProps.metrics.totalRevenue &&
-		prevProps.metrics.totalGrossProfit === nextProps.metrics.totalGrossProfit &&
-		prevProps.metrics.totalSales === nextProps.metrics.totalSales
+		prevProps?.loading === nextProps?.loading &&
+		prevProps?.dateRange === nextProps?.dateRange &&
+		prevProps?.metrics?.totalRevenue === nextProps?.metrics?.totalRevenue &&
+		prevProps?.metrics?.totalGrossProfit === nextProps?.metrics?.totalGrossProfit &&
+		prevProps?.metrics?.totalSales === nextProps?.metrics?.totalSales
 	)
 }
 
@@ -28,7 +28,7 @@ export const KPISection: React.FC<KPISectionProps> = React.memo(({ metrics, date
 		<section className='grid grid-cols-3 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
 			<KPICard
 				title='Ventas'
-				value={metrics.totalSales}
+				value={metrics?.totalSales}
 				//growth={showGrowth ? metrics.salesGrowth : undefined}
 				description='Cantidad total de ventas realizadas'
 				isLoading={loading}
@@ -36,7 +36,7 @@ export const KPISection: React.FC<KPISectionProps> = React.memo(({ metrics, date
 
 			<KPICard
 				title='Ingresos'
-				value={metrics.totalRevenue}
+				value={metrics?.totalRevenue}
 				//growth={showGrowth ? metrics.revenueGrowth : undefined}
 				isCurrency
 				description='Monto total generado por las ventas'
@@ -45,7 +45,7 @@ export const KPISection: React.FC<KPISectionProps> = React.memo(({ metrics, date
 
 			<KPICard
 				title='Ganancias'
-				value={metrics.totalGrossProfit}
+				value={metrics?.totalGrossProfit}
 				//growth={showGrowth ? metrics.profitGrowth : undefined}
 				isCurrency
 				description='Beneficio neto después de costos'
