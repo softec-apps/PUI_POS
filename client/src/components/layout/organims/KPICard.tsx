@@ -55,7 +55,7 @@ export const KPICard = ({
 	const getNumericValue = (): number => {
 		if (typeof value === 'number') return value
 		if (typeof value === 'string') {
-			const parsed = parseFloat(value.replace(/[^0-9.-]/g, ''))
+			const parsed = parseFloat(value?.replace(/[^0-9.-]/g, ''))
 			return isNaN(parsed) ? 0 : parsed
 		}
 		return 0
@@ -64,13 +64,13 @@ export const KPICard = ({
 	// Función para formatear el valor final
 	const formatDisplayValue = (val: number): string => {
 		if (isCurrency) return formatPrice(val)
-		return val.toLocaleString('es-EC')
+		return val?.toLocaleString('es-EC')
 	}
 
 	const formatGrowthText = (): string => {
 		if (!hasValidGrowth) return 'Sin datos'
 		if (growth === 0) return '0.0%'
-		return `${Math.abs(growth).toFixed(1)}%`
+		return `${Math.abs(growth)?.toFixed(2)}%`
 	}
 
 	const getGrowthBadgeVariant = () => {
@@ -92,9 +92,9 @@ export const KPICard = ({
 		// Detectar decimales en el valor
 		let decimals = 0
 		if (typeof value === 'number') {
-			decimals = value.toString().split('.')[1]?.length || 0
-		} else if (typeof value === 'string' && value.includes('.')) {
-			decimals = value.split('.')[1]?.length || 0
+			decimals = value?.toString()?.split('.')[1]?.length || 0
+		} else if (typeof value === 'string' && value?.includes('.')) {
+			decimals = value?.split('.')[1]?.length || 0
 		}
 
 		return (
@@ -104,7 +104,7 @@ export const KPICard = ({
 				duration={animationDuration}
 				delay={animationDelay}
 				preserveValue
-				decimals={decimals} // 👈 Se adapta al valor real
+				decimals={decimals}
 				formattingFn={formatDisplayValue}
 			/>
 		)

@@ -21,9 +21,9 @@ export const TopProductsCard: React.FC<TopProductsCardProps> = ({ products }) =>
 			</CardHeader>
 			<CardContent className='p-0'>
 				<div className='dark:bg-popover bg-muted/50 border-border/50 w-full rounded-2xl border'>
-					{products.length > 0 ? (
-						products.slice(0, 6).map((product, index) => (
-							<div key={`product-${product.id}-${index}`} className='flex items-center gap-3 p-3'>
+					{products?.length > 0 ? (
+						products?.slice(0, 6)?.map((product, index) => (
+							<div key={`product-${product?.id}-${index}`} className='flex items-center gap-3 p-3'>
 								<ImageControl
 									imageUrl={product?.photo?.path}
 									altText={product?.name}
@@ -34,15 +34,15 @@ export const TopProductsCard: React.FC<TopProductsCardProps> = ({ products }) =>
 								/>
 								<div className='w-full'>
 									<Typography variant='small' className='text-primary max-w-xs truncate text-xs'>
-										{product.name}
+										{product?.name}
 									</Typography>
 									<div className='flex items-center justify-between'>
 										<p className='text-muted-foreground text-xs tabular-nums'>
-											{product.totalQuantity} {product.totalQuantity === 1 ? 'unidad vendida' : 'unidades vendidas'}
+											{product?.totalQuantity} {product?.totalQuantity === 1 ? 'unidad vendida' : 'unidades vendidas'}
 										</p>
 
 										<span className='text-xs font-medium text-emerald-600 tabular-nums'>
-											Ganancia: ${formatPrice(product.totalProfit)}
+											Ganancia: ${formatPrice(product?.totalProfit)}
 										</span>
 									</div>
 								</div>

@@ -1,6 +1,6 @@
 export const getEcuadorTime = (): Date => {
 	const now = new Date()
-	const ecuadorTime = new Date(now.getTime() + now.getTimezoneOffset() * 60000 - 5 * 60 * 60 * 1000)
+	const ecuadorTime = new Date(now?.getTime() + now?.getTimezoneOffset() * 60000 - 5 * 60 * 60 * 1000)
 	return ecuadorTime
 }
 
