@@ -9,8 +9,9 @@ import { RelationalSalePersistenceModule } from '@/modules/sales/infrastructure/
 import { HttpModule } from '@nestjs/axios'
 import { BullModule } from '@nestjs/bullmq'
 import { QUEUE } from '@/common/constants/queue.const'
-import { QueuesModule } from '../queues/queues.module'
-import { BillingWorker } from '../factuZen/billing.worker'
+import { QueuesModule } from '@/modules/queues/queues.module'
+import { BillingWorker } from '@/modules/factuZen/billing.worker'
+import { UsersModule } from '@/modules/users/users.module'
 
 const infrastructurePersistenceModule = RelationalSalePersistenceModule
 
@@ -20,6 +21,7 @@ const infrastructurePersistenceModule = RelationalSalePersistenceModule
     QueuesModule,
     infrastructurePersistenceModule,
     forwardRef(() => CustomerModule),
+    forwardRef(() => UsersModule),
     forwardRef(() => ProductModule),
     forwardRef(() => BillingModule),
     forwardRef(() => EstablishmentModule),

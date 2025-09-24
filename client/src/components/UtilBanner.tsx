@@ -1,12 +1,12 @@
 'use client'
 
-import { delay, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { CardTitle } from '@/components/ui/card'
 import { Typography } from '@/components/ui/typography'
 import { ReactNode } from 'react'
 
 type Props = {
-	title: string
+	title?: string
 	description?: string
 	icon: ReactNode
 }

@@ -382,7 +382,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 
 	return (
 		<>
-			<div ref={containerRef} className='flex h-full w-full max-w-[25rem] flex-col pb-1'>
+			<div ref={containerRef} className='flex h-full w-full max-w-[25rem] flex-col'>
 				{/* Header */}
 				<div ref={headerRef} className='flex-shrink-0'>
 					{orderItems.length !== 0 && <Typography variant='p'>Productos ({totalItems})</Typography>}
@@ -465,7 +465,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 										variant='info'
 										disabled={!canFinalizeOrder()}
 										onClick={handleFinalizeSimpleSale}
-										icon={<Icons.shoppingCart className='size-6' />}
+										icon={<Icons.shoppingBag className='size-6' />}
 										text='Simple'
 									/>
 
@@ -474,7 +474,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({ handleSriSale, handleS
 										variant='success'
 										disabled={!canFinalizeOrder()}
 										onClick={handleFinalizeSriSale}
-										icon={<Icons.shoppingCart className='size-6' />}
+										icon={<Icons.shoppingBag className='size-6' />}
 										text='Factura'
 									/>
 								</div>

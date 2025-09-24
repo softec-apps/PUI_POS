@@ -9,7 +9,7 @@ export const ProductStatusBadge = ({ status }: { status: I_Product['status'] }) 
 		draft: { text: 'Borrador', variant: 'info' },
 		out_of_stock: { text: 'Agotado', variant: 'warning' },
 		discontinued: { text: 'Descontinuado', variant: 'orange' },
-		inactive: { text: 'Inactivo', variant: 'error' },
+		inactive: { text: 'Inactivo', variant: 'destructive' },
 	} as const
 
 	return (

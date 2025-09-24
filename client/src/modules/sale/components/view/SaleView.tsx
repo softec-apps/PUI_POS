@@ -128,8 +128,7 @@ export function SaleView() {
 						recordsData={saleData.data.items}
 						loading={saleData.loading}
 						viewType={viewType}
-						onViewBillRSI={modal.openViewBillSRI}
-						onViewVoucher={modal.openViewVoucher}
+						onViewBill={modal.openViewBill}
 					/>
 
 					<PaginationControls

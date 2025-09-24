@@ -24,7 +24,7 @@ interface TableProps {
 	loading: boolean
 	recordsData: I_Sale[]
 	viewType: ViewType
-	onViewBillRSI: (recordsData: I_Sale) => void // Fixed: corrected the prop name
+	onViewBill: (recordsData: I_Sale) => void // Fixed: corrected the prop name
 	onViewVoucher: (recordsData: I_Sale) => void
 	// Optional props for enhanced functionality
 	enableGlobalFilter?: boolean
@@ -37,8 +37,7 @@ export function TableData({
 	recordsData,
 	loading,
 	viewType,
-	onViewBillRSI, // Fixed: corrected the prop name
-	onViewVoucher,
+	onViewBill,
 	enableGlobalFilter = true,
 	enableRowSelection = true,
 	defaultSorting = [],
@@ -50,14 +49,7 @@ export function TableData({
 	const [globalFilter, setGlobalFilter] = useState('')
 
 	// Memoized columns to prevent unnecessary re-renders
-	const columns = useMemo(
-		() =>
-			createTableColumns({
-				onViewBillRSI, // Fixed: corrected parameter name
-				onViewVoucher,
-			}),
-		[onViewBillRSI, onViewVoucher]
-	)
+	const columns = useMemo(() => createTableColumns({ onViewBill }), [onViewBill])
 
 	// Memoized table configuration
 	const table = useReactTable({
@@ -82,8 +74,7 @@ export function TableData({
 		autoResetExpanded: false,
 	})
 
-	const handleViewBillRSI = useCallback((recordData: I_Sale) => onViewBillRSI(recordData), [onViewBillRSI])
-	const handleViewVoucher = useCallback((recordData: I_Sale) => onViewVoucher(recordData), [onViewVoucher])
+	const handleViewBill = useCallback((recordData: I_Sale) => onViewBill(recordData), [onViewBill])
 
 	if (loading) return <LoadingStates viewType={viewType} />
 	if (!recordsData || recordsData.length === 0) return <EmptyState />
@@ -92,8 +83,7 @@ export function TableData({
 	const renderView = () => {
 		const viewProps = {
 			recordsData: table,
-			handleViewBillRSI,
-			handleViewVoucher,
+			handleViewBill,
 		}
 
 		switch (viewType) {

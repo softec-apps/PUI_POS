@@ -226,7 +226,7 @@ export class SaleRelationalRepository implements SaleRepository {
   async update(
     id: Sale['id'],
     payload: Partial<Sale>,
-    entityManager?: EntityManager, // ✅ Hacer opcional con fallback
+    entityManager?: EntityManager,
   ): Promise<Sale> {
     // ✅ Usar EntityManager si se proporciona, sino usar el repository directo
     const repository = entityManager
@@ -251,13 +251,15 @@ export class SaleRelationalRepository implements SaleRepository {
     if (payload.estado_sri !== undefined) {
       updateData.estado_sri = payload.estado_sri
     }
-
     if (payload.clave_acceso !== undefined) {
       updateData.clave_acceso = payload.clave_acceso
     }
-
     if (payload.comprobante_id !== undefined) {
       updateData.comprobante_id = payload.comprobante_id
+    }
+    // 🔥 AGREGAR EL CAMPO pdfVoucher QUE FALTABA
+    if (payload.pdfVoucher !== undefined) {
+      updateData.pdfVoucher = payload.pdfVoucher
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -266,7 +268,10 @@ export class SaleRelationalRepository implements SaleRepository {
     }
 
     // ✅ Realizar la actualización usando merge + save
-    console.log(`🔄 [SaleRepository] Ejecutando actualización...`)
+    console.log(
+      `🔄 [SaleRepository] Ejecutando actualización con datos:`,
+      updateData,
+    )
     const entityToUpdate = repository.merge(existingEntity, updateData)
     const updatedEntity = await repository.save(entityToUpdate)
 

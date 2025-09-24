@@ -46,6 +46,7 @@ export interface I_Sale extends I_SaleBase {
 	totalItems: number
 	customer: I_Customer
 	user: I_User
+	pdfVoucher: string
 }
 
 /** DTO para creación de venta */

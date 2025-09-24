@@ -30,7 +30,6 @@ export const useModal = () => {
 		closeModal,
 		setLoading,
 
-		openViewBillSRI: (record: I_Sale) => openModal('viewBillSRI', record),
-		openViewVoucher: (record: I_Sale) => openModal('viewVoucher', record),
+		openViewBill: (record: I_Sale) => openModal('view', record),
 	}
 }

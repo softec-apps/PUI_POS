@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   Logger,
+  BadRequestException,
 } from '@nestjs/common'
 import { DataSource } from 'typeorm'
 
@@ -30,7 +31,12 @@ import { PATH_SOURCE } from '@/common/constants/pathSource.const'
 import { Queue } from 'bullmq'
 import { InjectQueue } from '@nestjs/bullmq'
 import { JOB, QUEUE } from '@/common/constants/queue.const'
-import { paymentMethodMap } from './constant/paymentMethod'
+import { paymentMethodMap } from '@/modules/sales/constant/paymentMethod'
+import { UsersService } from '@/modules/users/users.service'
+import {
+  convertSaleToVoucherFormat,
+  generateSaleReceiptPDFBase64,
+} from '@/modules/sales/util/makeVoucher'
 
 export interface ComprobanteJobData {
   saleId: string
@@ -54,6 +60,7 @@ export class SaleService {
     private readonly dataSource: DataSource,
     private readonly saleRepository: SaleRepository,
     private readonly billingService: BillingService,
+    private readonly userService: UsersService,
     private readonly stockDiscountService: StockDiscountService,
     private readonly customerRepository: CustomerRepository,
     private readonly productRepository: ProductRepository,
@@ -104,6 +111,9 @@ export class SaleService {
     userId: string,
   ): Promise<ApiResponse<Sale>> {
     return this.dataSource.transaction(async (entityManager) => {
+      const UserFound = await this.userService.findById(userId)
+      if (!UserFound?.data) throw new ConflictException('Usuario no encontrado')
+
       // 1. Productos
       const productIds = createSaleDto.items.map((item) => item.productId)
       const products = await this.productRepository.findByIds(productIds)
@@ -113,6 +123,37 @@ export class SaleService {
         throw new NotFoundException(
           `Productos no encontrados: ${missingIds.join(', ')}`,
         )
+      }
+
+      // 2. Validar que todos los productos estén activos
+      const inactiveProducts = products.filter(
+        (product) => product.status !== 'active',
+      )
+      if (inactiveProducts.length > 0) {
+        const inactiveProductNames = inactiveProducts
+          .map((p) => p.name)
+          .join(', ')
+        const inactiveProductStatuses = inactiveProducts
+          .map((p) => `${p.name}`)
+          .join(', ')
+
+        throw new BadRequestException(
+          `Los siguientes productos no están disponibles: ${inactiveProductStatuses}`,
+        )
+      }
+
+      // 3. Validar stock disponible
+      const stockErrors: string[] = []
+
+      for (const item of createSaleDto.items) {
+        const product = products.find((p) => p.id === item.productId)
+        if (!product) continue
+
+        if (product.stock < item.quantity) {
+          stockErrors.push(
+            `Producto "${product.name}": Stock insuficiente. Solicitado: ${item.quantity}, Disponible: ${product.stock}`,
+          )
+        }
       }
 
       // 2. Map de productos
@@ -297,6 +338,7 @@ export class SaleService {
         this.logger.warn('⚠️ Error al obtener establishment:', error.message)
       }
 
+      // 12. CREAR LA VENTA INICIALMENTE SIN EL PDF
       const sale = await this.saleRepository.create(
         {
           customerId: createSaleDto.customerId,
@@ -333,12 +375,13 @@ export class SaleService {
           }),
           clave_acceso: null,
           estado_sri: 'PENDING',
+          pdfVoucher: null, // Inicialmente null
           user: { id: userId } as any,
         },
         entityManager,
       )
 
-      // 12. Descontar stock
+      // 13. Descontar stock
       const stockDiscounts = enrichedItems.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -359,7 +402,7 @@ export class SaleService {
         )
       }
 
-      // 13. Preparar datos para facturación
+      // 14. Preparar datos para facturación
       let customerDataForBilling
       try {
         const esConsumidorFinal =
@@ -433,7 +476,7 @@ export class SaleService {
         this.logger.warn('⚠️ Usando datos de consumidor final como fallback')
       }
 
-      // 14. Punto de emisión
+      // 15. Punto de emisión
       let puntoEmision
       try {
         const puntosEmisionData = await this.billingService.getPuntosEmision()
@@ -450,7 +493,7 @@ export class SaleService {
         )
       }
 
-      // 15. Factura electrónica directa con createSimpleFactura
+      // 16. Factura electrónica directa con createSimpleFactura
       let facturaResponse: {
         success: boolean
         attempted: boolean
@@ -465,6 +508,7 @@ export class SaleService {
         attempted: false,
         message: 'No se intentó crear la factura',
       }
+
       try {
         const productos = enrichedItems.map((item) => {
           const codigo = (item.productCode || item.productId).toString()
@@ -588,21 +632,24 @@ export class SaleService {
         }
       }
 
-      // 16. Respuesta final
+      // 17. Preparar datos completos para la respuesta (similar a createSimpleSale)
       const saleWithCompleteInfo = {
         ...sale,
         customer: fullCustomer || null,
+        user: UserFound.data,
         establishment,
         billing: {
-          facturaResponse: {
-            success: facturaResponse.success,
-            attempted: facturaResponse.attempted,
-            message: facturaResponse.message,
-            claveAcceso: facturaResponse.claveAcceso,
-            processing: facturaResponse.processing,
-            comprobanteId: facturaResponse.comprobanteId,
-            sriResponse: facturaResponse.sriResponse,
-          },
+          attempted: facturaResponse.attempted,
+          success: facturaResponse.success,
+          status: facturaResponse.processing
+            ? 'PROCESANDO'
+            : facturaResponse.success
+              ? 'AUTORIZADA'
+              : 'ERROR',
+          message: facturaResponse.message,
+          queuedAt: facturaResponse.processing ? new Date() : null,
+          claveAcceso: facturaResponse.claveAcceso,
+          comprobanteId: facturaResponse.comprobanteId,
         },
         paymentSummary: {
           totalReceived: Number(totalReceivedFromPayments.toFixed(6)),
@@ -615,6 +662,40 @@ export class SaleService {
           totalDiscount: Number(totalDiscountAmount.toFixed(6)),
         },
       }
+
+      // 18. GENERAR PDF Y HACER UPDATE A LA VENTA (igual que createSimpleSale)
+      let pdfBase64: string | null = null
+      try {
+        const ticketData = convertSaleToVoucherFormat(saleWithCompleteInfo)
+        pdfBase64 = generateSaleReceiptPDFBase64(ticketData)
+
+        // IMPORTANTE: Actualizar la venta con el PDF usando el entityManager de la transacción
+        await this.saleRepository.update(
+          sale.id,
+          {
+            pdfVoucher: pdfBase64,
+          },
+          entityManager,
+        )
+
+        this.logger.log(
+          `PDF generado y actualizado correctamente para la venta ${sale.id}`,
+        )
+      } catch (pdfError) {
+        // Log del error pero no fallar la venta
+        this.logger.error('Error generando o actualizando PDF:', {
+          saleId: sale.id,
+          error: pdfError.message,
+          stack: pdfError.stack,
+        })
+
+        // Opcional: Si quieres que el PDF sea crítico, puedes hacer throw aquí
+        // throw new ConflictException(`Error generando PDF: ${pdfError.message}`)
+      }
+
+      // 19. AGREGAR EL PDF A LA RESPUESTA FINAL
+      // Asegurar que el PDF esté en saleWithCompleteInfo para la respuesta
+      saleWithCompleteInfo.pdfVoucher = pdfBase64
 
       const responseMessage = facturaResponse.success
         ? 'Venta con factura electrónica creada exitosamente'
@@ -637,6 +718,9 @@ export class SaleService {
     userId: string,
   ): Promise<ApiResponse<Sale>> {
     return this.dataSource.transaction(async (entityManager) => {
+      const UserFound = await this.userService.findById(userId)
+      if (!UserFound?.data) throw new ConflictException('Usuario no encontrado')
+
       // 1. Productos
       const productIds = createSaleDto.items.map((item) => item.productId)
       const products = await this.productRepository.findByIds(productIds)
@@ -646,6 +730,37 @@ export class SaleService {
         throw new NotFoundException(
           `Productos no encontrados: ${missingIds.join(', ')}`,
         )
+      }
+
+      // 2. Validar que todos los productos estén activos
+      const inactiveProducts = products.filter(
+        (product) => product.status !== 'active',
+      )
+      if (inactiveProducts.length > 0) {
+        const inactiveProductNames = inactiveProducts
+          .map((p) => p.name)
+          .join(', ')
+        const inactiveProductStatuses = inactiveProducts
+          .map((p) => `${p.name}`)
+          .join(', ')
+
+        throw new BadRequestException(
+          `Los siguientes productos no están disponibles: ${inactiveProductStatuses}`,
+        )
+      }
+
+      // 3. Validar stock disponible
+      const stockErrors: string[] = []
+
+      for (const item of createSaleDto.items) {
+        const product = products.find((p) => p.id === item.productId)
+        if (!product) continue
+
+        if (product.stock < item.quantity) {
+          stockErrors.push(
+            `Producto "${product.name}": Stock insuficiente. Solicitado: ${item.quantity}, Disponible: ${product.stock}`,
+          )
+        }
       }
 
       // 2. Map de productos
@@ -802,6 +917,7 @@ export class SaleService {
         this.logger.warn('Error al obtener establishment:', error.message)
       }
 
+      // 11. CREAR LA VENTA INICIALMENTE SIN EL PDF
       const sale = await this.saleRepository.create(
         {
           customerId: createSaleDto.customerId,
@@ -839,6 +955,7 @@ export class SaleService {
           }),
           clave_acceso: null,
           estado_sri: 'NO_ELECTRONIC',
+          pdfVoucher: null,
           user: { id: userId } as any,
         },
         entityManager,
@@ -867,10 +984,11 @@ export class SaleService {
         )
       }
 
-      // 13. Respuesta final
+      // 13. Preparar datos completos para la respuesta
       const saleWithCompleteInfo = {
         ...sale,
         customer: customer || null,
+        user: UserFound.data,
         establishment,
         billing: {
           attempted: false,
@@ -890,6 +1008,40 @@ export class SaleService {
           totalDiscount: Number(totalDiscountAmount.toFixed(6)),
         },
       }
+
+      // 14. GENERAR PDF Y HACER UPDATE A LA VENTA
+      let pdfBase64: string | null = null
+      try {
+        const ticketData = convertSaleToVoucherFormat(saleWithCompleteInfo)
+        pdfBase64 = generateSaleReceiptPDFBase64(ticketData)
+
+        // IMPORTANTE: Actualizar la venta con el PDF usando el entityManager de la transacción
+        await this.saleRepository.update(
+          sale.id,
+          {
+            pdfVoucher: pdfBase64,
+          },
+          entityManager,
+        )
+
+        this.logger.log(
+          `PDF generado y actualizado correctamente para la venta ${sale.id}`,
+        )
+      } catch (pdfError) {
+        // Log del error pero no fallar la venta
+        this.logger.error('Error generando o actualizando PDF:', {
+          saleId: sale.id,
+          error: pdfError.message,
+          stack: pdfError.stack,
+        })
+
+        // Opcional: Si quieres que el PDF sea crítico, puedes hacer throw aquí
+        // throw new ConflictException(`Error generando PDF: ${pdfError.message}`)
+      }
+
+      // 15. AGREGAR EL PDF A LA RESPUESTA FINAL
+      // Asegurar que el PDF esté en saleWithCompleteInfo para la respuesta
+      saleWithCompleteInfo.pdfVoucher = pdfBase64
 
       return createdResponse({
         resource: PATH_SOURCE.SALE,

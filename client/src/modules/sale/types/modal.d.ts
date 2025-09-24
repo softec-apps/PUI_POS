@@ -1,6 +1,6 @@
 import { I_Sale } from '@/common/types/modules/sale'
 
-export type ModalType = 'viewBillSRI' | 'viewVoucher'
+export type ModalType = 'view'
 
 export interface ModalState {
 	type: ModalType | null

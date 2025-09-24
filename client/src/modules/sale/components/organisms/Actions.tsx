@@ -10,11 +10,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 interface ActionsProps {
 	recordData: I_Sale
-	onViewBillRSI: (recordData: I_Sale) => void
-	onViewVoucher: (recordData: I_Sale) => void
+	onViewBill: (recordData: I_Sale) => void
 }
 
-export const Actions = ({ recordData, onViewBillRSI, onViewVoucher }: ActionsProps) => {
+export const Actions = ({ recordData, onViewBill }: ActionsProps) => {
 	const router = useRouter()
 
 	const handleViewDetails = useCallback(
@@ -22,8 +21,7 @@ export const Actions = ({ recordData, onViewBillRSI, onViewVoucher }: ActionsPro
 		[router, recordData.id]
 	)
 
-	const handleViewBillSRI = useCallback(() => onViewBillRSI(recordData), [onViewBillRSI, recordData])
-	const handleViewVoucher = useCallback(() => onViewVoucher(recordData), [onViewVoucher, recordData])
+	const handleViewBill = useCallback(() => onViewBill(recordData), [onViewBill, recordData])
 
 	return (
 		<>
@@ -44,24 +42,10 @@ export const Actions = ({ recordData, onViewBillRSI, onViewVoucher }: ActionsPro
 						<span>Detalles venta</span>
 					</DropdownMenuItem>
 
-					{recordData.estado_sri === 'AUTHORIZED' ? (
-						<>
-							<DropdownMenuItem onClick={handleViewBillSRI} className='flex items-center gap-2 rounded-xl'>
-								<Icons.file />
-								<span>Ver factura SRI</span>
-							</DropdownMenuItem>
-
-							<DropdownMenuItem onClick={handleViewVoucher} className='flex items-center gap-2 rounded-xl'>
-								<Icons.fileText />
-								<span>Ver voucher</span>
-							</DropdownMenuItem>
-						</>
-					) : (
-						<DropdownMenuItem onClick={handleViewVoucher} className='flex items-center gap-2 rounded-xl'>
-							<Icons.fileText />
-							<span>Ver voucher</span>
-						</DropdownMenuItem>
-					)}
+					<DropdownMenuItem onClick={handleViewBill} className='flex items-center gap-2 rounded-xl'>
+						<Icons.file />
+						<span>Ver documentos</span>
+					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
 		</>

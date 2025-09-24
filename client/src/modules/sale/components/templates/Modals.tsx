@@ -2,8 +2,7 @@
 
 import { ModalType } from '@/modules/sale/types/modal'
 import { I_Sale } from '@/common/types/modules/sale'
-import { ModalViewBillSRI } from '@/modules/sale/components/organisms/modal/ModalViewBillSRI'
-import { ModalViewVoucher } from '@/modules/sale/components/organisms/modal/ModalViewVoucher'
+import { ModalViewBill } from '@/modules/sale/components/organisms/modal/ModalViewBill'
 
 interface ModalsProps {
 	modal: {
@@ -18,14 +17,8 @@ interface ModalsProps {
 export function Modals({ modal }: ModalsProps) {
 	return (
 		<>
-			<ModalViewBillSRI
-				isOpen={modal.type === 'viewBillSRI' && modal.isOpen}
-				recordData={modal.record}
-				onClose={modal.closeModal}
-			/>
-
-			<ModalViewVoucher
-				isOpen={modal.type === 'viewVoucher' && modal.isOpen}
+			<ModalViewBill
+				isOpen={modal.type === 'view' && modal.isOpen}
 				recordData={modal.record}
 				onClose={modal.closeModal}
 			/>

@@ -27,14 +27,44 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onSelect, disabled }) => {
 	const [openDetail, setProductDetailOpen] = useState(false)
 
+	// Verificar primero el status y luego el stock
+	const isValidStatus = product.status === 'active'
 	const isOutOfStock = product.stock === 0
-	const isDisabled = disabled || isOutOfStock
+	const isDisabled = disabled || !isValidStatus || isOutOfStock
 
 	const handleCardClick = () => {
 		if (isDisabled) return
 		if (onSelect) onSelect()
 		onAddToCart(product)
 	}
+
+	// Determinar el texto y color del badge basado en status y stock
+	const getStatusBadgeInfo = () => {
+		// Primero verificar el status
+		switch (product.status) {
+			case 'draft':
+				return { text: 'Borrador', color: 'bg-sky-500' }
+			case 'inactive':
+				return { text: 'Inactivo', color: 'bg-red-500' }
+			case 'discontinued':
+				return { text: 'Descontinuado', color: 'bg-orange-500' }
+			case 'out_of_stock':
+				return { text: 'Agotado', color: 'bg-yellow-500' }
+			case 'active':
+				// Si el status es active, verificar el stock
+				if (product.stock === 0) {
+					return { text: 'Agotado', color: 'bg-destructive' }
+				} else if (product.stock === 1) {
+					return { text: '1 und', color: 'bg-orange-500' }
+				} else if (product.stock <= 5) {
+					return { text: `${product.stock} und`, color: 'bg-yellow-500 dark:bg-yellow-400' }
+				}
+			default:
+				return { text: `${product.stock} und`, color: 'bg-muted-foreground' }
+		}
+	}
+
+	const badgeInfo = getStatusBadgeInfo()
 
 	return (
 		<>
@@ -65,17 +95,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
 								<Icons.media className='text-muted-foreground h-8 w-8' />
 							)}
 
-							{/* Stock badge */}
+							{/* Status/Stock badge */}
 							<div className='absolute bottom-2 left-2'>
-								<div
-									className={`text-primary-foreground rounded px-1.5 py-0.5 text-xs font-medium ${
-										product.stock === 0 || product.stock === 1
-											? 'bg-destructive'
-											: product.stock <= 5
-												? 'bg-amber-500 dark:bg-amber-400'
-												: 'bg-muted-foreground'
-									}`}>
-									{product.stock === 0 ? 'Agotado' : `${product.stock} und`}
+								<div className={`text-primary-foreground rounded px-1.5 py-0.5 text-xs font-medium ${badgeInfo.color}`}>
+									{badgeInfo.text}
 								</div>
 							</div>
 						</div>

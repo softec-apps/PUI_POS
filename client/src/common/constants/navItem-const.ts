@@ -85,7 +85,7 @@ export const ALL_NAV_ITEMS: NavConfig = [
 			{
 				title: 'Ventas',
 				url: ROUTE_PATH.ADMIN.SALES,
-				icon: 'shoppingCart',
+				icon: 'shoppingBag',
 				isActive: false,
 				permission: PERMISSIONS.SALES,
 			},

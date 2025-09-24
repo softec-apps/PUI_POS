@@ -162,4 +162,11 @@ export class SaleEntity extends EntityRelationalHelper {
     comment: 'UUID del usuario',
   })
   userId?: string | null
+
+  @Column({
+    type: 'text',
+    nullable: true,
+    comment: 'PDF voucher',
+  })
+  pdfVoucher?: string | null
 }

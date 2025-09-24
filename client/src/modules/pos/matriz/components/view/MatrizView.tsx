@@ -22,8 +22,6 @@ import { useSale } from '@/common/hooks/useSale'
 import { Typography } from '@/components/ui/typography'
 import { FooterPublic } from '@/components/layout/templates/FooterPublic'
 import { SpinnerLoader } from '@/components/layout/SpinnerLoader'
-import { generateSaleReceiptPDF } from '../../hooks/generateSaleReceiptPDF'
-import { SaleToTicket } from '../../types/ticket'
 import api from '@/lib/axios'
 import { toast } from 'sonner'
 
@@ -32,6 +30,16 @@ interface ProductStockResponse {
 	hasEnoughStock: boolean
 	currentStock: number
 	message?: string
+}
+
+// Tipos para la respuesta de venta con PDF
+interface SaleResponse {
+	data: {
+		id: string
+		// ... otros campos de la venta
+		pdfVoucher?: string // PDF en base64
+		// ... otros campos
+	}
 }
 
 const containerVariants = {
@@ -49,6 +57,62 @@ const sectionVariants = {
 	visible: { opacity: 1, y: 0 },
 }
 
+// Función para descargar PDF desde base64
+const downloadPDFFromBase64 = (base64String: string, filename: string = 'comprobante.pdf') => {
+	try {
+		// Crear un blob desde base64
+		const byteCharacters = atob(base64String)
+		const byteNumbers = new Array(byteCharacters.length)
+
+		for (let i = 0; i < byteCharacters.length; i++) {
+			byteNumbers[i] = byteCharacters.charCodeAt(i)
+		}
+
+		const byteArray = new Uint8Array(byteNumbers)
+		const blob = new Blob([byteArray], { type: 'application/pdf' })
+
+		// Crear URL y descargar
+		const url = window.URL.createObjectURL(blob)
+		const link = document.createElement('a')
+		link.href = url
+		link.download = filename
+		document.body.appendChild(link)
+		link.click()
+		document.body.removeChild(link)
+		window.URL.revokeObjectURL(url)
+	} catch (error) {
+		console.error('Error al descargar PDF:', error)
+		toast.error('Error', {
+			description: 'No se pudo descargar el comprobante',
+		})
+	}
+}
+
+// Función para abrir PDF en nueva pestaña
+const openPDFInNewTab = (base64String: string) => {
+	try {
+		const byteCharacters = atob(base64String)
+		const byteNumbers = new Array(byteCharacters.length)
+
+		for (let i = 0; i < byteCharacters.length; i++) {
+			byteNumbers[i] = byteCharacters.charCodeAt(i)
+		}
+
+		const byteArray = new Uint8Array(byteNumbers)
+		const blob = new Blob([byteArray], { type: 'application/pdf' })
+		const url = window.URL.createObjectURL(blob)
+		window.open(url, '_blank')
+
+		// Limpiar después de un tiempo
+		setTimeout(() => window.URL.revokeObjectURL(url), 1000)
+	} catch (error) {
+		console.error('Error al abrir PDF:', error)
+		toast.error('Error', {
+			description: 'No se pudo abrir el comprobante',
+		})
+	}
+}
+
 // Componente de Loading Inicial
 const InitialLoadingSpinner = () => (
 	<div className='flex h-screen w-full items-center justify-center'>
@@ -58,7 +122,7 @@ const InitialLoadingSpinner = () => (
 	</div>
 )
 
-// Types actualizados para múltiples pagos y descuentos
+// Types para múltiples pagos y descuentos
 interface PaymentEntry {
 	id: string
 	method: string
@@ -119,7 +183,7 @@ export function MatrizView() {
 
 	const [page, setPage] = useState(1)
 
-	// 🔧 CORRECCIÓN: Usar orderItems en lugar de items
+	// Usar orderItems en lugar de items
 	const { addItem, orderItems } = useCartStore()
 
 	const { recordsData: categoryData, loading: loadingCategories } = useCategory({ limit: 41 })
@@ -142,7 +206,6 @@ export function MatrizView() {
 			setIsValidatingStock(true)
 			setStockError('')
 
-			// Enviar la cantidad absoluta que el usuario quiere como query parameter
 			const response = await api.get<ProductStockResponse>(`/product/check/${productId}?quantity=${requestedQuantity}`)
 			const { hasEnoughStock, currentStock, message } = response.data
 
@@ -176,10 +239,10 @@ export function MatrizView() {
 		}
 	}
 
-	// Controlar el loading inicial - cuando las categorías terminan de cargar por primera vez
+	// Controlar el loading inicial
 	useEffect(() => {
 		if (!loadingCategories && categoryData) {
-			const timer = setTimeout(() => setIsInitialLoading(false), 300) // Pequeño delay para suavizar la transición
+			const timer = setTimeout(() => setIsInitialLoading(false), 300)
 			return () => clearTimeout(timer)
 		}
 	}, [loadingCategories, categoryData])
@@ -202,25 +265,47 @@ export function MatrizView() {
 	// Encontrar la categoría seleccionada para mostrar su nombre
 	const currentCategory = categories.find(cat => cat.id === selectedCategory)
 
-	// 🔧 FUNCIÓN CORREGIDA - handleAddToCart con validación de stock correcta
-	const handleAddToCart = async product => {
+	// Función para verificar si el producto está activo
+	const isProductActive = (product: any): boolean => {
+		return product.status === 'active'
+	}
+
+	// Función para obtener el mensaje de error según el status
+	const getStatusErrorMessage = (product: any): string => {
+		switch (product.status) {
+			case 'draft':
+				return 'Producto en borrador'
+			case 'inactive':
+				return 'Producto inactivo'
+			case 'discontinued':
+				return 'Producto descontinuado'
+			case 'out_of_stock':
+				return 'Producto sin stock'
+			default:
+				return 'Producto no disponible'
+		}
+	}
+
+	// Función handleAddToCart con validación de status y stock
+	const handleAddToCart = async (product: any) => {
 		try {
-			// Usar orderItems del store (ya corregido arriba)
-			const existingItem = orderItems?.find(item => item.id === product.id)
-			const currentQuantityInCart = existingItem ? existingItem.quantity : 0
-
-			// La nueva cantidad total sería la actual + 1 (porque siempre añadimos de 1 en 1)
-			const newTotalQuantity = currentQuantityInCart + 1
-
-			// Verificar stock antes de añadir al carrito
-			const hasStock = await checkStock(product.id, newTotalQuantity)
-
-			if (!hasStock) {
-				// El error ya se muestra en checkStock, no hacer nada más
+			// Primero verificar si el producto está activo
+			if (!isProductActive(product)) {
+				const errorMessage = getStatusErrorMessage(product)
+				toast.error('Producto no disponible', {
+					description: errorMessage,
+				})
 				return
 			}
 
-			// Si hay stock suficiente, añadir al carrito
+			const existingItem = orderItems?.find(item => item.id === product.id)
+			const currentQuantityInCart = existingItem ? existingItem.quantity : 0
+			const newTotalQuantity = currentQuantityInCart + 1
+
+			const hasStock = await checkStock(product.id, newTotalQuantity)
+
+			if (!hasStock) return
+
 			addItem({
 				id: product.id,
 				name: product.name,
@@ -231,13 +316,11 @@ export function MatrizView() {
 				discount: 0,
 			})
 
-			// Limpiar búsqueda después de añadir si hay coincidencia exacta
 			if (allProducts.length === 1 && debouncedSearchTerm.length > 0) {
 				setSearchTerm('')
 				searchInputRef.current?.focus()
 			}
 
-			// Toast de éxito
 			toast.success('Producto añadido', {
 				description: `Se añadió ${newTotalQuantity} ${newTotalQuantity === 1 ? 'unidad' : 'unidades'} de ${product.name}`,
 			})
@@ -249,12 +332,14 @@ export function MatrizView() {
 		}
 	}
 
-	// Auto-seleccionar y añadir primer producto cuando hay resultados
+	// Auto-seleccionar y añadir primer producto cuando hay resultados (solo si está activo)
 	useEffect(() => {
 		if (allProducts.length === 1 && debouncedSearchTerm.length > 0) {
-			setSelectedProductIndex(0)
-			// Auto-añadir al carrito cuando hay solo un producto (con validación)
-			handleAddToCart(allProducts[0])
+			const product = allProducts[0]
+			if (isProductActive(product)) {
+				setSelectedProductIndex(0)
+				handleAddToCart(product)
+			}
 		} else if (allProducts.length > 1 && debouncedSearchTerm.length > 0) {
 			setSelectedProductIndex(0)
 		} else {
@@ -267,8 +352,8 @@ export function MatrizView() {
 	// Función para manejar la selección de categoría
 	const handleCategorySelect = (categoryId: string) => {
 		setSelectedCategory(categoryId)
-		setSearchTerm('') // Limpiar búsqueda al seleccionar categoría
-		setPage(1) // Reset página
+		setSearchTerm('')
+		setPage(1)
 	}
 
 	// Función para regresar a las categorías
@@ -280,22 +365,7 @@ export function MatrizView() {
 
 	const handleSriSale = async (saleData: SaleData) => {
 		try {
-			console.log('🛒 Datos originales del frontend con descuentos:', saleData)
-
-			// --- Validar pagos ---
-			if (!saleData.payments || saleData.payments.length === 0) {
-				throw new Error('No hay métodos de pago definidos')
-			}
-
-			const totalPaid = saleData.payments.reduce((sum, p) => sum + p.amount, 0)
-			if (totalPaid < saleData.financials.total - 0.0) {
-				// tolerancia de 0 centavo
-				throw new Error(
-					`Total pagado insuficiente: $${totalPaid.toFixed(2)} / Total requerido: $${saleData.financials.total.toFixed(2)}`
-				)
-			}
-
-			// --- Formatear datos para backend con información de descuentos ---
+			// Formatear datos para backend
 			const formattedData = {
 				customerId: saleData.customerId,
 				payments: saleData.payments.map(p => ({
@@ -311,64 +381,21 @@ export function MatrizView() {
 				})),
 			}
 
-			console.log('📤 DATA TO BACKEND (con descuentos):', formattedData)
-
-			// --- Llamada al backend ---
+			// Llamada al backend
 			const response = await createSriSale(formattedData)
-			console.log('✅ Respuesta backend:', response)
 
-			if (!response.data) throw new Error('No hay datos de la venta en la respuesta')
-
-			// --- Preparar datos para PDF ---
-			const backendSale = response.data
-			const receiptData: SaleToTicket = {
-				...backendSale,
-				receivedAmount: totalPaid,
-				change: Math.max(0, totalPaid - backendSale.total),
-				paymentMethods: backendSale.payments || saleData.payments,
-				facturaInfo: {
-					attempted: backendSale.billing?.facturaResponse?.attempted || false,
-					success: backendSale.billing?.facturaResponse?.success || false,
-					message: backendSale.billing?.facturaResponse?.message || '',
-					claveAcceso:
-						backendSale.billing?.facturaResponse?.sriResponse?.data?.clave_acceso || backendSale.claveAcceso || null,
-					estado: backendSale.billing?.facturaResponse?.sriResponse?.data?.estado || backendSale.estado_sri || null,
-					processing: backendSale.billing?.facturaResponse?.sriResponse?.data?.processing || false,
-				},
-			}
-
-			// --- Generar PDF con los datos del backend ---
-			generateSaleReceiptPDF(receiptData)
+			// Manejar el PDF desde la respuesta del backend
+			if (response.data.pdfVoucher) openPDFInNewTab(response.data.pdfVoucher)
 
 			return response
 		} catch (error) {
-			console.error('❌ Error al procesar la venta:', error)
-
-			// Manejo de errores específicos
-			if (error.response?.data?.message) console.error('💬 Mensaje servidor:', error.response.data.message)
-			if (error.response?.status === 409) console.error('🚫 Conflicto: stock insuficiente')
-			if (error.response?.status === 404) console.error('🔍 No encontrado: producto o cliente inexistente')
-			if (error.response?.status === 400) console.error('📝 Datos inválidos:', error.response.data)
-
 			throw error
 		}
 	}
 
 	const handleSimpleSale = async (saleData: SaleData) => {
 		try {
-			// Validar que existan pagos
-			if (!saleData.payments || saleData.payments.length === 0) throw new Error('No hay métodos de pago definidos')
-
-			// Validar que el total de pagos cubra el monto total
-			const totalPaid = saleData.payments.reduce((sum, payment) => sum + payment.amount, 0)
-			if (totalPaid < saleData.financials.total - 0.0) {
-				// Tolerancia de 0 centavo
-				throw new Error(
-					`El total pagado ($${totalPaid.toFixed(2)}) es menor al total requerido ($${saleData.financials.total.toFixed(2)})`
-				)
-			}
-
-			// Formatear datos para el backend con soporte para múltiples pagos y descuentos
+			// Formatear datos para el backend
 			const formattedData = {
 				customerId: saleData.customerId,
 				payments: saleData.payments.map(payment => ({
@@ -378,7 +405,6 @@ export function MatrizView() {
 						transferNumber: payment.transferNumber,
 					}),
 				})),
-				// Enviar información completa de descuentos al backend
 				items: saleData.items.map(item => ({
 					productId: item.productId,
 					quantity: item.quantity,
@@ -387,91 +413,13 @@ export function MatrizView() {
 				})),
 			}
 
-			console.log('📤 DATA TO BACKEND (con múltiples pagos y descuentos):', formattedData)
-
-			// El backend retornará los totales calculados para verificación
 			const response = await createSimpleSale(formattedData)
-			console.log('✅ Respuesta del backend:', response)
 
-			// Después de una venta exitosa, generar el PDF
-			if (response.data) {
-				// Usar directamente los datos de respuesta del backend
-				const receiptData = {
-					...response.data,
-					// Mapear el campo discountAmount a discount para compatibilidad con el PDF
-					// Asegurar que todos los campos necesarios estén presentes
-					estado_sri: response.data.estado_sri,
-					receivedAmount: response.data.receivedAmount,
-					change: response.data.change,
-					// Convertir discountAmount string a número si es necesario
-					discount: response.data.discountAmount || response.data.totalDiscountAmount || 0,
-					discountAmount: parseFloat(response.data.discountAmount || '0'),
-					totalDiscountAmount: response.data.discountSummary?.totalDiscount || 0,
-				}
-
-				// Generar el PDF
-				generateSaleReceiptPDF(receiptData)
-			}
-
-			// Verificar totales calculados por el backend vs frontend
-			if (response.data?.calculatedTotals) {
-				const backendTotals = response.data.calculatedTotals
-				const frontendTotals = saleData.financials
-
-				console.log('📊 Comparación de totales (con descuentos):')
-				console.log('Frontend:', {
-					subtotal: frontendTotals.subtotal,
-					tax: frontendTotals.tax,
-					total: frontendTotals.total,
-					items: frontendTotals.totalItems,
-					totalPaid: totalPaid,
-					totalDiscountAmount: frontendTotals.totalDiscountAmount,
-				})
-				console.log('Backend:', {
-					subtotal: backendTotals.subtotal,
-					tax: backendTotals.taxAmount,
-					total: backendTotals.total,
-					items: backendTotals.totalItems,
-					totalDiscountAmount: backendTotals.totalDiscountAmount || 0,
-				})
-
-				// Alertar si hay diferencias significativas
-				const tolerance = 0.0
-				if (Math.abs(frontendTotals.total - backendTotals.total) > tolerance) {
-					console.warn('⚠️ DIFERENCIA EN TOTALES:', {
-						frontend: frontendTotals.total,
-						backend: backendTotals.total,
-						diferencia: Math.abs(frontendTotals.total - backendTotals.total),
-					})
-				}
-
-				// Verificar que el total pagado cubra el total del backend
-				if (totalPaid < backendTotals.total - tolerance) {
-					console.warn('⚠️ TOTAL PAGADO INSUFICIENTE:', {
-						totalPagado: totalPaid,
-						totalRequerido: backendTotals.total,
-						diferencia: backendTotals.total - totalPaid,
-					})
-				}
-			}
+			// Manejar el PDF desde la respuesta del backend
+			if (response.data?.pdfVoucher) openPDFInNewTab(response.data.pdfVoucher)
 
 			return response
 		} catch (error) {
-			console.error('❌ Error al procesar la venta:', error)
-
-			// Manejo de errores específicos
-			if (error.response?.data?.message) {
-				console.error('💬 Mensaje del servidor:', error.response.data.message)
-			}
-
-			if (error.response?.status === 409) {
-				console.error('🚫 Conflicto (probablemente stock insuficiente)')
-			} else if (error.response?.status === 404) {
-				console.error('🔍 No encontrado (producto o cliente inexistente)')
-			} else if (error.response?.status === 400) {
-				console.error('📝 Datos inválidos:', error.response.data)
-			}
-
 			throw error
 		}
 	}
@@ -618,9 +566,12 @@ export function MatrizView() {
 						)}
 					</div>
 				</ScrollArea>
+				<div className='px-4'>
+					<FooterPublic />
+				</div>
 			</div>
 
-			{/* Sidebar del carrito con soporte para múltiples pagos y descuentos */}
+			{/* Sidebar del carrito */}
 			<CartSidebar handleSriSale={handleSriSale} handleSimpleSale={handleSimpleSale} />
 		</div>
 	)

@@ -23,11 +23,11 @@ export const TopCustomersCard: React.FC<TopCustomersCardProps> = ({ customers })
 	}
 
 	function formatCustomerName(firstName = '', lastName = '') {
-		const first = firstName.split(' ')[0] || '' // primer nombre
-		const lastParts = lastName.split(' ') // apellidos
+		const first = firstName?.split(' ')[0] || '' // primer nombre
+		const lastParts = lastName?.split(' ') // apellidos
 		const firstInitial = lastParts[0] ? lastParts[0][0] : '' // inicial del primer apellido
 		const secondInitial = lastParts[1] ? lastParts[1][0] : '' // inicial del segundo apellido
-		const initials = [firstInitial, secondInitial].filter(Boolean).join('.')
+		const initials = [firstInitial, secondInitial]?.filter(Boolean)?.join('.')
 		return `${first} ${initials ? initials + '.' : ''}`.trim()
 	}
 

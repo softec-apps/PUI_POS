@@ -9,6 +9,7 @@ import { InfoDate } from '@/modules/sale/components/atoms/InfoDate'
 import { formatPrice } from '@/common/utils/formatPrice-util'
 import { Badge } from '@/components/layout/atoms/Badge'
 import { StatusSRI, StatusSRILabels_ES } from '@/common/enums/sale.enum'
+import { StatusSRIBadge } from '../../atoms/StatusSRIBadge'
 
 const createHeader = (column: Column<I_Sale>, label: string) => {
 	return (
@@ -32,36 +33,18 @@ const createHeader = (column: Column<I_Sale>, label: string) => {
 }
 
 interface createTableColumnsProps {
-	onViewBillRSI: (recordData: I_Sale) => void
-	onViewVoucher: (recordData: I_Sale) => void
+	onViewBill: (recordData: I_Sale) => void
 }
 
-export const createTableColumns = ({ onViewBillRSI, onViewVoucher }: createTableColumnsProps): ColumnDef<I_Sale>[] => [
+export const createTableColumns = ({ onViewBill }: createTableColumnsProps): ColumnDef<I_Sale>[] => [
 	{
 		accessorKey: 'estado_sri',
 		header: ({ column }) => createHeader(column, 'Estado (SRI)'),
-		cell: ({ row }) => {
-			const estado = row.original.estado_sri as StatusSRI | undefined
-
-			// Definir el color del Badge según estado
-			let variant: 'default' | 'destructive' | 'warning' | 'success' | 'secondary' | 'info' = 'default'
-			switch (estado) {
-				case StatusSRI.AUTHORIZED:
-					variant = 'success'
-					break
-				case StatusSRI.ERROR:
-					variant = 'destructive'
-					break
-				case StatusSRI.NO_ELECTRONIC:
-					variant = 'info'
-					break
-				case StatusSRI.PROCESANDO:
-					variant = 'warning'
-					break
-			}
-
-			return <Badge variant={variant} text={StatusSRILabels_ES[estado ?? StatusSRI.NO_ELECTRONIC] || 'No aplica'} />
-		},
+		cell: ({ row }) => (
+			<span>
+				<StatusSRIBadge estado={row.original.estado_sri} />
+			</span>
+		),
 	},
 	{
 		accessorKey: 'code',
@@ -120,7 +103,7 @@ export const createTableColumns = ({ onViewBillRSI, onViewVoucher }: createTable
 		id: 'actions',
 		cell: ({ row }) => (
 			<span className='flex justify-end'>
-				<Actions recordData={row.original} onViewBillRSI={onViewBillRSI} onViewVoucher={onViewVoucher} />
+				<Actions recordData={row.original} onViewBill={onViewBill} />
 			</span>
 		),
 	},

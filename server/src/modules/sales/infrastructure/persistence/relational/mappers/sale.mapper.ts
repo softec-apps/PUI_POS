@@ -94,6 +94,7 @@ export class SaleMapper {
       clave_acceso: raw.clave_acceso,
       // Responsable de la venta
       user: raw.user ? UserMapper.toDomain(raw.user) : null,
+      pdfVoucher: raw.pdfVoucher,
     })
     return domainEntity
   }
@@ -116,6 +117,7 @@ export class SaleMapper {
       estado_sri: domainEntity.estado_sri,
       comprobante_id: domainEntity.comprobante_id,
       clave_acceso: domainEntity.clave_acceso,
+      pdfVoucher: domainEntity.pdfVoucher,
     })
 
     // Manejo de la foto

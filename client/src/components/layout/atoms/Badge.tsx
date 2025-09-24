@@ -24,6 +24,7 @@ interface Props {
 	variant?: BadgeVariant
 	text: string | React.ReactNode
 	decor?: boolean
+	icon?: React.ReactNode
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
@@ -62,9 +63,10 @@ const dotColors: Record<BadgeVariant, string> = {
 	gray: 'bg-gray-600 dark:bg-gray-300',
 }
 
-export function Badge({ variant = 'default', text, decor = false }: Props) {
+export function Badge({ variant = 'default', text, decor = false, icon }: Props) {
 	return (
-		<BadgeUI className={`rounded-full focus-visible:outline-none ${variantStyles[variant]}`}>
+		<BadgeUI className={`flex items-center gap-1 rounded-full focus-visible:outline-none ${variantStyles[variant]}`}>
+			{icon && <div>{icon}</div>}
 			{decor && <span className={`mr-0.5 size-1.5 rounded-full ${dotColors[variant]}`} />}
 			{text}
 		</BadgeUI>

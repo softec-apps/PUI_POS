@@ -151,4 +151,11 @@ export class Sale {
     description: 'UUID del usuario',
   })
   userId?: string | null
+
+  @ApiPropertyOptional({
+    type: 'string',
+    example: 'procesando',
+    description: 'PDF voucher',
+  })
+  pdfVoucher?: string | null
 }
