@@ -56,8 +56,8 @@ export function DashboardView() {
 		const { startDate, endDate } = getPeriodDates(dateRange)
 		return {
 			createdAt: {
-				startDate: startDate.toISOString(),
-				endDate: endDate.toISOString(),
+				startDate: startDate?.toISOString(),
+				endDate: endDate?.toISOString(),
 			},
 		}
 	}, [dateRange])
@@ -73,11 +73,11 @@ export function DashboardView() {
 	// Datos para gráficos
 	const chartData = useMemo(() => {
 		const dailySalesData = {
-			labels: metrics.salesByDay.map(item => `${item.day}\n${item.date}`),
+			labels: metrics?.salesByDay?.map(item => `${item?.day}\n${item?.date}`),
 			datasets: [
 				{
 					label: 'Ventas del día',
-					data: metrics.salesByDay.map(item => item.sales),
+					data: metrics?.salesByDay?.map(item => item?.sales),
 					backgroundColor: 'rgba(116, 134, 119, 0.8)',
 					borderColor: 'rgb(116, 134, 119)',
 					borderWidth: 0,
@@ -86,11 +86,11 @@ export function DashboardView() {
 		}
 
 		const salesTrendData = {
-			labels: metrics.salesByMonth.map(item => item.month),
+			labels: metrics?.salesByMonth?.map(item => item.month),
 			datasets: [
 				{
 					label: 'Número de Ventas',
-					data: metrics.salesByMonth.map(item => item.sales),
+					data: metrics?.salesByMonth?.map(item => item?.sales),
 					borderColor: 'rgb(75, 192, 192)',
 					backgroundColor: 'rgba(75, 192, 192, 0.1)',
 					tension: 0.4,
@@ -99,7 +99,7 @@ export function DashboardView() {
 				},
 				{
 					label: 'Ingresos ($)',
-					data: metrics.salesByMonth.map(item => item.revenue),
+					data: metrics?.salesByMonth?.map(item => item?.revenue),
 					borderColor: 'rgb(159, 213, 190)',
 					backgroundColor: 'rgba(159, 213, 190, 0.1)',
 					tension: 0.4,
@@ -108,7 +108,7 @@ export function DashboardView() {
 				},
 				{
 					label: 'Ganancias ($)',
-					data: metrics.salesByMonth.map(item => item.profit),
+					data: metrics?.salesByMonth?.map(item => item?.profit),
 					borderColor: 'rgb(206, 180, 217)',
 					backgroundColor: 'rgba(206, 180, 217, 0.1)',
 					tension: 0.4,
@@ -119,10 +119,10 @@ export function DashboardView() {
 		}
 
 		const paymentMethodData = {
-			labels: Object.keys(metrics.salesByPaymentMethod),
+			labels: Object.keys(metrics?.salesByPaymentMethod),
 			datasets: [
 				{
-					data: Object.values(metrics.salesByPaymentMethod),
+					data: Object.values(metrics?.salesByPaymentMethod),
 					backgroundColor: ['#fbdee0', '#a6c7ea', '#fbf5ab', '#4BC0C0', '#dfcde3', '#e6eda0'],
 					borderWidth: 0,
 				},
@@ -130,7 +130,7 @@ export function DashboardView() {
 		}
 
 		const statusSriData = {
-			labels: Object.keys(metrics.salesByStatus).map(status => {
+			labels: Object?.keys(metrics?.salesByStatus)?.map(status => {
 				switch (status) {
 					case 'AUTHORIZED':
 						return 'Autorizadas'
@@ -146,7 +146,7 @@ export function DashboardView() {
 			}),
 			datasets: [
 				{
-					data: Object.values(metrics.salesByStatus),
+					data: Object.values(metrics?.salesByStatus),
 					backgroundColor: ['#9fd4bd', '#f1afa1', '#f6f19f', '#ccd7c6'],
 					borderWidth: 0,
 				},
@@ -213,13 +213,13 @@ export function DashboardView() {
 		() => ({
 			...chartOptions,
 			plugins: {
-				...chartOptions.plugins,
+				...chartOptions?.plugins,
 				tooltip: {
-					...chartOptions.plugins.tooltip,
+					...chartOptions?.plugins?.tooltip,
 					callbacks: {
 						label: function (context: any) {
-							const label = context.label || ''
-							const value = context.raw || 0
+							const label = context?.label || ''
+							const value = context?.raw || 0
 							return `${label}: ${formatPrice(value)}`
 						},
 					},
@@ -237,8 +237,8 @@ export function DashboardView() {
 	// Datos del usuario y saludo
 	const firstName = user?.firstName || ''
 	const lastName = user?.lastName || ''
-	const fullName = `${firstName} ${lastName}`.trim() || 'Usuario'
-	const ecuadorHour = currentTime.getHours()
+	const fullName = `${firstName} ${lastName}`?.trim() || 'Usuario'
+	const ecuadorHour = currentTime?.getHours()
 	const greeting = getGreeting(ecuadorHour)
 
 	return (
