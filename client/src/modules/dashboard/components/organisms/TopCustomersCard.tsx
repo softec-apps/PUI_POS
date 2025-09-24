@@ -24,7 +24,7 @@ export const TopCustomersCard: React.FC<TopCustomersCardProps> = ({ customers })
 
 	function formatCustomerName(firstName = '', lastName = '') {
 		const first = firstName?.split(' ')[0] || '' // primer nombre
-		const lastParts = lastName?.split(' ') // apellidos
+		const lastParts = lastName?.split(' ') || '' // apellidos
 		const firstInitial = lastParts[0] ? lastParts[0][0] : '' // inicial del primer apellido
 		const secondInitial = lastParts[1] ? lastParts[1][0] : '' // inicial del segundo apellido
 		const initials = [firstInitial, secondInitial]?.filter(Boolean)?.join('.')
@@ -40,22 +40,22 @@ export const TopCustomersCard: React.FC<TopCustomersCardProps> = ({ customers })
 			<CardContent className='p-0'>
 				{customers?.length > 0 ? (
 					<div className='flex w-full gap-4'>
-						{customers.slice(0, 3).map((customer, index) => (
+						{customers?.slice(0, 3).map((customer, index) => (
 							<div
-								key={`customer-${customer.customer?.id || index}`}
+								key={`customer-${customer?.customer?.id || index}`}
 								className='border-border/50 bg-muted/50 dark:bg-popover flex flex-1 items-center gap-4 rounded-2xl border p-4'>
 								<div className='bg-muted flex h-10 w-10 items-center justify-center rounded-full'>
 									{getRankIcon(index)}
 								</div>
 								<div className='flex-1'>
 									<p className='mb-1 truncate text-sm font-medium'>
-										{formatCustomerName(customer.customer?.firstName, customer.customer?.lastName)}
+										{formatCustomerName(customer?.customer?.firstName, customer?.customer?.lastName)}
 									</p>
 									<div className='flex items-center justify-between'>
 										<p className='text-muted-foreground text-xs'>
-											{customer.salesCount} compra{customer.salesCount !== 1 ? 's' : ''}
+											{customer?.salesCount} compra{customer?.salesCount !== 1 ? 's' : ''}
 										</p>
-										<p className='text-sm font-semibold tabular-nums'>${formatPrice(customer.totalSpent)}</p>
+										<p className='text-sm font-semibold tabular-nums'>${formatPrice(customer?.totalSpent)}</p>
 									</div>
 								</div>
 							</div>
