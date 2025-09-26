@@ -25,7 +25,7 @@ export const KPISection: React.FC<KPISectionProps> = React.memo(({ metrics, date
 	const showGrowth = dateRange !== '0'
 
 	return (
-		<section className='grid grid-cols-3 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+		<section className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
 			<KPICard
 				title='Ventas'
 				value={metrics.totalSales}

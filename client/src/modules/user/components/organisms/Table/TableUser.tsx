@@ -22,6 +22,7 @@ import { ListView } from '@/modules/user/components/templates/ViewList'
 import { TableView } from '@/modules/user/components/templates/ViewTable'
 import { LoadingStates } from '@/modules/user/components/templates/ViewSkeleton'
 import { createTableColumns } from '@/modules/user/components/organisms/Table/TableColumns'
+import { Table } from '@/components/ui/table'
 
 interface TableUserProps {
 	loading: boolean

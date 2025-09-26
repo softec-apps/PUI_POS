@@ -1,18 +1,19 @@
 'use client'
 
 import { LucideHeart } from 'lucide-react'
+import { Footer } from '@/components/ui/footer'
 import { DEV_INFO } from '@/common/constants/devInfo-const'
 import { SITE_CONFIG } from '@/common/constants/siteConf-const'
-import { Footer } from '@/components/ui/footer'
 
 export function FooterPublic() {
 	return (
-		<Footer className='m-0 bg-transparent p-0'>
-			<div className='flex flex-col items-center justify-between gap-4 sm:flex-row'>
-				<p className='text-muted-foreground text-xs'>
-					&copy; {new Date().getFullYear()} {SITE_CONFIG.DOAMIN} - {SITE_CONFIG.NAME}. Todos los derechos reservados.
+		<Footer className='bg-popover px-2 py-1.5 sm:px-4 dark:bg-[#0b0b0b]'>
+			<div className='flex items-center justify-between gap-2'>
+				<p className='text-muted-foreground flex gap-1 text-xs'>
+					&copy; {new Date().getFullYear()} {SITE_CONFIG.DOAMIN} - {SITE_CONFIG.NAME}.{' '}
+					<span className='hidden sm:flex'>Todos los derechos reservados.</span>
 				</p>
-				<div className='text-muted-foreground flex items-center gap-1'>
+				<div className='text-muted-foreground flex items-center gap-1 text-xs'>
 					<span className='flex gap-1 text-xs font-medium'>
 						Made with
 						<LucideHeart className='text-destructive size-4' fill='currentColor' />

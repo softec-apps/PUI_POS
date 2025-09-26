@@ -28,7 +28,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({
 		<>
 			{/* Primera fila de gráficos */}
 			<section className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
-				<Card className='border-border/50 lg:col-span-2'>
+				<Card className='border-border/50 bg-popover lg:col-span-2'>
 					<CardHeader>
 						<CardTitle>Ventas por día</CardTitle>
 						<CardDescription>Últimos {metrics.salesByDay.length} días del período seleccionado</CardDescription>
@@ -40,7 +40,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({
 					</CardContent>
 				</Card>
 
-				<Card className='border-border/50'>
+				<Card className='border-border/50 bg-popover'>
 					<CardHeader>
 						<CardTitle>Estado SRI</CardTitle>
 						<CardDescription>Distribución por estado de autorización</CardDescription>
@@ -55,7 +55,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({
 
 			{/* Segunda fila de gráficos */}
 			<section className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
-				<Card className='border-border/50'>
+				<Card className='border-border/50 bg-popover'>
 					<CardHeader>
 						<CardTitle>Métodos de pago</CardTitle>
 						<CardDescription>Distribución de ingresos por método</CardDescription>
@@ -67,7 +67,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({
 					</CardContent>
 				</Card>
 
-				<Card className='border-border/50 lg:col-span-2'>
+				<Card className='border-border/50 bg-popover lg:col-span-2'>
 					<CardHeader>
 						<CardTitle>Tendencia mensual</CardTitle>
 						<CardDescription>Evolución de ventas, ingresos y ganancias</CardDescription>

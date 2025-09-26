@@ -19,6 +19,7 @@ import { EmptyState } from '@/modules/category/components/templates/EmptyState'
 import { ErrorState } from '@/components/layout/templates/ErrorState'
 import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { TableData } from '@/modules/category/components/organisms/Table/TableData'
+import { Table } from '@/components/ui/table'
 
 const SEARCH_DELAY = 500
 const MAX_RETRIES = 3
@@ -174,15 +175,19 @@ export function CategoryView() {
 						onViewChange={setViewType}
 					/>
 
-					<TableData
-						recordsData={categoryData.data.items}
-						loading={categoryData.loading}
-						onEdit={modal.openEdit}
-						onHardDelete={modal.openHardDelete}
-						onSoftDelete={modal.openSoftDelete}
-						onRestore={modal.openRestore}
-						viewType={viewType}
-					/>
+					<Table className='w-full table-fixed overflow-hidden'>
+						<div className='pr-12'>
+							<TableData
+								recordsData={categoryData.data.items}
+								loading={categoryData.loading}
+								onEdit={modal.openEdit}
+								onHardDelete={modal.openHardDelete}
+								onSoftDelete={modal.openSoftDelete}
+								onRestore={modal.openRestore}
+								viewType={viewType}
+							/>
+						</div>
+					</Table>
 
 					<PaginationControls
 						loading={categoryData.loading}

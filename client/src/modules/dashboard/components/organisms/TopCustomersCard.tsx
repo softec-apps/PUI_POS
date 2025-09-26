@@ -39,7 +39,7 @@ export const TopCustomersCard: React.FC<TopCustomersCardProps> = ({ customers })
 			</CardHeader>
 			<CardContent className='p-0'>
 				{customers?.length > 0 ? (
-					<div className='flex w-full gap-4'>
+					<div className='flex w-full flex-col gap-4 sm:flex-row'>
 						{customers?.slice(0, 3).map((customer, index) => (
 							<div
 								key={`customer-${customer?.customer?.id || index}`}

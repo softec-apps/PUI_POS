@@ -17,7 +17,7 @@ export default function PageContainer({ children, scrollable = true }: PageConta
 					<div className='px-4 pb-28'>{children}</div>
 				</ScrollArea>
 
-				<div className='bg-popover sticky right-0 bottom-0 left-0 z-10 px-4 py-1 dark:bg-[#0b0b0b]'>
+				<div className='sticky right-0 bottom-0 left-0 z-10'>
 					<FooterPublic />
 				</div>
 			</div>
@@ -26,7 +26,10 @@ export default function PageContainer({ children, scrollable = true }: PageConta
 
 	return (
 		<div className='relative min-h-[calc(100dvh-52px)] px-2'>
-			<div className='pb-24'>{children}</div>
+			<div>{children}</div>
+			<div className='sticky right-0 bottom-0 left-0 z-10'>
+				<FooterPublic />
+			</div>
 		</div>
 	)
 }

@@ -118,11 +118,7 @@ export function TableData({
 
 		switch (viewType) {
 			case 'table':
-				return (
-					<Table className='w-full table-fixed overflow-hidden'>
-						<TableView {...viewProps} />
-					</Table>
-				)
+				return <TableView {...viewProps} />
 			case 'card':
 				return <CardView {...viewProps} />
 			case 'list':

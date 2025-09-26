@@ -141,8 +141,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = ({ payments, onPaym
 	}
 
 	return (
-		<div>
-			<div className='flex items-center justify-between space-y-3'>
+		<>
+			<div className='flex items-center justify-between'>
 				<Typography variant='p'>Métodos de pago</Typography>
 				{!isFullyPaid && (
 					<ActionButton
@@ -157,7 +157,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = ({ payments, onPaym
 
 			{/* Lista de pagos agregados */}
 			{payments.length > 0 && (
-				<div className='bg-popover divide-y rounded-2xl border'>
+				<div className='divide-y'>
 					{payments.map(payment => {
 						const methodInfo = getMethodInfo(payment.method)
 						return (
@@ -200,7 +200,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = ({ payments, onPaym
 
 			{/* Diálogo para agregar nuevo pago */}
 			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-				<DialogContent className='max-w-md'>
+				<DialogContent className='max-w-sm'>
 					<DialogHeader>
 						<DialogTitle>Agregar método de pago</DialogTitle>
 						<DialogDescription>Restante: ${formatPrice(remainingAmount)}</DialogDescription>
@@ -353,6 +353,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = ({ payments, onPaym
 					</div>
 				</DialogContent>
 			</Dialog>
-		</div>
+		</>
 	)
 }

@@ -36,9 +36,7 @@ interface ProductStockResponse {
 interface SaleResponse {
 	data: {
 		id: string
-		// ... otros campos de la venta
-		pdfVoucher?: string // PDF en base64
-		// ... otros campos
+		pdfVoucher?: string
 	}
 }
 
@@ -57,37 +55,6 @@ const sectionVariants = {
 	visible: { opacity: 1, y: 0 },
 }
 
-// Función para descargar PDF desde base64
-const downloadPDFFromBase64 = (base64String: string, filename: string = 'comprobante.pdf') => {
-	try {
-		// Crear un blob desde base64
-		const byteCharacters = atob(base64String)
-		const byteNumbers = new Array(byteCharacters.length)
-
-		for (let i = 0; i < byteCharacters.length; i++) {
-			byteNumbers[i] = byteCharacters.charCodeAt(i)
-		}
-
-		const byteArray = new Uint8Array(byteNumbers)
-		const blob = new Blob([byteArray], { type: 'application/pdf' })
-
-		// Crear URL y descargar
-		const url = window.URL.createObjectURL(blob)
-		const link = document.createElement('a')
-		link.href = url
-		link.download = filename
-		document.body.appendChild(link)
-		link.click()
-		document.body.removeChild(link)
-		window.URL.revokeObjectURL(url)
-	} catch (error) {
-		console.error('Error al descargar PDF:', error)
-		toast.error('Error', {
-			description: 'No se pudo descargar el comprobante',
-		})
-	}
-}
-
 // Función para abrir PDF en nueva pestaña
 const openPDFInNewTab = (base64String: string) => {
 	try {
@@ -103,7 +70,6 @@ const openPDFInNewTab = (base64String: string) => {
 		const url = window.URL.createObjectURL(blob)
 		window.open(url, '_blank')
 
-		// Limpiar después de un tiempo
 		setTimeout(() => window.URL.revokeObjectURL(url), 1000)
 	} catch (error) {
 		console.error('Error al abrir PDF:', error)
@@ -384,6 +350,8 @@ export function MatrizView() {
 			// Llamada al backend
 			const response = await createSriSale(formattedData)
 
+			console.log('RES DA', response)
+
 			// Manejar el PDF desde la respuesta del backend
 			if (response.data.pdfVoucher) openPDFInNewTab(response.data.pdfVoucher)
 
@@ -434,9 +402,11 @@ export function MatrizView() {
 	}
 
 	return (
-		<div className='flex h-[calc(100vh-0.5rem)] min-h-[calc(100vh-0.5rem)] w-full gap-4 pb-10'>
-			<div className='flex flex-1 flex-col space-y-3 pb-6'>
-				<div className='flex flex-shrink-0 items-center justify-between px-2 pr-4'>
+		<div className='flex h-[calc(100vh-0.5rem)] min-h-[calc(100vh-5rem)] w-full gap-4 pb-2 sm:pb-10'>
+			{/* Main Content Area - Responsive */}
+			<div className='flex flex-1 flex-col space-y-3 pb-0 sm:pb-6'>
+				{/* Header Section - Responsive padding and layout */}
+				<div className='flex flex-col space-y-3 px-2 pr-0 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:pr-4'>
 					<motion.div
 						key={selectedCategory ? 'category-selected' : 'categories'}
 						variants={sectionVariants}
@@ -445,7 +415,7 @@ export function MatrizView() {
 						exit='hidden'
 						className='flex items-center gap-3'>
 						{!selectedCategory ? (
-							<Typography variant='lead' className='uppercase'>
+							<Typography variant='lead' className='text-lg uppercase sm:text-xl'>
 								Categorías
 							</Typography>
 						) : (
@@ -457,22 +427,22 @@ export function MatrizView() {
 									size='icon'
 									className='h-9 w-9'
 								/>
-								<Typography variant='lead' className='uppercase'>
+								<Typography variant='lead' className='text-lg uppercase sm:text-xl'>
 									{currentCategory?.name}
 								</Typography>
 							</>
 						)}
 					</motion.div>
 
-					{/* Barra de búsqueda */}
-					<div className='relative'>
+					{/* Search Bar - Full width on mobile */}
+					<div className='relative w-full sm:w-auto sm:min-w-[300px]'>
 						<Icons.search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform' />
 						<Input
 							ref={searchInputRef}
 							placeholder='Buscar por nombre o códigos...'
 							value={searchTerm}
 							onChange={e => setSearchTerm(e.target.value)}
-							className='bg-card focus:border-primary h-8 rounded-md border-2 pr-4 pl-9'
+							className='bg-card focus:border-primary h-10 w-full rounded-xl border-2 pr-10 pl-9 sm:h-8'
 							disabled={isValidatingStock}
 						/>
 						{searchTerm && (
@@ -490,18 +460,19 @@ export function MatrizView() {
 					</div>
 				</div>
 
-				<ScrollArea className='flex-1 overflow-auto pr-2'>
-					<div className='m-1 space-y-6'>
+				{/* Scrollable Content Area - Adjusted padding for mobile */}
+				<ScrollArea className='flex-1 overflow-auto px-2 pr-0 sm:pr-4'>
+					<div className='space-y-6 pb-20 sm:pb-6'>
 						{/* Mostrar productos si hay búsqueda o categoría seleccionada */}
 						{(debouncedSearchTerm.length > 0 || selectedCategory) && (
 							<motion.div variants={sectionVariants} initial='hidden' animate='visible' className='space-y-4'>
-								{/* Grid de productos */}
+								{/* Grid de productos - Responsive grid */}
 								{productLoading ? (
 									<motion.div
 										variants={containerVariants}
 										initial='hidden'
 										animate='visible'
-										className='grid grid-cols-2 gap-4 px-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+										className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7'>
 										<ProductCardSkeleton count={24} />
 									</motion.div>
 								) : allProducts.length === 0 ? (
@@ -511,7 +482,7 @@ export function MatrizView() {
 										variants={containerVariants}
 										initial='hidden'
 										animate='visible'
-										className='grid grid-cols-2 gap-4 px-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+										className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7'>
 										{allProducts.map((product, index) => (
 											<div key={product.id} className='relative'>
 												{/* Card */}
@@ -543,7 +514,7 @@ export function MatrizView() {
 										variants={containerVariants}
 										initial='hidden'
 										animate='visible'
-										className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+										className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7'>
 										<CategoryCardSkeleton count={24} />
 									</motion.div>
 								) : (
@@ -551,7 +522,7 @@ export function MatrizView() {
 										variants={containerVariants}
 										initial='hidden'
 										animate='visible'
-										className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+										className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7'>
 										{categories.map(category => (
 											<CategoryCard
 												key={category.id}
@@ -566,12 +537,9 @@ export function MatrizView() {
 						)}
 					</div>
 				</ScrollArea>
-				<div className='px-4'>
-					<FooterPublic />
-				</div>
 			</div>
 
-			{/* Sidebar del carrito */}
+			{/* Desktop Sidebar - Responsive CartSidebar component */}
 			<CartSidebar handleSriSale={handleSriSale} handleSimpleSale={handleSimpleSale} />
 		</div>
 	)

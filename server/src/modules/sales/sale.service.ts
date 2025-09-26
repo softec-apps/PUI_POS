@@ -308,12 +308,6 @@ export class SaleService {
             `No se puede realizar una venta mayor a $50.00 (Total: $${backendTotal.toFixed(6)}) a un consumidor final.`,
           )
         }
-        this.logger.log('✅ Cliente validado para venta mayor a $50:', {
-          customerId: fullCustomer.id,
-          total: backendTotal,
-          customerType: fullCustomer.customerType,
-          identificationType: fullCustomer.identificationType,
-        })
       }
 
       // 10. Obtener establishment
@@ -375,7 +369,7 @@ export class SaleService {
           }),
           clave_acceso: null,
           estado_sri: 'PENDING',
-          pdfVoucher: null, // Inicialmente null
+          pdfVoucher: null,
           user: { id: userId } as any,
         },
         entityManager,
@@ -632,9 +626,23 @@ export class SaleService {
         }
       }
 
-      // 17. Preparar datos completos para la respuesta (similar a createSimpleSale)
+      // 17. Preparar datos completos para la respuesta
       const saleWithCompleteInfo = {
         ...sale,
+        // Sobrescribir con los datos de facturación si están disponibles
+        clave_acceso:
+          facturaResponse.claveAcceso ||
+          facturaResponse.sriResponse?.data?.clave_acceso ||
+          sale.clave_acceso,
+        estado_sri: facturaResponse.processing
+          ? 'PROCESANDO'
+          : facturaResponse.success
+            ? 'AUTORIZADA'
+            : sale.estado_sri,
+        comprobante_id:
+          facturaResponse.comprobanteId ||
+          facturaResponse.sriResponse?.data?.comprobante_id ||
+          sale.comprobante_id,
         customer: fullCustomer || null,
         user: UserFound.data,
         establishment,
@@ -650,6 +658,10 @@ export class SaleService {
           queuedAt: facturaResponse.processing ? new Date() : null,
           claveAcceso: facturaResponse.claveAcceso,
           comprobanteId: facturaResponse.comprobanteId,
+          // Incluir todos los datos de facturaResult.data si están disponibles
+          ...(facturaResponse.sriResponse?.data && {
+            facturaData: facturaResponse.sriResponse.data,
+          }),
         },
         paymentSummary: {
           totalReceived: Number(totalReceivedFromPayments.toFixed(6)),

@@ -49,7 +49,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
 			case 'discontinued':
 				return { text: 'Descontinuado', color: 'bg-orange-500' }
 			case 'out_of_stock':
-				return { text: 'Agotado', color: 'bg-yellow-500' }
+				return { text: 'Agotado', color: 'bg-destructive' }
 			case 'active':
 				// Si el status es active, verificar el stock
 				if (product.stock === 0) {
@@ -70,8 +70,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
 		<>
 			<motion.div
 				variants={itemVariants}
-				whileHover={{ scale: isDisabled ? 1 : 1.02 }}
-				whileTap={{ scale: isDisabled ? 1 : 0.98 }}>
+				whileHover={{ scale: isDisabled ? 1 : 0.98 }}
+				whileTap={{ scale: isDisabled ? 1 : 0.9 }}>
 				<Card
 					className={cn(
 						'cursor-pointer border-2 p-0 transition-all duration-500 select-none',

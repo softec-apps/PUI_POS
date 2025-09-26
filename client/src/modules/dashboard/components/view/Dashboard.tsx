@@ -254,12 +254,12 @@ export function DashboardView() {
 				<div className='col-span-5 flex flex-col gap-4 md:col-span-3'>
 					<KPISection metrics={metrics} dateRange={dateRange} loading={loading} />
 					<ProfitabilitySection metrics={metrics} loading={loading} />
-					<div className='pt-2'>
+					<div className='pt-5'>
 						<TopCustomersSection metrics={metrics} />
 					</div>
 				</div>
 
-				<div className='col-span-2'>
+				<div className='col-span-5 pt-5 sm:pt-0 md:col-span-2'>
 					<TopProductsSection metrics={metrics} />
 				</div>
 			</div>

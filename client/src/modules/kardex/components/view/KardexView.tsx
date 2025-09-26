@@ -15,6 +15,7 @@ import { EmptyState } from '@/modules/kardex/components/templates/EmptyState'
 import { ErrorState } from '@/components/layout/templates/ErrorState'
 import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { TableData } from '@/modules/kardex/components/organisms/Table/TableData'
+import { Table } from '@/components/ui/table'
 
 const SEARCH_DELAY = 500
 const MAX_RETRIES = 3
@@ -98,9 +99,8 @@ export function KardexView() {
 	if (kardexData.lastedData.isEmpty) return <EmptyState />
 
 	return (
-		<div className='flex flex-1 flex-col space-y-6'>
+		<Table className='flex flex-1 flex-col space-y-6'>
 			<Header onRefresh={handleFiltersRefresh} totalRecords={totalRealRecords} />
-
 			<Filters
 				searchValue={pagination.searchTerm}
 				currentSort={pagination.currentSort}
@@ -118,7 +118,11 @@ export function KardexView() {
 				onViewChange={setViewType}
 			/>
 
-			<TableData recordsData={kardexData.lastedData.items} loading={kardexData.loading} viewType={viewType} />
+			<Table className='w-full table-fixed overflow-hidden'>
+				<div className='pr-5'>
+					<TableData recordsData={kardexData.lastedData.items} loading={kardexData.loading} viewType={viewType} />
+				</div>
+			</Table>
 
 			<PaginationControls
 				loading={kardexData.loading}
@@ -129,6 +133,6 @@ export function KardexView() {
 				onLimitChange={pagination.handleLimitChange}
 				metaDataPagination={kardexData.lastedData.pagination}
 			/>
-		</div>
+		</Table>
 	)
 }

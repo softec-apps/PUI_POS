@@ -11,25 +11,27 @@ sudo apt update && sudo apt upgrade -y
 ### 2. Instalar Docker
 
 ```bash
-# Instalar dependencias
-sudo apt install -y apt-transport-https ca-certificates curl gnupg lsb-release
 
-# Agregar clave GPG de Docker
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+# Install prerequisites
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg
 
-# Agregar repositorio
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+# Add Docker's official GPG key
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
-# Actualizar e instalar
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io
+# Add the Docker repository
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 # Iniciar y habilitar Docker
+sudo systemctl status docker
 sudo systemctl start docker
 sudo systemctl enable docker
 
 # Agregar usuario al grupo docker (opcional)
 sudo usermod -aG docker $USER
+newgrp
 ```
 
 ### 3. Instalar Node.js (v20 LTS)
@@ -71,6 +73,16 @@ sudo systemctl status nginx
 
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
+```
+
+```bash
+sudo certbot --nginx -d domain
+```
+
+```bash
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw reload
 ```
 
 ## Configuración de Redis (Docker)
@@ -166,6 +178,8 @@ sudo rm /etc/nginx/sites-enabled/default
 
 # Opcional: guardar copia de seguridad
 sudo mv /etc/nginx/sites-available/default ~/default.bak
+
+sudo ln -s /etc/nginx/sites-available/domain /etc/nginx/sites-enabled/
 ```
 
 ### 2. Crear configuración del sitio
@@ -316,6 +330,13 @@ pm2 list
 pm2 logs pui-pos-api
 pm2 logs pui-pos.client
 sudo tail -f /var/log/nginx/error.log
+```
+
+- Borra todo: contenedores, imágenes, volúmenes, redes
+
+```bash
+# EJECUTA ESTO SOLO SI ESTÁS SEGURO DE QUERER ELIMINAR TODO
+docker stop $(docker ps -aq) && docker rm $(docker ps -aq) && docker rmi $(docker images -q) -f && docker volume prune -f && docker system prune -a -f
 ```
 
 ### 2. Pruebas de endpoints

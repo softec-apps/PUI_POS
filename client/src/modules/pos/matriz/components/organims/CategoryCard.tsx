@@ -23,7 +23,7 @@ interface CardProps {
 
 export const CategoryCard: React.FC<CardProps> = ({ category, isSelected = false, onSelect = () => {} }) => {
 	return (
-		<motion.div variants={itemVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+		<motion.div variants={itemVariants} whileHover={{ scale: 0.98 }} whileTap={{ scale: 0.9 }}>
 			<Card
 				className={cn(
 					'flex h-auto cursor-pointer flex-col border-2 p-0 transition-all duration-500',

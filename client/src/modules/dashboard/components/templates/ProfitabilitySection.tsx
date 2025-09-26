@@ -25,7 +25,7 @@ export const ProfitabilitySection: React.FC<ProfitabilitySectionProps> = React.m
 	}
 
 	return (
-		<section className='grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-2'>
+		<section className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2'>
 			<KPICard
 				title='Margen de ganancia'
 				value={metrics.profitMargin.toFixed(1)}
@@ -35,10 +35,10 @@ export const ProfitabilitySection: React.FC<ProfitabilitySectionProps> = React.m
 			/>
 
 			<KPICard
-				title='Ganancia por venta'
+				title='Ganancia promedio'
 				value={getAverageProfit()}
 				isCurrency
-				description='Ganancia promedio por transacción'
+				description='Ganancia promedio por venta'
 				isLoading={loading}
 			/>
 		</section>

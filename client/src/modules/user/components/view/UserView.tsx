@@ -19,6 +19,7 @@ import { EmptyState } from '@/modules/user/components/templates/EmptyState'
 import { ErrorState } from '@/components/layout/templates/ErrorState'
 import { PaginationControls } from '@/components/layout/organims/Pagination'
 import { TableUser } from '@/modules/user/components/organisms/Table/TableUser'
+import { Table } from '@/components/ui/table'
 
 const SEARCH_DELAY = 500
 const MAX_RETRIES = 3
@@ -179,15 +180,19 @@ export function UserView() {
 						onViewChange={setViewType}
 					/>
 
-					<TableUser
-						recordsData={userData.data.items}
-						loading={userData.loading}
-						onEdit={modal.openEdit}
-						onHardDelete={modal.openHardDelete}
-						onSoftDelete={modal.openSoftDelete}
-						onRestore={modal.openRestore}
-						viewType={viewType}
-					/>
+					<Table className='w-full table-fixed overflow-hidden'>
+						<div className='pr-12'>
+							<TableUser
+								recordsData={userData.data.items}
+								loading={userData.loading}
+								onEdit={modal.openEdit}
+								onHardDelete={modal.openHardDelete}
+								onSoftDelete={modal.openSoftDelete}
+								onRestore={modal.openRestore}
+								viewType={viewType}
+							/>
+						</div>
+					</Table>
 
 					<PaginationControls
 						loading={userData.loading}

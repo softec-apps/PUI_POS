@@ -23,7 +23,7 @@ export const TopProductsCard: React.FC<TopProductsCardProps> = ({ products }) =>
 				<div className='dark:bg-popover bg-muted/50 border-border/50 w-full rounded-2xl border'>
 					{products.length > 0 ? (
 						products.slice(0, 6).map((product, index) => (
-							<div key={`product-${product.id}-${index}`} className='flex items-center gap-3 p-3'>
+							<div key={`product-${product.id}-${index}`} className='flex w-full items-center gap-3 p-4'>
 								<ImageControl
 									imageUrl={product?.photo?.path}
 									altText={product?.name}
